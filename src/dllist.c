@@ -1,30 +1,110 @@
 #include <Python.h>
-
-/* Implementation of doubly-linked list */
-
-typedef struct
-{
-    void* value;
-    struct dllist_node_t* prev;
-    struct dllist_node_t* next;
-} dllist_node_t;
-
-typedef struct
-{
-    dllist_node_t* first;
-    dllist_node_t* last;
-} dllist_t;
-
-
-/* Python objects */
+#include <structmember.h>
 
 /* DLListNode */
 
 typedef struct
 {
     PyObject_HEAD
-    dllist_node_t* node;
-} DLLListNodeObject;
+    PyObject* value;
+    PyObject* prev;
+    PyObject* next;
+} DLListNodeObject;
+
+static void dllistnode_dealloc(DLListNodeObject* self)
+{
+    Py_DECREF(self->next);
+    Py_DECREF(self->prev);
+    Py_DECREF(self->value);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject* dllistnode_new(PyTypeObject* type,
+                                PyObject* args,
+                                PyObject* kwds)
+{
+    DLListNodeObject* self;
+
+    self = (DLListNodeObject*)type->tp_alloc(type, 0);
+    if (self == NULL)
+        return NULL;
+
+    Py_INCREF(Py_None);
+    self->value = Py_None;
+
+    Py_INCREF(Py_None);
+    self->prev = Py_None;
+
+    Py_INCREF(Py_None);
+    self->next = Py_None;
+
+    return (PyObject*)self;
+}
+
+static PyObject* dllistnode_call(PyObject* self,
+                                 PyObject* args,
+                                 PyObject* kw)
+{
+    DLListNodeObject* node = (DLListNodeObject*)self;
+
+    Py_INCREF(node->value);
+    return node->value;
+}
+
+static PyMemberDef DLListNodeMembers[] =
+{
+    { "value", T_OBJECT_EX, offsetof(DLListNodeObject, value), 0,
+      "value" },
+    { "prev", T_OBJECT_EX, offsetof(DLListNodeObject, prev), READONLY,
+      "previous node" },
+    { "next", T_OBJECT_EX, offsetof(DLListNodeObject, next), READONLY,
+      "next node" },
+    { NULL },   /* sentinel */
+};
+
+static PyTypeObject DLListNodeType =
+{
+    PyObject_HEAD_INIT(NULL)
+    0,                              /* ob_size */
+    "llist.DLListNode",             /* tp_name */
+    sizeof(DLListNodeObject),       /* tp_basicsize */
+    0,                              /* tp_itemsize */
+    (destructor)dllistnode_dealloc, /* tp_dealloc */
+    0,                              /* tp_print */
+    0,                              /* tp_getattr */
+    0,                              /* tp_setattr */
+    0,                              /* tp_compare */
+    0,                              /* tp_repr */
+    0,                              /* tp_as_number */
+    0,                              /* tp_as_sequence */
+    0,                              /* tp_as_mapping */
+    0,                              /* tp_hash */
+    dllistnode_call,                /* tp_call */
+    0,                              /* tp_str */
+    0,                              /* tp_getattro */
+    0,                              /* tp_setattro */
+    0,                              /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,             /* tp_flags */
+    "Doubly linked list node",      /* tp_doc */
+    0,                              /* tp_traverse */
+    0,                              /* tp_clear */
+    0,                              /* tp_richcompare */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter */
+    0,                              /* tp_iternext */
+    0,                              /* tp_methods */
+    DLListNodeMembers,              /* tp_members */
+    0,                              /* tp_getset */
+    0,                              /* tp_base */
+    0,                              /* tp_dict */
+    0,                              /* tp_descr_get */
+    0,                              /* tp_descr_set */
+    0,                              /* tp_dictoffset */
+    0,                              /* tp_init */
+    0,                              /* tp_alloc */
+    dllistnode_new,                 /* tp_new */
+};
 
 
 /* DLList */
@@ -32,13 +112,15 @@ typedef struct
 typedef struct
 {
     PyObject_HEAD
-    dllist_t* list;
+    PyObject* first;
+    PyObject* last;
+    Py_ssize_t size;
 } DLListObject;
 
 static void dllist_dealloc(DLListObject* self)
 {
-    /* delete list */
-    delete_list(self->list);
+    Py_DECREF(self->last);
+    Py_DECREF(self->first);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -50,13 +132,23 @@ static PyObject* dllist_new(PyTypeObject* type,
     DLListObject* self;
 
     self = (DLListObject*)type->tp_alloc(type, 0);
-    self->list = NULL;
+    if (self == NULL)
+        return NULL;
+
+    Py_INCREF(Py_None);
+    self->first = Py_None;
+
+    Py_INCREF(Py_None);
+    self->last = Py_None;
+
+    self->size = 0;
 
     return (PyObject*)self;
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
+    
     Py_RETURN_NONE;
 }
 
@@ -85,14 +177,10 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 }
 
-static PyObject* dllist_get_first(DLListObject* self)
-{
-    Py_RETURN_NONE;
-}
-
-static PyObject* dllist_get_last(DLListObject* self)
-{
-    Py_RETURN_NONE;
+static Py_ssize_t dllist_len(PyObject* self) 
+{ 
+    DLListObject* list = (DLListObject*)self;
+    return list->size;
 }
 
 static PyMethodDef DLListMethods[] =
@@ -112,13 +200,18 @@ static PyMethodDef DLListMethods[] =
     { NULL },   /* sentinel */
 };
 
-static PyGetSetDef DLListGetSetters[] =
+static PyMemberDef DLListMembers[] =
 {
-    { "first", (getter)dllist_get_first, NULL,
-      "first node", NULL },
-    { "last", (getter)dllist_get_last, NULL,
-      "last_node", NULL },
+    { "first", T_OBJECT_EX, offsetof(DLListObject, first), READONLY,
+      "First node" },
+    { "last", T_OBJECT_EX, offsetof(DLListObject, last), READONLY,
+      "Next node" },
     { NULL },   /* sentinel */
+};
+
+static PySequenceMethods DLListSequenceMethods[] =
+{
+    dllist_len,                 /* sq_length */
 };
 
 static PyTypeObject DLListType =
@@ -135,7 +228,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_compare */
     0,                          /* tp_repr */
     0,                          /* tp_as_number */
-    0,                          /* tp_as_sequence */
+    DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
     0,                          /* tp_hash */
     0,                          /* tp_call */
@@ -152,8 +245,8 @@ static PyTypeObject DLListType =
     0,                          /* tp_iter */
     0,                          /* tp_iternext */
     DLListMethods,              /* tp_methods */
-    0,                          /* tp_members */
-    DLListGetSetters,           /* tp_getset */
+    DLListMembers,              /* tp_members */
+    0,                          /* tp_getset */
     0,                          /* tp_base */
     0,                          /* tp_dict */
     0,                          /* tp_descr_get */
