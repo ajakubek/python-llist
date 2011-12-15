@@ -34,7 +34,7 @@ static PyTypeObject llist_SLListType =
 int sllist_init_type()
 {
     llist_SLListType.tp_new = PyType_GenericNew;
-    return (PyType_Ready(&llist_SLListType) < 0) ? 1 : 0;
+    return (PyType_Ready(&llist_SLListType) == 0) ? 1 : 0;
 }
 
 void sllist_register(PyObject* module)
