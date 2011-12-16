@@ -270,7 +270,45 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 
 static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 {
-    Py_RETURN_NONE;
+    PyObject* val = NULL;
+    PyObject* ref_node = NULL;
+    DLListNodeObject* new_node;
+
+    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, ref_node))
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid arguments");
+        return NULL;
+    }
+
+    if (PyObject_TypeCheck(val, &DLListNodeType))
+        val = ((DLListNodeObject*)val)->value;
+
+    if (ref_node == NULL || ref_node == Py_None)
+    {
+        /* append item at the end of the list */
+        new_node = dllistnode_create(self->last, NULL, val);
+
+        self->last = (PyObject*)new_node;
+
+        if (self->first == Py_None)
+            self->first = (PyObject*)new_node;
+    }
+    else
+    {
+        /* insert item before ref_node */
+        new_node = dllistnode_create(NULL, ref_node, val);
+
+        if (ref_node = self->first)
+            self->first = (PyObject*)new_node;
+
+        if (self->last == Py_None)
+            self->last = (PyObject*)new_node;
+    }
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
 }
 
 static PyObject* dllist_popleft(DLListObject* self)
@@ -289,9 +327,9 @@ static PyObject* dllist_popleft(DLListObject* self)
     if (self->last == (PyObject*)del_node)
         self->last = Py_None;
 
-    dllistnode_delete(del_node);
-
     --self->size;
+
+    dllistnode_delete(del_node);
 
     Py_RETURN_NONE;
 }
@@ -312,15 +350,40 @@ static PyObject* dllist_popright(DLListObject* self)
     if (self->first == (PyObject*)del_node)
         self->first = Py_None;
 
-    dllistnode_delete(del_node);
-
     --self->size;
+
+    dllistnode_delete(del_node);
 
     Py_RETURN_NONE;
 }
 
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 {
+    DLListNodeObject* del_node;
+
+    if (!PyObject_TypeCheck(arg, &DLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a DLListNode");
+        return NULL;
+    }
+
+    if (self->first == Py_None)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        return NULL;
+    }
+
+    del_node = (DLListNodeObject*)arg;
+
+    if (self->first == arg)
+        self->first = del_node->next;
+    if (self->last == arg)
+        self->last = del_node->prev;
+
+    --self->size;
+
+    dllistnode_delete(del_node);
+
     Py_RETURN_NONE;
 }
 
