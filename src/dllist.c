@@ -182,6 +182,7 @@ typedef struct
     Py_ssize_t size;
 } DLListObject;
 
+/* Convenience function for locating list nodes using index. */
 static DLListNodeObject* dllist_get_node_at(DLListObject* self,
                                             Py_ssize_t index)
 {
@@ -194,6 +195,7 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
         return NULL;
     }
 
+    /* pick the faster search direction */
     if (index <= self->size / 2)
     {
         node = (DLListNodeObject*)self->first;
