@@ -13,50 +13,89 @@ typedef struct
     PyObject* next;
 } DLListNodeObject;
 
-static DLListNodeObject* dllistnode_create(DLListNodeObject* prev,
-                                           DLListNodeObject* next,
+/* Convenience function for creating list nodes.
+ * Automatically update pointers in neigbours.
+ */
+static DLListNodeObject* dllistnode_create(PyObject* prev,
+                                           PyObject* next,
                                            PyObject* value)
 {
     DLListNodeObject *node;
 
-    assert(prev != NULL);
-    assert(next != NULL);
     assert(value != NULL);
 
     node = (DLListNodeObject*)PyObject_CallObject(
         (PyObject*)&DLListNodeType, NULL);
 
-    if ((PyObject*)prev != Py_None)
+    /* prev is initialized to Py_None by default
+     * (by dllistnode_new) */
+    if (prev != NULL && prev != Py_None)
     {
-        node->prev = (PyObject*)prev;
-        prev->next = (PyObject*)node;
-    }
-    else
-    {
-        Py_INCREF(Py_None);
-        node->prev = Py_None;
+        assert(node->prev == Py_None);
+        Py_DECREF(node->prev);
+
+        node->prev = prev;
+        ((DLListNodeObject*)prev)->next = (PyObject*)node;
     }
 
-    if ((PyObject*)next != Py_None)
+    /* next is initialized to Py_None by default
+     * (by dllistnode_new) */
+    if (next != NULL && next != Py_None)
     {
-        node->next = (PyObject*)next;
-        next->prev = (PyObject*)node;
+        assert(node->next == Py_None);
+        Py_DECREF(node->next);
+
+        node->next = next;
+        ((DLListNodeObject*)next)->prev = (PyObject*)node;
     }
-    else
-    {
-        Py_INCREF(Py_None);
-        node->next = Py_None;
-    }
+
+    /* node->value references Py_None which has to be freed */
+    assert(node->value == Py_None);
+    Py_DECREF(node->value);
 
     Py_INCREF(value);
     node->value = value;
+
+    return node;
+}
+
+/* Convenience function for creating list nodes.
+ * Automatically updates pointers in neigbours.
+ */
+static void dllistnode_delete(DLListNodeObject* node)
+{
+    if (node->prev != Py_None)
+    {
+        DLListNodeObject* prev = (DLListNodeObject*)node->prev;
+        if (prev->next == Py_None)
+            Py_DECREF(prev->next);
+        prev->next = node->next;
+    }
+    else
+        Py_DECREF(node->prev);
+
+    if (node->next != Py_None)
+    {
+        DLListNodeObject* next = (DLListNodeObject*)node->next;
+        if (next->prev == Py_None)
+            Py_DECREF(next->prev);
+        next->prev = node->prev;
+    }
+    else
+        Py_DECREF(node->next);
+
+    Py_DECREF((PyObject*)node);
 }
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
-    Py_XDECREF(self->next);
-    Py_XDECREF(self->prev);
-    Py_XDECREF(self->value);
+    if (self->next == Py_None)
+        Py_DECREF(self->next);
+
+    if (self->prev == Py_None)
+        Py_DECREF(self->prev);
+
+    Py_DECREF(self->value);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -219,12 +258,45 @@ static PyObject* dllist_new(PyTypeObject* type,
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
-    Py_RETURN_NONE;
+    DLListNodeObject* new_node;
+
+    new_node = dllistnode_create(NULL, self->first, arg);
+
+    if (self->first == Py_None)
+        Py_DECREF(self->first);
+    self->first = (PyObject*)new_node;
+
+    if (self->last == Py_None)
+    {
+        Py_DECREF(self->last);
+        self->last = (PyObject*)new_node;
+    }
+
+    ++self->size;
+
+    return (PyObject*)new_node;
 }
 
 static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 {
-    Py_RETURN_NONE;
+    DLListNodeObject* new_node;
+
+    new_node = dllistnode_create(self->last, NULL, arg);
+
+    if (self->last == Py_None)
+        Py_DECREF(self->last);
+    self->last = (PyObject*)new_node;
+
+    if (self->first == Py_None)
+    {
+        Py_DECREF(self->first);
+        self->first = (PyObject*)new_node;
+    }
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
 }
 
 static PyObject* dllist_insert(DLListObject* self, PyObject* args)
@@ -234,11 +306,53 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 
 static PyObject* dllist_popleft(DLListObject* self)
 {
+    DLListNodeObject* del_node;
+
+    if (self->first == Py_None)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        return NULL;
+    }
+
+    del_node = (DLListNodeObject*)self->first;
+
+    self->first = del_node->next;
+    if (self->last == (PyObject*)del_node)
+    {
+        Py_INCREF(Py_None);
+        self->last = Py_None;
+    }
+
+    dllistnode_delete(del_node);
+
+    --self->size;
+
     Py_RETURN_NONE;
 }
 
 static PyObject* dllist_popright(DLListObject* self)
 {
+    DLListNodeObject* del_node;
+
+    if (self->last == Py_None)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        return NULL;
+    }
+
+    del_node = (DLListNodeObject*)self->last;
+
+    self->last = del_node->prev;
+    if (self->first == (PyObject*)del_node)
+    {
+        Py_INCREF(Py_None);
+        self->first = Py_None;
+    }
+
+    dllistnode_delete(del_node);
+
+    --self->size;
+
     Py_RETURN_NONE;
 }
 
