@@ -463,10 +463,9 @@ int sllist_init_type()
     SLListType.tp_new = PyType_GenericNew;
     SLListNodeType.tp_new = PyType_GenericNew;
 
-    int sllistrv = (PyType_Ready(&SLListType) <= 0) ? 1 : 0;
-    int sllistnoderv = (PyType_Ready(&SLListNodeType) <= 0) ? 1 : 0;
+    int sllistrv = (PyType_Ready(&SLListType) == 0) ? 1 : 0;
+    int sllistnoderv = (PyType_Ready(&SLListNodeType) == 0) ? 1 : 0;
     return sllistrv + sllistnoderv;
-
 }
 
 void sllist_register(PyObject* module)

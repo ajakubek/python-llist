@@ -55,11 +55,11 @@ static PyObject* dllistnode_call(PyObject* self,
 static PyMemberDef DLListNodeMembers[] =
 {
     { "value", T_OBJECT_EX, offsetof(DLListNodeObject, value), 0,
-      "value" },
+      "Value stored in node" },
     { "prev", T_OBJECT_EX, offsetof(DLListNodeObject, prev), READONLY,
-      "previous node" },
+      "Previous node" },
     { "next", T_OBJECT_EX, offsetof(DLListNodeObject, next), READONLY,
-      "next node" },
+      "Next node" },
     { NULL },   /* sentinel */
 };
 
@@ -148,7 +148,6 @@ static PyObject* dllist_new(PyTypeObject* type,
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
-
     Py_RETURN_NONE;
 }
 
@@ -260,7 +259,7 @@ static PyTypeObject DLListType =
 int dllist_init_type()
 {
     DLListType.tp_new = PyType_GenericNew;
-    return (PyType_Ready(&DLListType) <= 0) ? 1 : 0;
+    return (PyType_Ready(&DLListType) == 0) ? 1 : 0;
 }
 
 void dllist_register(PyObject* module)
