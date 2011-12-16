@@ -181,7 +181,7 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 }
 
-static PyObject* dllist_append(DLListObject* self, PyObject* arg)
+static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 {
     Py_RETURN_NONE;
 }
@@ -196,7 +196,7 @@ static PyObject* dllist_popleft(DLListObject* self)
     Py_RETURN_NONE;
 }
 
-static PyObject* dllist_pop(DLListObject* self)
+static PyObject* dllist_popright(DLListObject* self)
 {
     Py_RETURN_NONE;
 }
@@ -248,13 +248,17 @@ static PyMethodDef DLListMethods[] =
 {
     { "appendleft", (PyCFunction)dllist_appendleft, METH_O,
       "Append element at the beginning of the list" },
-    { "append", (PyCFunction)dllist_append, METH_O,
+    { "append", (PyCFunction)dllist_appendright, METH_O,
+      "Append element at the end of the list" },
+    { "appendright", (PyCFunction)dllist_appendright, METH_O,
       "Append element at the end of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
-    { "pop", (PyCFunction)dllist_pop, METH_NOARGS,
+    { "pop", (PyCFunction)dllist_popright, METH_NOARGS,
+      "Remove last element from the list and return it" },
+    { "popright", (PyCFunction)dllist_popright, METH_NOARGS,
       "Remove last element from the list and return it" },
     { "remove", (PyCFunction)dllist_remove, METH_O,
       "Remove element from the list" },
