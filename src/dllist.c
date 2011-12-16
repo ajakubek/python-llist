@@ -117,6 +117,36 @@ typedef struct
     Py_ssize_t size;
 } DLListObject;
 
+static DLListNodeObject* dllist_get_node_at(DLListObject* self,
+                                            Py_ssize_t index)
+{
+    long i;
+    DLListNodeObject* node;
+
+    if (index >= self->size || index < 0)
+    {
+        PyErr_SetString(PyExc_IndexError, "No such index");
+        return NULL;
+    }
+
+    if (index <= self->size / 2)
+    {
+        node = (DLListNodeObject*)self->first;
+        assert((PyObject*)node != Py_None);
+        for (i = 0; i < index; ++i)
+            node = (DLListNodeObject*)node->next;
+    }
+    else
+    {
+        node = (DLListNodeObject*)self->last;
+        assert((PyObject*)node != Py_None);
+        for (i = self->size - 1; i > index; --i)
+            node = (DLListNodeObject*)node->prev;
+    }
+
+    return node;
+}
+
 static void dllist_dealloc(DLListObject* self)
 {
     Py_XDECREF(self->last);
@@ -182,6 +212,38 @@ static Py_ssize_t dllist_len(PyObject* self)
     return list->size;
 }
 
+static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
+{
+    DLListNodeObject* node;
+
+    node = dllist_get_node_at((DLListObject*)self, index);
+    Py_XINCREF(node);
+
+    return (PyObject*)node;
+}
+
+static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
+{
+    DLListNodeObject* node;
+
+    if (PyObject_TypeCheck(val, &DLListNodeType))
+        val = ((DLListNodeObject*)val)->value;
+
+    node = dllist_get_node_at((DLListObject*)self, index);
+    if (node != NULL)
+    {
+        PyObject* oldval = node->value;
+
+        Py_INCREF(val);
+        node->value = val;
+        Py_DECREF(oldval);
+
+        return 0;
+    }
+
+    return -1;
+}
+
 static PyMethodDef DLListMethods[] =
 {
     { "appendleft", (PyCFunction)dllist_appendleft, METH_O,
@@ -211,6 +273,12 @@ static PyMemberDef DLListMembers[] =
 static PySequenceMethods DLListSequenceMethods[] =
 {
     dllist_len,                 /* sq_length */
+    0,                          /* sq_concat */
+    0,                          /* sq_repeat */
+    dllist_get_item,            /* sq_item */
+    0,                          /* sq_slice */
+    dllist_set_item,            /* sq_ass_item */
+    0                           /* sq_ass_slice */
 };
 
 static PyTypeObject DLListType =
