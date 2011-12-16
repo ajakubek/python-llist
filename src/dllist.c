@@ -20,7 +20,7 @@ typedef struct
 static DLListNodeObject* dllistnode_create(PyObject* prev,
                                            PyObject* next,
                                            PyObject* value,
-                                           PyObject* list)
+                                           PyObject* owner_list)
 {
     DLListNodeObject *node;
 
@@ -52,7 +52,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     Py_INCREF(value);
     node->value = value;
 
-    node->list_weakref = PyWeakref_NewRef(list, NULL);
+    node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
     return node;
 }
