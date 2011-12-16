@@ -13,9 +13,9 @@ typedef struct
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
-    Py_DECREF(self->next);
-    Py_DECREF(self->prev);
-    Py_DECREF(self->value);
+    Py_XDECREF(self->next);
+    Py_XDECREF(self->prev);
+    Py_XDECREF(self->value);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -119,8 +119,8 @@ typedef struct
 
 static void dllist_dealloc(DLListObject* self)
 {
-    Py_DECREF(self->last);
-    Py_DECREF(self->first);
+    Py_XDECREF(self->last);
+    Py_XDECREF(self->first);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -176,8 +176,8 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 }
 
-static Py_ssize_t dllist_len(PyObject* self) 
-{ 
+static Py_ssize_t dllist_len(PyObject* self)
+{
     DLListObject* list = (DLListObject*)self;
     return list->size;
 }
