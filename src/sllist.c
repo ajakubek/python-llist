@@ -193,7 +193,8 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
     new_node->next = list->first;
     list->first=(PyObject*)new_node;
     list->size++;
-    return (PyObject*)list;
+    Py_INCREF(new_node);
+    return (PyObject*)new_node;
 
 }
 
@@ -223,7 +224,8 @@ static PyObject* sllist_append(SLListObject* self, PyObject* arg)
         list->last = (PyObject*)new_node;
     }
     self->size++;
-    return (PyObject*)list;
+    Py_INCREF(new_node);
+    return (PyObject*)new_node;
 }
 
 
@@ -257,15 +259,21 @@ static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
     return (PyObject*)sllist_get_node_at((SLListObject*)self, Py_BuildValue("i", index));
 }
 
-static int sllist_set_item(PyObject* self, int index, PyObject* val)
+static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 {
 
     if (!PyObject_TypeCheck(val, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
         return -1;
     }
+    SLListObject* list = (SLListObject*)self;
     SLListNodeObject* node;
-    node = (SLListNodeObject*)sllist_get_node_at((SLListObject*)self, Py_BuildValue("i", index));
+    if(index==0)
+	node = (SLListNodeObject*)list->first;
+    else if(index==list->size-1)
+        node = (SLListNodeObject*)list->last;
+    else
+	node = (SLListNodeObject*)sllist_get_node_at((SLListObject*)self, Py_BuildValue("i", index));
     Py_XDECREF(node->value);
     node->value =((SLListNodeObject*)val)->value;
     return 0;
