@@ -25,8 +25,8 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     DLListNodeObject *node;
 
     assert(value != NULL);
-    assert(list != NULL);
-    assert(list != Py_None);
+    assert(owner_list != NULL);
+    assert(owner_list != Py_None);
 
     node = (DLListNodeObject*)PyObject_CallObject(
         (PyObject*)&DLListNodeType, NULL);
