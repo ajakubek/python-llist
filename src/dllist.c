@@ -11,6 +11,7 @@ typedef struct
     PyObject* value;
     PyObject* prev;
     PyObject* next;
+    PyObject* list_weakref;
 } DLListNodeObject;
 
 /* Convenience function for creating list nodes.
@@ -18,11 +19,14 @@ typedef struct
  */
 static DLListNodeObject* dllistnode_create(PyObject* prev,
                                            PyObject* next,
-                                           PyObject* value)
+                                           PyObject* value,
+                                           PyObject* list)
 {
     DLListNodeObject *node;
 
     assert(value != NULL);
+    assert(list != NULL);
+    assert(list != Py_None);
 
     node = (DLListNodeObject*)PyObject_CallObject(
         (PyObject*)&DLListNodeType, NULL);
@@ -47,6 +51,8 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
 
     Py_INCREF(value);
     node->value = value;
+
+    node->list_weakref = PyWeakref_NewRef(list, NULL);
 
     return node;
 }
@@ -96,6 +102,7 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     self->value = Py_None;
     self->prev = Py_None;
     self->next = Py_None;
+    self->list_weakref = Py_None;
 
     return (PyObject*)self;
 }
@@ -238,7 +245,7 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
 
-    new_node = dllistnode_create(NULL, self->first, arg);
+    new_node = dllistnode_create(NULL, self->first, arg, (PyObject*)self);
 
     self->first = (PyObject*)new_node;
 
@@ -255,7 +262,7 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
 
-    new_node = dllistnode_create(self->last, NULL, arg);
+    new_node = dllistnode_create(self->last, NULL, arg, (PyObject*)self);
 
     self->last = (PyObject*)new_node;
 
@@ -286,7 +293,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     if (ref_node == NULL || ref_node == Py_None)
     {
         /* append item at the end of the list */
-        new_node = dllistnode_create(self->last, NULL, val);
+        new_node = dllistnode_create(self->last, NULL, val, (PyObject*)self);
 
         self->last = (PyObject*)new_node;
 
@@ -296,7 +303,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     else
     {
         /* insert item before ref_node */
-        new_node = dllistnode_create(NULL, ref_node, val);
+        new_node = dllistnode_create(NULL, ref_node, val, (PyObject*)self);
 
         if (ref_node = self->first)
             self->first = (PyObject*)new_node;
@@ -360,6 +367,7 @@ static PyObject* dllist_popright(DLListObject* self)
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* del_node;
+    PyObject* list_ref;
 
     if (!PyObject_TypeCheck(arg, &DLListNodeType))
     {
@@ -374,6 +382,14 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     }
 
     del_node = (DLListNodeObject*)arg;
+
+    list_ref = PyWeakref_GetObject(del_node->list_weakref);
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "DLListNode belongs to another list");
+        return NULL;
+    }
 
     if (self->first == arg)
         self->first = del_node->next;
