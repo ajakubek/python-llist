@@ -148,10 +148,6 @@ static PyObject* dllist_new(PyTypeObject* type,
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
-<<<<<<< HEAD
-=======
-
->>>>>>> f174ce65335b0cb1c31a45a8f261f1895c35cdaf
     Py_RETURN_NONE;
 }
 
