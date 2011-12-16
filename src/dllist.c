@@ -3,6 +3,8 @@
 
 /* DLListNode */
 
+staticforward PyTypeObject DLListNodeType;
+
 typedef struct
 {
     PyObject_HEAD
@@ -10,6 +12,45 @@ typedef struct
     PyObject* prev;
     PyObject* next;
 } DLListNodeObject;
+
+static DLListNodeObject* dllistnode_create(DLListNodeObject* prev,
+                                           DLListNodeObject* next,
+                                           PyObject* value)
+{
+    DLListNodeObject *node;
+
+    assert(prev != NULL);
+    assert(next != NULL);
+    assert(value != NULL);
+
+    node = (DLListNodeObject*)PyObject_CallObject(
+        (PyObject*)&DLListNodeType, NULL);
+
+    if ((PyObject*)prev != Py_None)
+    {
+        node->prev = (PyObject*)prev;
+        prev->next = (PyObject*)node;
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        node->prev = Py_None;
+    }
+
+    if ((PyObject*)next != Py_None)
+    {
+        node->next = (PyObject*)next;
+        next->prev = (PyObject*)node;
+    }
+    else
+    {
+        Py_INCREF(Py_None);
+        node->next = Py_None;
+    }
+
+    Py_INCREF(value);
+    node->value = value;
+}
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
