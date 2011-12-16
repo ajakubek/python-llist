@@ -1,4 +1,4 @@
-.PHONY: clean test 
+.PHONY: clean test
 
 all: clean build install test
 
@@ -6,10 +6,10 @@ build:
 	python setup.py build
 
 install:
-	sudo python setup.py install
+	python setup.py install --install-lib ./tests
 
 clean:
-	rm -rf build
+	python setup.py clean --all
 
 test:
 	python tests/llist_test.py
