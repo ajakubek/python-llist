@@ -541,5 +541,8 @@ int dllist_init_type()
 void dllist_register(PyObject* module)
 {
     Py_INCREF(&DLListType);
+    Py_INCREF(&DLListNodeType);
+
     PyModule_AddObject(module, "DLList", (PyObject*)&DLListType);
+    PyModule_AddObject(module, "DLListNode", (PyObject*)&DLListNodeType);
 }
