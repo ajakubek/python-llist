@@ -9,13 +9,38 @@ typedef struct
     PyObject* next;
 } SLListNodeObject;
 
+
+static SLListNodeObject* sllistnode_create(PyObject* next,
+                                           PyObject* value)
+{
+    SLListNodeObject* node;
+    assert(value != NULL);
+
+    node = (SLListNodeObject*)PyObject_CallObject(
+        (PyObject*)&SLListNodeType, NULL);
+
+    if (next != NULL && next != Py_None)
+        node->next = next;
+
+    assert(node->value == Py_None);
+
+    Py_INCREF(value);
+    node->value = value;
+
+    return node;
+}
+
+static void dllistnode_delete(SLListNodeObject* node)
+{
+    Py_DECREF((PyObject*)node);
+}
+
+
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
-    /* Py_XDECREF(self->value); */
-    /* Py_XDECREF(self->next); */
-    /* self->ob_type->tp_free((PyObject*)self); */
-    /* self->ob_type->tp_dealloc((PyObject*)self); */
-    PyObject_Del(self);
+    Py_DECREF(Py_None);
+    Py_DECREF(self->value);
+    self->ob_type->tp_free((PyObject*)self);
 }
 
 static PyObject* sllistnode_new(PyTypeObject* type,
@@ -29,42 +54,24 @@ static PyObject* sllistnode_new(PyTypeObject* type,
         return NULL;
 
     Py_INCREF(Py_None);
-    self->value = Py_None;
 
-    Py_INCREF(Py_None);
+    self->value = Py_None;
     self->next = Py_None;
 
     return (PyObject*)self;
 }
 
-/* static PyObject* sllistnode_call(PyObject* self, */
-/*                                  PyObject* args, */
-/*                                  PyObject* kw) */
-/* { */
-/*     SLListNodeObject* node = (SLListNodeObject*)self; */
-
-/*     Py_INCREF(node->value); */
-/*     return (PyObject*)node->value; */
-/* } */
-
-
-static int sllistnode_print(PyObject* self, FILE* fp, int flags)
+static PyObject* sllistnode_call(PyObject* self,
+                                 PyObject* args,
+                                 PyObject* kw)
 {
     SLListNodeObject* node = (SLListNodeObject*)self;
-    fprintf(fp, "%p", node);
-    return 0;
+    Py_INCREF(node->value);
+    return node->value;
 }
 
-PyObject* sllistnode_str(PyObject* self)
-{
-    return PyObject_Repr(self);
-}
 
-PyObject* sllistnode_repr(PyObject* self)
-{
-    SLListNodeObject* node = (SLListNodeObject*)self;
-    return PyObject_Str(node->value);
-}
+
 
 static PyMemberDef SLListNodeMembers[] =
     {
@@ -84,18 +91,17 @@ static PyTypeObject SLListNodeType =
         sizeof(SLListNodeObject),       /* tp_basicsize      */
         0,                              /* tp_itemsize       */
         (destructor)sllistnode_dealloc, /* tp_dealloc        */
-        sllistnode_print,               /* tp_print          */
+        0,                              /* tp_print          */
         0,                              /* tp_getattr        */
         0,                              /* tp_setattr        */
         0,                              /* tp_compare        */
-        sllistnode_repr,                /* tp_repr           */
+        0,                              /* tp_repr           */
         0,                              /* tp_as_number      */
         0,                              /* tp_as_sequence    */
         0,                              /* tp_as_mapping     */
         0,                              /* tp_hash           */
-        /* sllistnode_call,                /\* tp_call           *\/ */
-        0,                              /* tp_call           */
-        sllistnode_str,                 /* tp_str            */
+        sllistnode_call,                /* tp_call           */
+        0,                              /* tp_str            */
         0,                              /* tp_getattro       */
         0,                              /* tp_setattro       */
         0,                              /* tp_as_buffer      */
@@ -133,18 +139,24 @@ typedef struct
     PyObject_HEAD
     PyObject* first;
     PyObject* last;
-    int size;
+    Py_ssize_t size;
 } SLListObject;
 
 
 static void sllist_dealloc(SLListObject* self)
 {
-    /* Py_XDECREF(self->last); */
-    /* Py_XDECREF(self->first); */
-    /* Py_XDECREF(&self->size); */
-    /* self->ob_type->tp_dealloc((PyObject*)self); */
-    PyObject_Del(self);
+    Py_XDECREF(self->last);
+    Py_XDECREF(self->first);
 
+    self->ob_type->tp_free((PyObject*)self);
+
+}
+
+
+
+static void sllistnode_delete(SLListNodeObject* node)
+{
+    Py_DECREF((PyObject*)node);
 }
 
 static PyObject* sllist_new(PyTypeObject* type,
@@ -158,25 +170,13 @@ static PyObject* sllist_new(PyTypeObject* type,
         return NULL;
 
     Py_INCREF(Py_None);
+
     self->first = Py_None;
-
-    Py_INCREF(Py_None);
     self->last = Py_None;
-
     self->size = 0;
 
     return (PyObject*)self;
 }
-
-/* static PyObject* sllistnode_call(PyObject* self, */
-/*                                  PyObject* args, */
-/*                                  PyObject* kw) */
-/* { */
-/*     SLListNodeObject* node = (SLListNodeObject*)self; */
-
-/*     Py_INCREF(node->value); */
-/*     return (PyObject*)node->value; */
-/* } */
 
 
 static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
@@ -187,129 +187,135 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
     }
 
     SLListNodeObject* new_node;
-    SLListObject* list = (SLListObject*)self;
-    new_node = PyObject_New(SLListNodeObject, &SLListNodeType);
-    new_node->value = ((SLListNodeObject*)arg)->value;
-    new_node->next = list->first;
-    list->first=(PyObject*)new_node;
-    list->size++;
-    Py_INCREF(new_node);
-    return (PyObject*)new_node;
+    new_node = sllistnode_create(self->first, arg);
 
+    self->first=(PyObject*)new_node;
+
+    if(self->last == Py_None)
+        self->last = (PyObject*)new_node;
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
 }
 
-static PyObject* sllist_append(SLListObject* self, PyObject* arg)
+static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
 {
 
     if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
         PyErr_SetString(PyExc_TypeError, "not a SLLNodeObject");
         return NULL;
     }
-
-    SLListObject* list = (SLListObject*)self;
-
     SLListNodeObject* new_node;
-    SLListNodeObject* node;
-    new_node = PyObject_New(SLListNodeObject, &SLListNodeType);
+    new_node = sllistnode_create(NULL, arg);
 
-    new_node->value = ((SLListNodeObject*)arg)->value;
-    new_node->next = Py_None;
+    if(self->first == Py_None)
+        self->first = (PyObject*)new_node;
+    else
+        ((SLListNodeObject*)self->last)->next = (PyObject*)new_node;
 
-    if(list->first == NULL) {
-        list->first = (PyObject*)new_node;
-        list->last = (PyObject*)new_node;
-    } else {
-        node = (SLListNodeObject*)list->last;
-        node->next = (PyObject*)new_node;
-        list->last = (PyObject*)new_node;
-    }
-    self->size++;
-    Py_INCREF(new_node);
+    self->last = (PyObject*)new_node;
+
+    ++self->size;
+    Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
 }
 
 
-static PyObject* sllist_get_node_at(SLListObject* self, PyObject* arg)
+static PyObject* sllist_get_node_at(SLListObject* self,
+                                    PyObject* arg)
 {
-    int pos;
-    SLListObject* list = (SLListObject*)self;
+    int pos = PyInt_AsLong(arg);
     if (!PyInt_Check(arg)){
         PyErr_SetString(PyExc_TypeError, "Index should be integer");
         return NULL;
     }
-    pos = PyInt_AsLong(arg);
-    if(pos >= list->size || pos < 0){
+    if(pos >= self->size || pos < 0){
         PyErr_SetString(PyExc_IndexError, "No such index");
         return NULL;
     }
-
     SLListNodeObject* node;
-    node = (SLListNodeObject*)list->first;
+    node = (SLListNodeObject*)self->first;
     int counter = 0;
     for(;counter<pos;counter++){
-        node = (SLListNodeObject*)node->next;
+      node = (SLListNodeObject*)node->next;
     }
-    Py_INCREF(node);
+
     return (PyObject*)node;
 }
 
 
 static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 {
-    return (PyObject*)sllist_get_node_at((SLListObject*)self, Py_BuildValue("i", index));
+    SLListObject* list = (SLListObject*)self;
+    return (PyObject*)sllist_get_node_at(list, Py_BuildValue("i", index));
 }
 
 static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 {
+    SLListObject* list = (SLListObject*)self;
 
     if (!PyObject_TypeCheck(val, &SLListNodeType)) {
         PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
         return -1;
     }
-    SLListObject* list = (SLListObject*)self;
     SLListNodeObject* node;
     if(index==0)
-	node = (SLListNodeObject*)list->first;
+        node = (SLListNodeObject*)list->first;
     else if(index==list->size-1)
         node = (SLListNodeObject*)list->last;
     else
-	node = (SLListNodeObject*)sllist_get_node_at((SLListObject*)self, Py_BuildValue("i", index));
+        node = (SLListNodeObject*)sllist_get_node_at(list, Py_BuildValue("i", index));
     Py_XDECREF(node->value);
     node->value =((SLListNodeObject*)val)->value;
     return 0;
 }
 
-static PyObject* sllist_pop(SLListObject* self)
+static PyObject* sllist_popleft(SLListObject* self)
 {
-    PyObject* old_first;
-    PyObject* new_first;
-    SLListObject* list = (SLListObject*)self;
-    if(list->size > 0) {
-        old_first = list->first;
-        new_first = ((SLListNodeObject*)list->first)->next;
-        list->first = (PyObject*)new_first;
-        list->size--;
-        Py_XDECREF(old_first);
-        return (PyObject*)old_first;
+    SLListNodeObject* del_node;
+
+    if (self->first == Py_None)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        return NULL;
     }
-    PyErr_SetString(PyExc_IndexError, "List is empty");
-    return NULL;
+
+    del_node = (SLListNodeObject*)self->first;
+    self->first = del_node->next;
+    if (self->last == (PyObject*)del_node)
+        self->last = Py_None;
+
+    --self->size;
+
+    /* Py_DECREF(del_node); */
+    return (PyObject*)del_node;
+
 }
 
 
 static PyObject* sllist_popright(SLListObject* self)
 {
-    SLListObject* list = (SLListObject*)self;
-    SLListNodeObject* temp_node;
-    if(list->size<=1){
-        PyErr_SetString(PyExc_IndexError, "List is empty");
+
+    SLListNodeObject* del_node;
+
+    if (self->last == Py_None)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "List is empty");
         return NULL;
     }
-    temp_node = ((SLListNodeObject*)sllist_get_node_at(self, Py_BuildValue("i", list->size - 2)));
-    temp_node->next = Py_None;
-    list->size--;
-    Py_XDECREF(temp_node);
-    return (PyObject*)temp_node;
+
+    del_node = (SLListNodeObject*)self->last;
+    self->last = Py_None;
+
+    if (self->first == (PyObject*)del_node)
+        self->first = Py_None;
+
+    --self->size;
+
+    /* Py_DECREF((PyObject*)del_node); */
+    return (PyObject*) del_node;
 }
 
 
@@ -320,45 +326,30 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
         PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
         return NULL;
     }
-    Py_RETURN_NONE;
-}
 
+    SLListNodeObject* node = (SLListNodeObject*)self->first;
+    SLListNodeObject* prev = Py_None;
+    SLListNodeObject* to_delete = (SLListNodeObject*)arg;
 
-int sllist_print(PyObject* self, FILE* fp, int flags)
-{
-    SLListObject* list = (SLListObject*)self;
-    fprintf(fp, "%d", list->size);
-    return 0;
-}
-
-static PyObject* sllist_repr(PyObject* self)
-{
-    char tmp[20];
-    sprintf(tmp, "SLList size: %d", ((SLListObject*)self)->size);
-    return PyString_FromString(tmp);
-}
-
-static PyObject* sllist_str(PyObject* self)
-{
-    SLListObject* list = (SLListObject*)self;
-    SLListNodeObject* node;
-    int list_size = list->size;
-    char buf[20*list_size];
-    char tmp[20];
-    if(list->first == Py_None){
-        strcpy(buf, "[]");
-    } else {
-        strcpy(buf,"[");
-        node = (SLListNodeObject*)list->first;
-        while(node->next != Py_None) {
-            sprintf(tmp, "%p, ", node);
-            strcat(buf, tmp);
-            node = (SLListNodeObject*)node->next;
-        }
-        strcat(buf, "]");
+    while(node != Py_None && node != to_delete){
+        prev = node;
+        node = (SLListNodeObject*)node->next;
     }
-    return PyString_FromString(buf);
+    if(node == Py_None) {
+        PyErr_SetString(PyExc_RuntimeError, "Item not found");
+        return NULL;
+    }
+    if(node == (SLListNodeObject*)self->first)
+        self->first = node->next;
+    else
+        prev->next = node->next;
+    if(node == (SLListNodeObject*)self->last)
+        self->last = (PyObject*)prev;
+    --self->size;
 
+    sllistnode_delete(to_delete);
+
+    Py_RETURN_NONE;
 }
 
 
@@ -372,16 +363,16 @@ static PyMethodDef SLListMethods[] =
     {
         { "appendleft", (PyCFunction)sllist_appendleft, METH_O,
           "Append element at the beginning of the list" },
-        { "append", (PyCFunction)sllist_append, METH_O,
+        { "append", (PyCFunction)sllist_appendright, METH_O,
           "Append element at the end of the list" },
 
-        { "insert", (PyCFunction)sllist_append, METH_O,
+        { "insert", (PyCFunction)sllist_appendright, METH_O,
           "Inserts element before node" },
 
-        { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
+        { "pop", (PyCFunction)sllist_popleft, METH_NOARGS,
           "Remove last element from the list and return it" },
 
-        { "popleft", (PyCFunction)sllist_pop, METH_NOARGS,
+        { "popleft", (PyCFunction)sllist_popleft, METH_NOARGS,
           "Remove first element from the list and return it" },
 
         { "popright", (PyCFunction)sllist_popright, METH_NOARGS,
@@ -411,7 +402,7 @@ static PyMemberDef SLListMembers[] =
         { NULL },   /* sentinel */
     };
 
-static PySequenceMethods SLListSequenceMethods =
+static PySequenceMethods SLListSequenceMethods[] =
     {
         sllist_len,                  /* sq_length         */
         0,                           /* sq_concat         */
@@ -430,17 +421,17 @@ static PyTypeObject SLListType =
         sizeof(SLListObject),        /* tp_basicsize      */
         0,                           /* tp_itemsize       */
         (destructor)sllist_dealloc,  /* tp_dealloc        */
-        sllist_print,                /* tp_print          */
+        0,                           /* tp_print          */
         0,                           /* tp_getattr        */
         0,                           /* tp_setattr        */
         0,                           /* tp_compare        */
-        sllist_repr,                 /* tp_repr           */
+        0,                           /* tp_repr           */
         0,                           /* tp_as_number      */
-        &SLListSequenceMethods,      /* tp_as_sequence    */
+        SLListSequenceMethods,       /* tp_as_sequence    */
         0,                           /* tp_as_mapping     */
         0,                           /* tp_hash           */
         0,                           /* tp_call           */
-        sllist_str,                  /* tp_str            */
+        0,                           /* tp_str            */
         0,                           /* tp_getattro       */
         0,                           /* tp_setattro       */
         0,                           /* tp_as_buffer      */
@@ -468,12 +459,12 @@ static PyTypeObject SLListType =
 
 int sllist_init_type()
 {
-    SLListType.tp_new = PyType_GenericNew;
-    SLListNodeType.tp_new = PyType_GenericNew;
 
-    int sllistrv = (PyType_Ready(&SLListType) == 0) ? 1 : 0;
-    int sllistnoderv = (PyType_Ready(&SLListNodeType) == 0) ? 1 : 0;
-    return sllistrv + sllistnoderv;
+    return
+        ((PyType_Ready(&SLListType) == 0) &&
+         (PyType_Ready(&SLListNodeType) == 0))
+        ? 1 : 0;
+
 }
 
 void sllist_register(PyObject* module)
