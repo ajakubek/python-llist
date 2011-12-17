@@ -1,9 +1,11 @@
 #include <Python.h>
 #include <structmember.h>
 
-/* DLListNode */
-
 staticforward PyTypeObject DLListNodeType;
+staticforward PyTypeObject DLListIteratorType;
+
+
+/* DLListNode */
 
 typedef struct
 {
@@ -416,6 +418,29 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 }
 
+static PyObject* dllist_iter(PyObject* self)
+{
+    PyObject* args;
+
+    args = PyTuple_New(1);
+    if (args == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to create argument tuple");
+        return NULL;
+    }
+
+    Py_INCREF(self);
+    if (PyTuple_SetItem(args, 0, self) != 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to initialize argument tuple");
+        return NULL;
+    }
+
+    return PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+}
+
 static Py_ssize_t dllist_len(PyObject* self)
 {
     DLListObject* list = (DLListObject*)self;
@@ -524,7 +549,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_richcompare */
     offsetof(DLListObject, weakref_list),
                                 /* tp_weaklistoffset */
-    0,                          /* tp_iter */
+    dllist_iter,                /* tp_iter */
     0,                          /* tp_iternext */
     DLListMethods,              /* tp_methods */
     DLListMembers,              /* tp_members */
@@ -539,11 +564,131 @@ static PyTypeObject DLListType =
     dllist_new,                 /* tp_new */
 };
 
+
+/* DLListIterator */
+
+typedef struct
+{
+    PyObject_HEAD
+    DLListObject* list;
+    PyObject* current_node;
+} DLListIteratorObject;
+
+static void dllistiterator_dealloc(DLListIteratorObject* self)
+{
+    Py_XDECREF(self->current_node);
+    Py_DECREF(self->list);
+
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyObject* dllistiterator_new(PyTypeObject* type,
+                                    PyObject* args,
+                                    PyObject* kwds)
+{
+    DLListIteratorObject* self;
+    PyObject* owner_list = NULL;
+
+    if (!PyArg_UnpackTuple(args, "new", 1, 1, &owner_list))
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid argument");
+        return NULL;
+    }
+
+    if (!PyObject_TypeCheck(owner_list, &DLListType))
+    {
+        PyErr_SetString(PyExc_TypeError, "DLList argument expected");
+        return NULL;
+    }
+
+    self = (DLListIteratorObject*)type->tp_alloc(type, 0);
+    if (self == NULL)
+        return NULL;
+
+    self->list = (DLListObject*)owner_list;
+    self->current_node = self->list->first;
+
+    Py_INCREF(self->list);
+    Py_INCREF(self->current_node);
+
+    return (PyObject*)self;
+}
+
+static PyObject* dllistiterator_iternext(PyObject* self)
+{
+    DLListIteratorObject* iter_self = (DLListIteratorObject*)self;
+    PyObject* value;
+    PyObject* next_node;
+
+    if (iter_self->current_node == NULL || iter_self->current_node == Py_None)
+    {
+        Py_XDECREF(iter_self->current_node);
+        iter_self->current_node = NULL;
+        PyErr_SetNone(PyExc_StopIteration);
+        return NULL;
+    }
+
+    value = ((DLListNodeObject*)iter_self->current_node)->value;
+    Py_INCREF(value);
+
+    next_node = ((DLListNodeObject*)iter_self->current_node)->next;
+    Py_INCREF(next_node);
+    Py_DECREF(iter_self->current_node);
+    iter_self->current_node = next_node;
+
+    return value;
+}
+
+static PyTypeObject DLListIteratorType =
+{
+    PyObject_HEAD_INIT(NULL)
+    0,                                  /* ob_size */
+    "llist.DLListIterator",             /* tp_name */
+    sizeof(DLListIteratorObject),       /* tp_basicsize */
+    0,                                  /* tp_itemsize */
+    (destructor)dllistiterator_dealloc, /* tp_dealloc */
+    0,                                  /* tp_print */
+    0,                                  /* tp_getattr */
+    0,                                  /* tp_setattr */
+    0,                                  /* tp_compare */
+    0,                                  /* tp_repr */
+    0,                                  /* tp_as_number */
+    0,                                  /* tp_as_sequence */
+    0,                                  /* tp_as_mapping */
+    0,                                  /* tp_hash */
+    0,                                  /* tp_call */
+    0,                                  /* tp_str */
+    0,                                  /* tp_getattro */
+    0,                                  /* tp_setattro */
+    0,                                  /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,                 /* tp_flags */
+    "Doubly linked list iterator",      /* tp_doc */
+    0,                                  /* tp_traverse */
+    0,                                  /* tp_clear */
+    0,                                  /* tp_richcompare */
+    0,                                  /* tp_weaklistoffset */
+    0,                                  /* tp_iter */
+    dllistiterator_iternext,            /* tp_iternext */
+    0,                                  /* tp_methods */
+    0,                                  /* tp_members */
+    0,                                  /* tp_getset */
+    0,                                  /* tp_base */
+    0,                                  /* tp_dict */
+    0,                                  /* tp_descr_get */
+    0,                                  /* tp_descr_set */
+    0,                                  /* tp_dictoffset */
+    0,                                  /* tp_init */
+    0,                                  /* tp_alloc */
+    dllistiterator_new,                 /* tp_new */
+};
+
+
 int dllist_init_type()
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
-         (PyType_Ready(&DLListNodeType) == 0))
+         (PyType_Ready(&DLListNodeType) == 0) &&
+         (PyType_Ready(&DLListIteratorType) == 0))
         ? 1 : 0;
 }
 
@@ -551,7 +696,9 @@ void dllist_register(PyObject* module)
 {
     Py_INCREF(&DLListType);
     Py_INCREF(&DLListNodeType);
+    Py_INCREF(&DLListIteratorType);
 
     PyModule_AddObject(module, "DLList", (PyObject*)&DLListType);
     PyModule_AddObject(module, "DLListNode", (PyObject*)&DLListNodeType);
+    PyModule_AddObject(module, "DLListIterator", (PyObject*)&DLListIteratorType);
 }
