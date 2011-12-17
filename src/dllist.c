@@ -536,9 +536,6 @@ static PyTypeObject DLListType =
 
 int dllist_init_type()
 {
-    DLListType.tp_new = PyType_GenericNew;
-    DLListNodeType.tp_new = PyType_GenericNew;
-
     return
         ((PyType_Ready(&DLListType) == 0) &&
          (PyType_Ready(&DLListNodeType) == 0))
