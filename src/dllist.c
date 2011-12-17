@@ -217,6 +217,47 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
     return node;
 }
 
+/* Convenience function for extending (concatenating in-place)
+ * the list with elements from a sequence. */
+static int dllist_extend(DLListObject* self, PyObject* sequence)
+{
+    Py_ssize_t i;
+    Py_ssize_t sequence_len;
+
+    sequence_len = PySequence_Length(sequence);
+    if (sequence_len == -1)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+        return 0;
+    }
+
+    for (i = 0; i < sequence_len; ++i)
+    {
+        PyObject* item;
+        PyObject* new_node;
+
+        item = PySequence_GetItem(sequence, i);
+        if (item == NULL)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "Failed to get element from sequence");
+            return 0;
+        }
+
+        new_node = dllistnode_create(self->last, NULL, item, (PyObject*)self);
+
+        if (self->first == Py_None)
+            self->first = new_node;
+        self->last = new_node;
+
+        ++self->size;
+
+        Py_DECREF(item);
+    }
+
+    return 1;
+}
+
 static void dllist_dealloc(DLListObject* self)
 {
     Py_XDECREF(self->last);
@@ -248,6 +289,29 @@ static PyObject* dllist_new(PyTypeObject* type,
     self->weakref_list = NULL;
 
     return (PyObject*)self;
+}
+
+static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
+{
+    PyObject* sequence = NULL;
+
+    if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &sequence))
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Invalid arguments");
+        return -1;
+    }
+
+    if (sequence == NULL)
+        return 0;
+
+    /* initialize list using passed sequence */
+    if (!PySequence_Check(sequence))
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a sequence");
+        return -1;
+    }
+
+    return dllist_extend(self, sequence) ? 0 : -1;
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -559,7 +623,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_descr_get */
     0,                          /* tp_descr_set */
     0,                          /* tp_dictoffset */
-    0,                          /* tp_init */
+    (initproc)dllist_init,      /* tp_init */
     0,                          /* tp_alloc */
     dllist_new,                 /* tp_new */
 };
@@ -589,7 +653,7 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
     DLListIteratorObject* self;
     PyObject* owner_list = NULL;
 
-    if (!PyArg_UnpackTuple(args, "new", 1, 1, &owner_list))
+    if (!PyArg_UnpackTuple(args, "__new__", 1, 1, &owner_list))
     {
         PyErr_SetString(PyExc_RuntimeError, "Invalid argument");
         return NULL;
