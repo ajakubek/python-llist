@@ -180,6 +180,7 @@ typedef struct
     PyObject* first;
     PyObject* last;
     Py_ssize_t size;
+    PyObject* weakref_list;
 } DLListObject;
 
 /* Convenience function for locating list nodes using index. */
@@ -219,6 +220,9 @@ static void dllist_dealloc(DLListObject* self)
     Py_XDECREF(self->last);
     Py_XDECREF(self->first);
 
+    if (self->weakref_list != NULL)
+        PyObject_ClearWeakRefs((PyObject*)self);
+
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -239,6 +243,7 @@ static PyObject* dllist_new(PyTypeObject* type,
     self->first = Py_None;
     self->last = Py_None;
     self->size = 0;
+    self->weakref_list = NULL;
 
     return (PyObject*)self;
 }
@@ -506,12 +511,14 @@ static PyTypeObject DLListType =
     0,                          /* tp_getattro */
     0,                          /* tp_setattro */
     0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,         /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_WEAKREFS,
+                                /* tp_flags */
     "Doubly linked list",       /* tp_doc */
     0,                          /* tp_traverse */
     0,                          /* tp_clear */
     0,                          /* tp_richcompare */
-    0,                          /* tp_weaklistoffset */
+    offsetof(DLListObject, weakref_list),
+                                /* tp_weaklistoffset */
     0,                          /* tp_iter */
     0,                          /* tp_iternext */
     DLListMethods,              /* tp_methods */
