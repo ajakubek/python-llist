@@ -109,14 +109,12 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     return (PyObject*)self;
 }
 
-static PyObject* dllistnode_call(PyObject* self,
+static PyObject* dllistnode_call(DLListNodeObject* self,
                                  PyObject* args,
                                  PyObject* kw)
 {
-    DLListNodeObject* node = (DLListNodeObject*)self;
-
-    Py_INCREF(node->value);
-    return node->value;
+    Py_INCREF(self->value);
+    return self->value;
 }
 
 static PyMemberDef DLListNodeMembers[] =
@@ -147,7 +145,7 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_as_sequence */
     0,                              /* tp_as_mapping */
     0,                              /* tp_hash */
-    dllistnode_call,                /* tp_call */
+    (ternaryfunc)dllistnode_call,   /* tp_call */
     0,                              /* tp_str */
     0,                              /* tp_getattro */
     0,                              /* tp_setattro */
@@ -244,7 +242,8 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
             return 0;
         }
 
-        new_node = dllistnode_create(self->last, NULL, item, (PyObject*)self);
+        new_node = (PyObject*)dllistnode_create(
+            self->last, NULL, item, (PyObject*)self);
 
         if (self->first == Py_None)
             self->first = new_node;
@@ -312,6 +311,34 @@ static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
     }
 
     return dllist_extend(self, sequence) ? 0 : -1;
+}
+
+static int dllist_compare(DLListObject* self, DLListObject* other)
+{
+    DLListNodeObject* self_node = (DLListNodeObject*)self->first;
+    DLListNodeObject* other_node = (DLListNodeObject*)other->first;
+    int result = 0;
+
+    while (result == 0)
+    {
+        if ((PyObject*)self_node == Py_None ||
+            (PyObject*)other_node == Py_None)
+        {
+            if ((PyObject*)self_node == Py_None)
+                return ((PyObject*)other_node == Py_None) ? 0 : -1;
+            else
+                return ((PyObject*)other_node == Py_None) ? 1 : 0;
+        }
+
+        result = PyObject_Compare(self_node->value, other_node->value);
+        if (PyErr_Occurred())
+            return 0;
+
+        self_node = (DLListNodeObject*)self_node->next;
+        other_node = (DLListNodeObject*)other_node->next;
+    }
+
+    return result;
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -595,7 +622,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_print */
     0,                          /* tp_getattr */
     0,                          /* tp_setattr */
-    0,                          /* tp_compare */
+    (cmpfunc)dllist_compare,    /* tp_compare */
     0,                          /* tp_repr */
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
