@@ -252,6 +252,9 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
 
+    if (PyObject_TypeCheck(arg, &DLListNodeType))
+        arg = ((DLListNodeObject*)arg)->value;
+
     new_node = dllistnode_create(NULL, self->first, arg, (PyObject*)self);
 
     self->first = (PyObject*)new_node;
@@ -268,6 +271,9 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
+
+    if (PyObject_TypeCheck(arg, &DLListNodeType))
+        arg = ((DLListNodeObject*)arg)->value;
 
     new_node = dllistnode_create(self->last, NULL, arg, (PyObject*)self);
 
