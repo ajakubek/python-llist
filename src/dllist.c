@@ -516,7 +516,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     PyObject* ref_node = NULL;
     DLListNodeObject* new_node;
 
-    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, ref_node))
+    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, &ref_node))
         return NULL;
 
     if (PyObject_TypeCheck(val, &DLListNodeType))
@@ -535,9 +535,18 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     else
     {
         /* insert item before ref_node */
-        new_node = dllistnode_create(NULL, ref_node, val, (PyObject*)self);
+        if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
+        {
+            PyErr_SetString(PyExc_TypeError,
+                "ref_node argument must be a DLListNode");
+            return NULL;
+        }
 
-        if (ref_node = self->first)
+        new_node = dllistnode_create(
+            ((DLListNodeObject*)ref_node)->prev,
+            ref_node, val, (PyObject*)self);
+
+        if (ref_node == self->first)
             self->first = (PyObject*)new_node;
 
         if (self->last == Py_None)
