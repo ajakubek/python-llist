@@ -81,8 +81,8 @@ static void dllistnode_delete(DLListNodeObject* node)
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
-    Py_DECREF(Py_None);
     Py_DECREF(self->value);
+    Py_DECREF(Py_None);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -105,6 +105,8 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     self->prev = Py_None;
     self->next = Py_None;
     self->list_weakref = Py_None;
+
+    Py_INCREF(self->value);
 
     return (PyObject*)self;
 }
@@ -371,11 +373,19 @@ str_alloc_error:
 
 static void dllist_dealloc(DLListObject* self)
 {
-    Py_XDECREF(self->last);
-    Py_XDECREF(self->first);
+    PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
+
+    while (node != Py_None)
+    {
+        PyObject* next_node = ((DLListNodeObject*)node)->next;
+        Py_DECREF(node);
+        node = next_node;
+    }
+
+    Py_DECREF(Py_None);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -407,10 +417,7 @@ static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
     PyObject* sequence = NULL;
 
     if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &sequence))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid arguments");
         return -1;
-    }
 
     if (sequence == NULL)
         return 0;
@@ -510,10 +517,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     DLListNodeObject* new_node;
 
     if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, ref_node))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid arguments");
         return NULL;
-    }
 
     if (PyObject_TypeCheck(val, &DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
@@ -803,10 +807,7 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
     PyObject* owner_list = NULL;
 
     if (!PyArg_UnpackTuple(args, "__new__", 1, 1, &owner_list))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid argument");
         return NULL;
-    }
 
     if (!PyObject_TypeCheck(owner_list, &DLListType))
     {
