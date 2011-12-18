@@ -59,7 +59,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     return node;
 }
 
-/* Convenience function for creating list nodes.
+/* Convenience function for deleting list nodes.
  * Automatically updates pointers in neigbours.
  */
 static void dllistnode_delete(DLListNodeObject* node)
@@ -117,6 +117,60 @@ static PyObject* dllistnode_call(DLListNodeObject* self,
     return self->value;
 }
 
+static PyObject* dllistnode_repr(DLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("<DLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Repr(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")>");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
+static PyObject* dllistnode_str(DLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("DLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Str(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
 static PyMemberDef DLListNodeMembers[] =
 {
     { "value", T_OBJECT_EX, offsetof(DLListNodeObject, value), 0,
@@ -140,13 +194,13 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_getattr */
     0,                              /* tp_setattr */
     0,                              /* tp_compare */
-    0,                              /* tp_repr */
+    (reprfunc)dllistnode_repr,      /* tp_repr */
     0,                              /* tp_as_number */
     0,                              /* tp_as_sequence */
     0,                              /* tp_as_mapping */
     0,                              /* tp_hash */
     (ternaryfunc)dllistnode_call,   /* tp_call */
-    0,                              /* tp_str */
+    (reprfunc)dllistnode_str,       /* tp_str */
     0,                              /* tp_getattro */
     0,                              /* tp_setattro */
     0,                              /* tp_as_buffer */
@@ -257,6 +311,64 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
     return 1;
 }
 
+/* Convenience function for formatting list to a string.
+ * Pass PyObject_Repr or PyObject_Str in the fmt_func argument. */
+static PyObject* dllist_to_string(DLListObject* self,
+                                  reprfunc fmt_func)
+{
+    PyObject* str = NULL;
+    PyObject* comma_str = NULL;
+    PyObject* tmp_str;
+    DLListNodeObject* node = (DLListNodeObject*)self->first;
+
+    assert(fmt_func != NULL);
+
+    if (self->first == Py_None)
+    {
+        str = PyString_FromString("DLList()");
+        if (str == NULL)
+            goto str_alloc_error;
+        return str;
+    }
+
+    str = PyString_FromString("DLList([");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    comma_str = PyString_FromString(", ");
+    if (comma_str == NULL)
+        goto str_alloc_error;
+
+    while ((PyObject*)node != Py_None)
+    {
+        if (node != (DLListNodeObject*)self->first)
+            PyString_Concat(&str, comma_str);
+
+        tmp_str = fmt_func(node->value);
+        if (tmp_str == NULL)
+            goto str_alloc_error;
+        PyString_ConcatAndDel(&str, tmp_str);
+
+        node = (DLListNodeObject*)node->next;
+    }
+
+    Py_DECREF(comma_str);
+    comma_str = NULL;
+
+    tmp_str = PyString_FromString("])");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    Py_XDECREF(comma_str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
 static void dllist_dealloc(DLListObject* self)
 {
     Py_XDECREF(self->last);
@@ -339,6 +451,16 @@ static int dllist_compare(DLListObject* self, DLListObject* other)
     }
 
     return result;
+}
+
+static PyObject* dllist_repr(DLListObject* self)
+{
+    return dllist_to_string(self, PyObject_Repr);
+}
+
+static PyObject* dllist_str(DLListObject* self)
+{
+    return dllist_to_string(self, PyObject_Str);
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -623,13 +745,13 @@ static PyTypeObject DLListType =
     0,                          /* tp_getattr */
     0,                          /* tp_setattr */
     (cmpfunc)dllist_compare,    /* tp_compare */
-    0,                          /* tp_repr */
+    (reprfunc)dllist_repr,      /* tp_repr */
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
     0,                          /* tp_hash */
     0,                          /* tp_call */
-    0,                          /* tp_str */
+    (reprfunc)dllist_str,       /* tp_str */
     0,                          /* tp_getattro */
     0,                          /* tp_setattro */
     0,                          /* tp_as_buffer */
