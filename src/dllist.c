@@ -25,13 +25,35 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
                                            PyObject* owner_list)
 {
     DLListNodeObject *node;
+    PyObject* args = NULL;
 
     assert(value != NULL);
     assert(owner_list != NULL);
     assert(owner_list != Py_None);
 
+    if (value != Py_None)
+    {
+        args = PyTuple_New(1);
+        if (args == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to create argument tuple");
+            return NULL;
+        }
+
+        Py_INCREF(value);
+        if (PyTuple_SetItem(args, 0, value) != 0)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to initialize argument tuple");
+            return NULL;
+        }
+    }
+
     node = (DLListNodeObject*)PyObject_CallObject(
-        (PyObject*)&DLListNodeType, NULL);
+        (PyObject*)&DLListNodeType, args);
+
+    Py_XDECREF(args);
 
     /* prev is initialized to Py_None by default
      * (by dllistnode_new) */
@@ -48,11 +70,6 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
         node->next = next;
         ((DLListNodeObject*)next)->prev = (PyObject*)node;
     }
-
-    assert(node->value == Py_None);
-
-    Py_INCREF(value);
-    node->value = value;
 
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
@@ -109,6 +126,26 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     Py_INCREF(self->value);
 
     return (PyObject*)self;
+}
+
+static int dllistnode_init(DLListNodeObject* self,
+                           PyObject* args,
+                           PyObject* kwds)
+{
+    PyObject* value = NULL;
+
+    if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &value))
+        return -1;
+
+    if (value == NULL)
+        return 0;
+
+    /* initialize node using passed value */
+    Py_DECREF(self->value);
+    Py_INCREF(value);
+    self->value = value;
+
+    return 0;
 }
 
 static PyObject* dllistnode_call(DLListNodeObject* self,
@@ -222,7 +259,7 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_descr_get */
     0,                              /* tp_descr_set */
     0,                              /* tp_dictoffset */
-    0,                              /* tp_init */
+    (initproc)dllistnode_init,      /* tp_init */
     0,                              /* tp_alloc */
     dllistnode_new,                 /* tp_new */
 };
@@ -235,16 +272,26 @@ typedef struct
     PyObject_HEAD
     PyObject* first;
     PyObject* last;
+    PyObject* last_accessed_node;
+    Py_ssize_t last_accessed_idx;
     Py_ssize_t size;
     PyObject* weakref_list;
 } DLListObject;
+
+static inline Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
+{
+    return (x >= 0) ? x : -x;
+}
 
 /* Convenience function for locating list nodes using index. */
 static DLListNodeObject* dllist_get_node_at(DLListObject* self,
                                             Py_ssize_t index)
 {
-    long i;
+    Py_ssize_t i;
+    Py_ssize_t middle = self->size / 2;
     DLListNodeObject* node;
+    Py_ssize_t start_pos;
+    int reverse_dir;
 
     if (index >= self->size || index < 0)
     {
@@ -252,21 +299,47 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
         return NULL;
     }
 
-    /* pick the faster search direction */
-    if (index <= self->size / 2)
+    /* pick the closest base node */
+    if (index <= middle)
     {
         node = (DLListNodeObject*)self->first;
-        assert((PyObject*)node != Py_None);
-        for (i = 0; i < index; ++i)
-            node = (DLListNodeObject*)node->next;
+        start_pos = 0;
+        reverse_dir = 0;
     }
     else
     {
         node = (DLListNodeObject*)self->last;
-        assert((PyObject*)node != Py_None);
-        for (i = self->size - 1; i > index; --i)
+        start_pos = self->size - 1;
+        reverse_dir = 1;
+    }
+
+    /* check if last accessed index is closer */
+    if (self->last_accessed_node != Py_None &&
+        self->last_accessed_idx >= 0 &&
+        py_ssize_t_abs(index - self->last_accessed_idx) < middle)
+    {
+        node = (DLListNodeObject*)self->last_accessed_node;
+        start_pos = self->last_accessed_idx;
+        reverse_dir = (index < self->last_accessed_idx) ? 1 : 0;
+    }
+
+    assert((PyObject*)node != Py_None);
+
+    if (!reverse_dir)
+    {
+        /* forward scan */
+        for (i = start_pos; i < index; ++i)
+            node = (DLListNodeObject*)node->next;
+    }
+    else
+    {
+        /* backward scan */
+        for (i = start_pos; i > index; --i)
             node = (DLListNodeObject*)node->prev;
     }
+
+    self->last_accessed_node = (PyObject*)node;
+    self->last_accessed_idx = index;
 
     return node;
 }
@@ -406,6 +479,8 @@ static PyObject* dllist_new(PyTypeObject* type,
 
     self->first = Py_None;
     self->last = Py_None;
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
     self->size = 0;
     self->weakref_list = NULL;
 
@@ -484,6 +559,9 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
     if (self->last == Py_None)
         self->last = (PyObject*)new_node;
 
+    if (self->last_accessed_idx >= 0)
+        ++self->last_accessed_idx;
+
     ++self->size;
 
     Py_INCREF((PyObject*)new_node);
@@ -551,6 +629,10 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 
         if (self->last == Py_None)
             self->last = (PyObject*)new_node;
+
+        /* invalidate last accessed item */
+        self->last_accessed_node = Py_None;
+        self->last_accessed_idx = -1;
     }
 
     ++self->size;
@@ -575,6 +657,18 @@ static PyObject* dllist_popleft(DLListObject* self)
     if (self->last == (PyObject*)del_node)
         self->last = Py_None;
 
+    if (self->last_accessed_node != (PyObject*)del_node)
+    {
+        if (self->last_accessed_idx >= 0)
+            --self->last_accessed_idx;
+    }
+    else
+    {
+        /* invalidate last accessed item */
+        self->last_accessed_node = Py_None;
+        self->last_accessed_idx = -1;
+    }
+
     --self->size;
 
     dllistnode_delete(del_node);
@@ -597,6 +691,13 @@ static PyObject* dllist_popright(DLListObject* self)
     self->last = del_node->prev;
     if (self->first == (PyObject*)del_node)
         self->first = Py_None;
+
+    if (self->last_accessed_node == (PyObject*)del_node)
+    {
+        /* invalidate last accessed item */
+        self->last_accessed_node = Py_None;
+        self->last_accessed_idx = -1;
+    }
 
     --self->size;
 
@@ -636,6 +737,12 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
         self->first = del_node->next;
     if (self->last == arg)
         self->last = del_node->prev;
+    if (self->last_accessed_node == arg)
+        self->last_accessed_node = del_node->prev;
+
+    /* invalidate last accessed item */
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
 
     --self->size;
 
@@ -647,6 +754,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 static PyObject* dllist_iter(PyObject* self)
 {
     PyObject* args;
+    PyObject* result;
 
     args = PyTuple_New(1);
     if (args == NULL)
@@ -664,7 +772,11 @@ static PyObject* dllist_iter(PyObject* self)
         return NULL;
     }
 
-    return PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+    result = PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+
+    Py_DECREF(args);
+
+    return result;
 }
 
 static Py_ssize_t dllist_len(PyObject* self)
@@ -685,24 +797,48 @@ static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
 
 static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 {
+    DLListObject* list = (DLListObject*)self;
     DLListNodeObject* node;
 
+    node = dllist_get_node_at(list, index);
+    if (node == NULL)
+        return -1;
+
+    /* Here is a tricky (and undocumented) part of sequence protocol.
+     * Python will pass NULL as item value when item is deleted with:
+     * del list[index] */
+    if (val == NULL)
+    {
+        PyObject* prev = node->prev;
+        PyObject* result;
+
+        result = dllist_remove(list, (PyObject*)node);
+
+        if (prev != Py_None && index > 0)
+        {
+            /* Last accessed item was invalidated by dllist_remove.
+             * We restore it here as the preceding node. */
+            list->last_accessed_node = prev;
+            list->last_accessed_idx = index - 1;
+        }
+
+        Py_XDECREF(result);
+
+        return (result != NULL) ? 0 : -1;
+    }
+
+    /* The rest of this function handles normal assignment:
+     * list[index] = item */
     if (PyObject_TypeCheck(val, &DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
 
-    node = dllist_get_node_at((DLListObject*)self, index);
-    if (node != NULL)
-    {
-        PyObject* oldval = node->value;
+    PyObject* oldval = node->value;
 
-        Py_INCREF(val);
-        node->value = val;
-        Py_DECREF(oldval);
+    Py_INCREF(val);
+    node->value = val;
+    Py_DECREF(oldval);
 
-        return 0;
-    }
-
-    return -1;
+    return 0;
 }
 
 static PyMethodDef DLListMethods[] =
