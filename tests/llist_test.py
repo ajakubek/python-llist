@@ -8,18 +8,6 @@ from llist import SLListNode
 
 class testLList(unittest.TestCase):
 
-    # def setUp(self):
-    #     self.l = SLList()
-    #     for i in range(0, 1100):
-    #         node = SLListNode()
-    #         node.value = 4 * i
-    #         self.l.append(node)
-
-    def testSll_init(self):
-        ll = SLList()
-        nn = SLListNode()
-	self.assertTrue(1)
-
     def testSll_append(self):
         ll = SLList()
         node = SLListNode()
@@ -104,14 +92,13 @@ class testLList(unittest.TestCase):
     #         ll.append(nn)
     #     self.assertEqual(0, 0)
 
-    # def testSll_remove_from_n_elem(self):
-    #     ll = SLList()
-    #     nn = SLListNode()
-    #     nn.value = 3
-    #     for i in range(0, 100):
-    #         ll.append(nn)
-    #     ll.remove(nn)
-    #     self.assertEqual(None, None)
+    def testSll_remove_from_n_elem(self):
+        ll = SLList()
+        nn = SLListNode()
+        ll.append(nn)
+        ll.remove(nn)
+        print ll.first
+        self.assertEqual(None, None)
 
 
 def suite():
