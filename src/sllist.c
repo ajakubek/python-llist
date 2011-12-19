@@ -546,7 +546,7 @@ static PyObject* sllist_popright(SLListObject* self)
 {
 
     SLListNodeObject* del_node;
-    SLListNodeObject* node;
+    SLListNodeObject* prev;
 
     if (self->last == Py_None)
         {
@@ -555,13 +555,17 @@ static PyObject* sllist_popright(SLListObject* self)
         }
 
     del_node = (SLListNodeObject*)self->last;
-    node = (SLListNodeObject*)self->first;
-
-
-    if (self->first == (PyObject*)del_node)
+    /* only one node in list */
+    if (self->first == (PyObject*)del_node){
         self->last = Py_None;
+        self->first = Py_None;
+    }
+    /* more than one node */
     else {
-        self->last = (PyObject*)sllist_get_prev(self, (SLListNodeObject*)del_node);
+        prev = (PyObject*)sllist_get_prev(self, (SLListNodeObject*)del_node);
+        prev->next = Py_None;
+        self->last = prev;
+        Py_DECREF(prev);
     }
     --self->size;
 
@@ -614,6 +618,37 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 
 }
+
+
+static PyObject* sllist_iter(PyObject* self)
+{
+    PyObject* args;
+    PyObject* result;
+
+    args = PyTuple_New(1);
+    if (args == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to create argument tuple");
+        return NULL;
+    }
+
+    Py_INCREF(self);
+    if (PyTuple_SetItem(args, 0, self) != 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to initialize argument tuple");
+        return NULL;
+    }
+
+    result = PyObject_CallObject((PyObject*)&SLListIteratorType, args);
+
+    Py_DECREF(args);
+
+    return result;
+}
+
+
 
 static PyObject* sllist_to_string(SLListObject* self,
                                   reprfunc fmt_func)
@@ -771,8 +806,9 @@ static PyTypeObject SLListType =
         0,                           /* tp_traverse       */
         0,                           /* tp_clear          */
         0,                           /* tp_richcompare    */
-        0,                           /* tp_weaklistoffset */
-        0,                           /* tp_iter           */
+        offsetof(SLListObject, weakref_list),
+                                     /* tp_weaklistoffset */
+        sllist_iter,                 /* tp_iter           */
         0,                           /* tp_iternext       */
         SLListMethods,               /* tp_methods        */
         SLListMembers,               /* tp_members        */
