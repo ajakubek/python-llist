@@ -25,13 +25,35 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
                                            PyObject* owner_list)
 {
     DLListNodeObject *node;
+    PyObject* args = NULL;
 
     assert(value != NULL);
     assert(owner_list != NULL);
     assert(owner_list != Py_None);
 
+    if (value != Py_None)
+    {
+        args = PyTuple_New(1);
+        if (args == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to create argument tuple");
+            return NULL;
+        }
+
+        Py_INCREF(value);
+        if (PyTuple_SetItem(args, 0, value) != 0)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to initialize argument tuple");
+            return NULL;
+        }
+    }
+
     node = (DLListNodeObject*)PyObject_CallObject(
-        (PyObject*)&DLListNodeType, NULL);
+        (PyObject*)&DLListNodeType, args);
+
+    Py_XDECREF(args);
 
     /* prev is initialized to Py_None by default
      * (by dllistnode_new) */
@@ -48,11 +70,6 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
         node->next = next;
         ((DLListNodeObject*)next)->prev = (PyObject*)node;
     }
-
-    assert(node->value == Py_None);
-
-    Py_INCREF(value);
-    node->value = value;
 
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
@@ -109,6 +126,26 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     Py_INCREF(self->value);
 
     return (PyObject*)self;
+}
+
+static int dllistnode_init(DLListNodeObject* self,
+                           PyObject* args,
+                           PyObject* kwds)
+{
+    PyObject* value = NULL;
+
+    if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &value))
+        return -1;
+
+    if (value == NULL)
+        return 0;
+
+    /* initialize node using passed value */
+    Py_DECREF(self->value);
+    Py_INCREF(value);
+    self->value = value;
+
+    return 0;
 }
 
 static PyObject* dllistnode_call(DLListNodeObject* self,
@@ -222,7 +259,7 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_descr_get */
     0,                              /* tp_descr_set */
     0,                              /* tp_dictoffset */
-    0,                              /* tp_init */
+    (initproc)dllistnode_init,      /* tp_init */
     0,                              /* tp_alloc */
     dllistnode_new,                 /* tp_new */
 };
@@ -717,6 +754,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 static PyObject* dllist_iter(PyObject* self)
 {
     PyObject* args;
+    PyObject* result;
 
     args = PyTuple_New(1);
     if (args == NULL)
@@ -734,7 +772,11 @@ static PyObject* dllist_iter(PyObject* self)
         return NULL;
     }
 
-    return PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+    result = PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+
+    Py_DECREF(args);
+
+    return result;
 }
 
 static Py_ssize_t dllist_len(PyObject* self)
