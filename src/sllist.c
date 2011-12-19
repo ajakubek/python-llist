@@ -457,12 +457,10 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* args)
                                  value,
                                  (PyObject*)self);
 
-    if(before == Py_None)
-        self->first = (PyObject*)new_node;
-    else{
-        new_node->next = ((SLListNodeObject*)before)->next;
-        ((SLListNodeObject*)before)->next = (PyObject*)new_node;
-    }
+
+    new_node->next = ((SLListNodeObject*)before)->next;
+    ((SLListNodeObject*)before)->next = (PyObject*)new_node;
+
     ++self->size;
     Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
@@ -531,7 +529,9 @@ static PyObject* sllist_popleft(SLListObject* self)
 
     del_node = (SLListNodeObject*)self->first;
 
+    /* setting the first node to next of removed one*/
     self->first = del_node->next;
+    /* removeing last node */
     if (self->last == (PyObject*)del_node)
         self->last = Py_None;
 
@@ -574,8 +574,6 @@ static PyObject* sllist_popright(SLListObject* self)
 }
 
 
-
-
 static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 {
     if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
@@ -599,18 +597,15 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
         return NULL;
     }
 
+    /* remove first node case */
     if(self->first == arg)
         self->first = ((SLListNodeObject*)arg)->next;
-    if(self->last == arg)
-        self->last = Py_None;
-
-    if(self->first != Py_None) {
+    /* we are sure that we have more than 1 node */
+    else {
+        /* making gap */
         prev = sllist_get_prev(self, (SLListNodeObject*)arg);
-        if(arg == Py_None)
-            Py_RETURN_NONE;
         prev->next = ((SLListNodeObject*)arg)->next;
         self->last = (PyObject*)prev;
-
     }
     Py_DECREF(arg);
 
