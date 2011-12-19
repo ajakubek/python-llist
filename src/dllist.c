@@ -59,7 +59,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     return node;
 }
 
-/* Convenience function for creating list nodes.
+/* Convenience function for deleting list nodes.
  * Automatically updates pointers in neigbours.
  */
 static void dllistnode_delete(DLListNodeObject* node)
@@ -81,8 +81,8 @@ static void dllistnode_delete(DLListNodeObject* node)
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
-    Py_DECREF(Py_None);
     Py_DECREF(self->value);
+    Py_DECREF(Py_None);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -106,17 +106,71 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     self->next = Py_None;
     self->list_weakref = Py_None;
 
+    Py_INCREF(self->value);
+
     return (PyObject*)self;
 }
 
-static PyObject* dllistnode_call(PyObject* self,
+static PyObject* dllistnode_call(DLListNodeObject* self,
                                  PyObject* args,
                                  PyObject* kw)
 {
-    DLListNodeObject* node = (DLListNodeObject*)self;
+    Py_INCREF(self->value);
+    return self->value;
+}
 
-    Py_INCREF(node->value);
-    return node->value;
+static PyObject* dllistnode_repr(DLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("<DLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Repr(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")>");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
+static PyObject* dllistnode_str(DLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("DLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Str(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
 }
 
 static PyMemberDef DLListNodeMembers[] =
@@ -142,13 +196,13 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_getattr */
     0,                              /* tp_setattr */
     0,                              /* tp_compare */
-    0,                              /* tp_repr */
+    (reprfunc)dllistnode_repr,      /* tp_repr */
     0,                              /* tp_as_number */
     0,                              /* tp_as_sequence */
     0,                              /* tp_as_mapping */
     0,                              /* tp_hash */
-    dllistnode_call,                /* tp_call */
-    0,                              /* tp_str */
+    (ternaryfunc)dllistnode_call,   /* tp_call */
+    (reprfunc)dllistnode_str,       /* tp_str */
     0,                              /* tp_getattro */
     0,                              /* tp_setattro */
     0,                              /* tp_as_buffer */
@@ -217,13 +271,121 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
     return node;
 }
 
+/* Convenience function for extending (concatenating in-place)
+ * the list with elements from a sequence. */
+static int dllist_extend(DLListObject* self, PyObject* sequence)
+{
+    Py_ssize_t i;
+    Py_ssize_t sequence_len;
+
+    sequence_len = PySequence_Length(sequence);
+    if (sequence_len == -1)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+        return 0;
+    }
+
+    for (i = 0; i < sequence_len; ++i)
+    {
+        PyObject* item;
+        PyObject* new_node;
+
+        item = PySequence_GetItem(sequence, i);
+        if (item == NULL)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "Failed to get element from sequence");
+            return 0;
+        }
+
+        new_node = (PyObject*)dllistnode_create(
+            self->last, NULL, item, (PyObject*)self);
+
+        if (self->first == Py_None)
+            self->first = new_node;
+        self->last = new_node;
+
+        ++self->size;
+
+        Py_DECREF(item);
+    }
+
+    return 1;
+}
+
+/* Convenience function for formatting list to a string.
+ * Pass PyObject_Repr or PyObject_Str in the fmt_func argument. */
+static PyObject* dllist_to_string(DLListObject* self,
+                                  reprfunc fmt_func)
+{
+    PyObject* str = NULL;
+    PyObject* comma_str = NULL;
+    PyObject* tmp_str;
+    DLListNodeObject* node = (DLListNodeObject*)self->first;
+
+    assert(fmt_func != NULL);
+
+    if (self->first == Py_None)
+    {
+        str = PyString_FromString("DLList()");
+        if (str == NULL)
+            goto str_alloc_error;
+        return str;
+    }
+
+    str = PyString_FromString("DLList([");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    comma_str = PyString_FromString(", ");
+    if (comma_str == NULL)
+        goto str_alloc_error;
+
+    while ((PyObject*)node != Py_None)
+    {
+        if (node != (DLListNodeObject*)self->first)
+            PyString_Concat(&str, comma_str);
+
+        tmp_str = fmt_func(node->value);
+        if (tmp_str == NULL)
+            goto str_alloc_error;
+        PyString_ConcatAndDel(&str, tmp_str);
+
+        node = (DLListNodeObject*)node->next;
+    }
+
+    Py_DECREF(comma_str);
+    comma_str = NULL;
+
+    tmp_str = PyString_FromString("])");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    Py_XDECREF(comma_str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
 static void dllist_dealloc(DLListObject* self)
 {
-    Py_XDECREF(self->last);
-    Py_XDECREF(self->first);
+    PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
+
+    while (node != Py_None)
+    {
+        PyObject* next_node = ((DLListNodeObject*)node)->next;
+        Py_DECREF(node);
+        node = next_node;
+    }
+
+    Py_DECREF(Py_None);
 
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -248,6 +410,64 @@ static PyObject* dllist_new(PyTypeObject* type,
     self->weakref_list = NULL;
 
     return (PyObject*)self;
+}
+
+static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
+{
+    PyObject* sequence = NULL;
+
+    if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &sequence))
+        return -1;
+
+    if (sequence == NULL)
+        return 0;
+
+    /* initialize list using passed sequence */
+    if (!PySequence_Check(sequence))
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a sequence");
+        return -1;
+    }
+
+    return dllist_extend(self, sequence) ? 0 : -1;
+}
+
+static int dllist_compare(DLListObject* self, DLListObject* other)
+{
+    DLListNodeObject* self_node = (DLListNodeObject*)self->first;
+    DLListNodeObject* other_node = (DLListNodeObject*)other->first;
+    int result = 0;
+
+    while (result == 0)
+    {
+        if ((PyObject*)self_node == Py_None ||
+            (PyObject*)other_node == Py_None)
+        {
+            if ((PyObject*)self_node == Py_None)
+                return ((PyObject*)other_node == Py_None) ? 0 : -1;
+            else
+                return ((PyObject*)other_node == Py_None) ? 1 : 0;
+        }
+
+        result = PyObject_Compare(self_node->value, other_node->value);
+        if (PyErr_Occurred())
+            return 0;
+
+        self_node = (DLListNodeObject*)self_node->next;
+        other_node = (DLListNodeObject*)other_node->next;
+    }
+
+    return result;
+}
+
+static PyObject* dllist_repr(DLListObject* self)
+{
+    return dllist_to_string(self, PyObject_Repr);
+}
+
+static PyObject* dllist_str(DLListObject* self)
+{
+    return dllist_to_string(self, PyObject_Str);
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -296,11 +516,8 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     PyObject* ref_node = NULL;
     DLListNodeObject* new_node;
 
-    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, ref_node))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid arguments");
+    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, &ref_node))
         return NULL;
-    }
 
     if (PyObject_TypeCheck(val, &DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
@@ -318,9 +535,18 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     else
     {
         /* insert item before ref_node */
-        new_node = dllistnode_create(NULL, ref_node, val, (PyObject*)self);
+        if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
+        {
+            PyErr_SetString(PyExc_TypeError,
+                "ref_node argument must be a DLListNode");
+            return NULL;
+        }
 
-        if (ref_node = self->first)
+        new_node = dllistnode_create(
+            ((DLListNodeObject*)ref_node)->prev,
+            ref_node, val, (PyObject*)self);
+
+        if (ref_node == self->first)
             self->first = (PyObject*)new_node;
 
         if (self->last == Py_None)
@@ -531,14 +757,14 @@ static PyTypeObject DLListType =
     0,                          /* tp_print */
     0,                          /* tp_getattr */
     0,                          /* tp_setattr */
-    0,                          /* tp_compare */
-    0,                          /* tp_repr */
+    (cmpfunc)dllist_compare,    /* tp_compare */
+    (reprfunc)dllist_repr,      /* tp_repr */
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
     0,                          /* tp_hash */
     0,                          /* tp_call */
-    0,                          /* tp_str */
+    (reprfunc)dllist_str,       /* tp_str */
     0,                          /* tp_getattro */
     0,                          /* tp_setattro */
     0,                          /* tp_as_buffer */
@@ -559,7 +785,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_descr_get */
     0,                          /* tp_descr_set */
     0,                          /* tp_dictoffset */
-    0,                          /* tp_init */
+    (initproc)dllist_init,      /* tp_init */
     0,                          /* tp_alloc */
     dllist_new,                 /* tp_new */
 };
@@ -589,11 +815,8 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
     DLListIteratorObject* self;
     PyObject* owner_list = NULL;
 
-    if (!PyArg_UnpackTuple(args, "new", 1, 1, &owner_list))
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Invalid argument");
+    if (!PyArg_UnpackTuple(args, "__new__", 1, 1, &owner_list))
         return NULL;
-    }
 
     if (!PyObject_TypeCheck(owner_list, &DLListType))
     {
