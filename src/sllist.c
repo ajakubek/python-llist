@@ -17,22 +17,46 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
                                            PyObject* value,
                                            PyObject* owner_list)
 {
-    SLListNodeObject* node;
+    SLListNodeObject *node;
+    PyObject* args = NULL;
+
     assert(value != NULL);
+    assert(owner_list != NULL);
+    assert(owner_list != Py_None);
+
+    if (value != Py_None)
+    {
+        args = PyTuple_New(1);
+        if (args == NULL)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to create argument tuple");
+            return NULL;
+        }
+
+        Py_INCREF(value);
+        if (PyTuple_SetItem(args, 0, value) != 0)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "Failed to initialize argument tuple");
+            return NULL;
+        }
+    }
 
     node = (SLListNodeObject*)PyObject_CallObject(
-                                                  (PyObject*)&SLListNodeType, NULL);
+        (PyObject*)&SLListNodeType, args);
 
+    Py_XDECREF(args);
+
+    /* next is initialized to Py_None by default
+     * (by dllistnode_new) */
     if (next != NULL && next != Py_None)
         node->next = next;
 
-    assert(node->value == Py_None);
-
-    Py_INCREF(value);
-    node->value = value;
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
     return node;
+
 }
 
 
@@ -42,6 +66,28 @@ static void sllistnode_dealloc(SLListNodeObject* self)
     Py_DECREF(self->value);
     self->ob_type->tp_free((PyObject*)self);
 }
+
+static int sllistnode_init(SLListNodeObject* self,
+                           PyObject* args,
+                           PyObject* kwds)
+{
+    PyObject* value = NULL;
+
+    if (!PyArg_UnpackTuple(args, "__init__", 0, 1, &value))
+        return -1;
+
+    if (value == NULL)
+        return 0;
+
+    /* initialize node using passed value */
+    Py_DECREF(self->value);
+    Py_INCREF(value);
+    self->value = value;
+
+    return 0;
+}
+
+
 
 static PyObject* sllistnode_new(PyTypeObject* type,
                                 PyObject* args,
@@ -61,6 +107,65 @@ static PyObject* sllistnode_new(PyTypeObject* type,
     self->list_weakref = Py_None;
     return (PyObject*)self;
 }
+
+
+
+static PyObject* sllistnode_repr(SLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("<SLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Repr(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")>");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
+static PyObject* sllistnode_str(SLListNodeObject* self)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    str = PyString_FromString("SLListNode(");
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = PyObject_Str(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = PyString_FromString(")");
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    PyString_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
+
+
 
 static PyObject* sllistnode_call(PyObject* self,
                                  PyObject* args,
@@ -96,13 +201,13 @@ static PyTypeObject SLListNodeType =
         0,                              /* tp_getattr        */
         0,                              /* tp_setattr        */
         0,                              /* tp_compare        */
-        0,                              /* tp_repr           */
+        (reprfunc)sllistnode_repr,      /* tp_repr           */
         0,                              /* tp_as_number      */
         0,                              /* tp_as_sequence    */
         0,                              /* tp_as_mapping     */
         0,                              /* tp_hash           */
-        sllistnode_call,                /* tp_call           */
-        0,                              /* tp_str            */
+        (ternaryfunc)sllistnode_call,   /* tp_call           */
+        (reprfunc)sllistnode_str,       /* tp_str            */
         0,                              /* tp_getattro       */
         0,                              /* tp_setattro       */
         0,                              /* tp_as_buffer      */
@@ -122,11 +227,10 @@ static PyTypeObject SLListNodeType =
         0,                              /* tp_descr_get      */
         0,                              /* tp_descr_set      */
         0,                              /* tp_dictoffset     */
-        0,                              /* tp_init           */
+        (initproc)sllistnode_init,      /* tp_init           */
         0,                              /* tp_alloc          */
         sllistnode_new,                 /* tp_new            */
     };
-
 
 
 
