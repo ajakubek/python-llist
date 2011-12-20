@@ -612,11 +612,22 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     }
     else
     {
+        PyObject* list_ref;
+
         /* insert item before ref_node */
         if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
         {
             PyErr_SetString(PyExc_TypeError,
                 "ref_node argument must be a DLListNode");
+            return NULL;
+        }
+
+        list_ref = PyWeakref_GetObject(
+            ((DLListNodeObject*)ref_node)->list_weakref);
+        if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "DLListNode belongs to another list");
             return NULL;
         }
 
@@ -647,7 +658,7 @@ static PyObject* dllist_popleft(DLListObject* self)
 
     if (self->first == Py_None)
     {
-        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
 
@@ -682,7 +693,7 @@ static PyObject* dllist_popright(DLListObject* self)
 
     if (self->last == Py_None)
     {
-        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
 
@@ -719,7 +730,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     if (self->first == Py_None)
     {
-        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
 
@@ -728,7 +739,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     list_ref = PyWeakref_GetObject(del_node->list_weakref);
     if (list_ref != (PyObject*)self)
     {
-        PyErr_SetString(PyExc_RuntimeError,
+        PyErr_SetString(PyExc_ValueError,
             "DLListNode belongs to another list");
         return NULL;
     }
