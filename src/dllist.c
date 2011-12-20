@@ -612,11 +612,22 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     }
     else
     {
+        PyObject* list_ref;
+
         /* insert item before ref_node */
         if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
         {
             PyErr_SetString(PyExc_TypeError,
                 "ref_node argument must be a DLListNode");
+            return NULL;
+        }
+
+        list_ref = PyWeakref_GetObject(
+            ((DLListNodeObject*)ref_node)->list_weakref);
+        if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_RuntimeError,
+                "DLListNode belongs to another list");
             return NULL;
         }
 
