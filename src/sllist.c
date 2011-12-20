@@ -375,6 +375,8 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
         return NULL;
     }
 
+
+    /* TODO: Think this over once more */
     if (self->first == (PyObject*)next) {
         PyErr_SetString(PyExc_RuntimeError, "No Previous elements");
         return NULL;
@@ -403,9 +405,10 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
     SLListNodeObject* new_node = sllistnode_create(self->first,
                                                    ((SLListNodeObject*)arg)->value,
                                                    (PyObject*)self);
-
+    /* setting head as new node */
     self->first  = (PyObject*)new_node;
 
+    /* setting tail as new node (appending to empty list)*/
     if(self->last == Py_None)
         self->last = (PyObject*)new_node;
 
@@ -426,11 +429,14 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
                                                    ((SLListNodeObject*)arg)->value,
                                                    (PyObject*)self);
 
+    /* appending to empty list */
     if(self->first == Py_None)
         self->first = (PyObject*)new_node;
+    /* setting next of last element as new node */
     else
         ((SLListNodeObject*)self->last)->next = (PyObject*)new_node;
 
+    /* allways set last node to new node */
     self->last = (PyObject*)new_node;
 
     ++self->size;
@@ -457,7 +463,7 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* args)
                                  value,
                                  (PyObject*)self);
 
-
+    /* putting new node in created gap */
     new_node->next = ((SLListNodeObject*)before)->next;
     ((SLListNodeObject*)before)->next = (PyObject*)new_node;
 
@@ -477,9 +483,10 @@ static SLListNodeObject* sllist_get_node_at(SLListObject* self,
         PyErr_SetString(PyExc_IndexError, "No such index");
         return NULL;
     }
-
+    /* taking head */
     node = (SLListNodeObject*)self->first;
     assert((PyObject*)node != Py_None);
+    /* iterate to given index */
     for (counter = 0; counter < pos; ++counter)
         node = (SLListNodeObject*)node->next;
 
@@ -506,14 +513,26 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
         return -1;
     }
     SLListNodeObject* node;
+    /* setting fist node */
     if(index==0)
         node = (SLListNodeObject*)list->first;
+    /* setting last node */
     else if(index==list->size-1)
         node = (SLListNodeObject*)list->last;
+    /* setting nth node,  */
     else
+        /* get_node_at will rise error for index out of scale */
         node = (SLListNodeObject*)sllist_get_node_at(list, index);
-    Py_XDECREF(node->value);
-    node->value =((SLListNodeObject*)val)->value;
+
+    /* nice played, migu :) */
+    val = ((DLListNodeObject*)val)->value;
+
+    PyObject* oldval = node->value;
+
+    Py_INCREF(val);
+    node->value = val;
+    Py_DECREF(oldval);
+
     return 0;
 }
 
