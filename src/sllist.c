@@ -375,6 +375,8 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
         return NULL;
     }
 
+
+    /* TODO: Think this over once more */
     if (self->first == (PyObject*)next) {
         PyErr_SetString(PyExc_RuntimeError, "No Previous elements");
         return NULL;
@@ -403,9 +405,10 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
     SLListNodeObject* new_node = sllistnode_create(self->first,
                                                    ((SLListNodeObject*)arg)->value,
                                                    (PyObject*)self);
-
+    /* setting head as new node */
     self->first  = (PyObject*)new_node;
 
+    /* setting tail as new node (appending to empty list)*/
     if(self->last == Py_None)
         self->last = (PyObject*)new_node;
 
@@ -426,11 +429,14 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
                                                    ((SLListNodeObject*)arg)->value,
                                                    (PyObject*)self);
 
+    /* appending to empty list */
     if(self->first == Py_None)
         self->first = (PyObject*)new_node;
+    /* setting next of last element as new node */
     else
         ((SLListNodeObject*)self->last)->next = (PyObject*)new_node;
 
+    /* allways set last node to new node */
     self->last = (PyObject*)new_node;
 
     ++self->size;
@@ -457,12 +463,10 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* args)
                                  value,
                                  (PyObject*)self);
 
-    if(before == Py_None)
-        self->first = (PyObject*)new_node;
-    else{
-        new_node->next = ((SLListNodeObject*)before)->next;
-        ((SLListNodeObject*)before)->next = (PyObject*)new_node;
-    }
+    /* putting new node in created gap */
+    new_node->next = ((SLListNodeObject*)before)->next;
+    ((SLListNodeObject*)before)->next = (PyObject*)new_node;
+
     ++self->size;
     Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
@@ -479,9 +483,10 @@ static SLListNodeObject* sllist_get_node_at(SLListObject* self,
         PyErr_SetString(PyExc_IndexError, "No such index");
         return NULL;
     }
-
+    /* taking head */
     node = (SLListNodeObject*)self->first;
     assert((PyObject*)node != Py_None);
+    /* iterate to given index */
     for (counter = 0; counter < pos; ++counter)
         node = (SLListNodeObject*)node->next;
 
@@ -508,14 +513,26 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
         return -1;
     }
     SLListNodeObject* node;
+    /* setting fist node */
     if(index==0)
         node = (SLListNodeObject*)list->first;
+    /* setting last node */
     else if(index==list->size-1)
         node = (SLListNodeObject*)list->last;
+    /* setting nth node,  */
     else
+        /* get_node_at will rise error for index out of scale */
         node = (SLListNodeObject*)sllist_get_node_at(list, index);
-    Py_XDECREF(node->value);
-    node->value =((SLListNodeObject*)val)->value;
+
+    /* nice played, migu :) */
+    val = ((DLListNodeObject*)val)->value;
+
+    PyObject* oldval = node->value;
+
+    Py_INCREF(val);
+    node->value = val;
+    Py_DECREF(oldval);
+
     return 0;
 }
 
@@ -531,7 +548,9 @@ static PyObject* sllist_popleft(SLListObject* self)
 
     del_node = (SLListNodeObject*)self->first;
 
+    /* setting the first node to next of removed one*/
     self->first = del_node->next;
+    /* removeing last node */
     if (self->last == (PyObject*)del_node)
         self->last = Py_None;
 
@@ -546,7 +565,7 @@ static PyObject* sllist_popright(SLListObject* self)
 {
 
     SLListNodeObject* del_node;
-    SLListNodeObject* node;
+    SLListNodeObject* prev;
 
     if (self->last == Py_None)
         {
@@ -555,21 +574,23 @@ static PyObject* sllist_popright(SLListObject* self)
         }
 
     del_node = (SLListNodeObject*)self->last;
-    node = (SLListNodeObject*)self->first;
-
-
-    if (self->first == (PyObject*)del_node)
+    /* only one node in list */
+    if (self->first == (PyObject*)del_node){
         self->last = Py_None;
+        self->first = Py_None;
+    }
+    /* more than one node */
     else {
-        self->last = (PyObject*)sllist_get_prev(self, (SLListNodeObject*)del_node);
+        prev = (PyObject*)sllist_get_prev(self, (SLListNodeObject*)del_node);
+        prev->next = Py_None;
+        self->last = prev;
+        Py_DECREF(prev);
     }
     --self->size;
 
     Py_DECREF((PyObject*)del_node);
     Py_RETURN_NONE;
 }
-
-
 
 
 static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
@@ -595,18 +616,15 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
         return NULL;
     }
 
+    /* remove first node case */
     if(self->first == arg)
         self->first = ((SLListNodeObject*)arg)->next;
-    if(self->last == arg)
-        self->last = Py_None;
-
-    if(self->first != Py_None) {
+    /* we are sure that we have more than 1 node */
+    else {
+        /* making gap */
         prev = sllist_get_prev(self, (SLListNodeObject*)arg);
-        if(arg == Py_None)
-            Py_RETURN_NONE;
         prev->next = ((SLListNodeObject*)arg)->next;
         self->last = (PyObject*)prev;
-
     }
     Py_DECREF(arg);
 
@@ -614,6 +632,37 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     Py_RETURN_NONE;
 
 }
+
+
+static PyObject* sllist_iter(PyObject* self)
+{
+    PyObject* args;
+    PyObject* result;
+
+    args = PyTuple_New(1);
+    if (args == NULL)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to create argument tuple");
+        return NULL;
+    }
+
+    Py_INCREF(self);
+    if (PyTuple_SetItem(args, 0, self) != 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Failed to initialize argument tuple");
+        return NULL;
+    }
+
+    result = PyObject_CallObject((PyObject*)&SLListIteratorType, args);
+
+    Py_DECREF(args);
+
+    return result;
+}
+
+
 
 static PyObject* sllist_to_string(SLListObject* self,
                                   reprfunc fmt_func)
@@ -771,8 +820,9 @@ static PyTypeObject SLListType =
         0,                           /* tp_traverse       */
         0,                           /* tp_clear          */
         0,                           /* tp_richcompare    */
-        0,                           /* tp_weaklistoffset */
-        0,                           /* tp_iter           */
+        offsetof(SLListObject, weakref_list),
+                                     /* tp_weaklistoffset */
+        sllist_iter,                 /* tp_iter           */
         0,                           /* tp_iternext       */
         SLListMethods,               /* tp_methods        */
         SLListMembers,               /* tp_members        */
