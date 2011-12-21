@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import gc
 import unittest
 from llist import SLList
 from llist import SLListNode
 from llist import DLList
 from llist import DLListNode
+
+gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
 
 
 class testLList(unittest.TestCase):
@@ -57,9 +59,6 @@ class testLList(unittest.TestCase):
         ll.insert_before(100, ll.first)
         self.assertEqual([100, 1, 3, '123'], list(ll))
 
-
-
-
     def testDll_append_left(self):
         ll = DLList([1, 2, 3, 4])
         ll.appendleft(5)
@@ -106,6 +105,9 @@ class testLList(unittest.TestCase):
         ll = DLList([1, 3, '123'])
         ll.insert(100, ll.first)
         self.assertEqual([100, 1, 3, '123'], list(ll))
+
+    def always_success(self):
+        self.assertEqual(0, 0)
 
 
 def suite():

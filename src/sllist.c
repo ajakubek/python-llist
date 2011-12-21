@@ -62,7 +62,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
-    Py_DECREF(Py_None);
+    /* Py_DECREF(Py_None); */
     Py_DECREF(self->value);
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -442,7 +442,7 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
 
     ++self->size;
 
-    Py_INCREF((PyObject*)new_node);
+    /* Py_INCREF((PyObject*)new_node); */
     return (PyObject*)new_node;
 }
 
@@ -637,7 +637,7 @@ static PyObject* sllist_popleft(SLListObject* self)
     --self->size;
 
     /* Py_DECREF((PyObject*)del_node); */
-    /* Py_RETURN_NONE; */
+    /* py_RETURN_NONE; */
     /* returning whole node, i suppose decref in this case is not wanted*/
     return (PyObject*)del_node;
 }
