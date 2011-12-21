@@ -1,4 +1,4 @@
-.PHONY: clean test
+.PHONY: clean docs test
 
 all: clean build install test
 
@@ -11,6 +11,11 @@ install:
 clean:
 	python setup.py clean --all
 
-test:
-	python tests/llist_test.py
+docs:
+	python setup.py install --install-lib ./docs
+	cd docs && $(MAKE) $(MFLAGS) clean
+	cd docs && $(MAKE) $(MFLAGS) doctest html
 
+test:
+	python setup.py install --install-lib ./tests
+	python tests/llist_test.py
