@@ -8,89 +8,34 @@ from llist import SLListNode
 
 class testLList(unittest.TestCase):
 
-    def testSll_append(self):
-        ll = SLList()
-        node = SLListNode()
-        ll.append(node)
-        ll.pop()
-        self.assertTrue(1)
-
     def testSll_append_left(self):
-        ll = SLList()
-        node = SLListNode()
-        node.value = 12
-        ll.appendleft(node)
-        self.assertTrue(1)
+        ll = SLList([1, 2, 3, 4])
+        ll.appendleft(5)
+        self.assertTrue([5, 1, 2, 3, 4], list(ll))
 
-    # def testSll_pop(self):
-    #     ll = SLList()
-    #     node = SLListNode()
-    #     node.value = 234
-    #     ll.append(node)
-    #     ll.append(node)
-    #     ll.popleft()
-    #     self.assertTrue()
-
-    def testSll_pop_left_from_empty(self):
-        ll = SLList()
-        try:
-            ll.popleft()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
-
-    def testSll_pop_right_from_empty(self):
-        ll = SLList()
-        try:
-            ll.popright()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
+    def testSll_append_right(self):
+        ll = SLList([1, 2, 3, 4])
+        ll.appendleft(5)
+        self.assertTrue([1, 2, 3, 4, 5], list(ll))
 
     def testSll_pop_left_from_one_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popleft()
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd.value, 0)
 
     def testSll_pop_right_from_one_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd.__class__, nn.__class__)
-
-    def testSll_pop_right_from_one_elem_and_later_from_empty(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
-        dd = ll.popright()
-        try:
-            ll.popright()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd.value, 99)
 
     def testSll_pop_right_from_n_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd(), 99)
 
-    # def testSll_get_node_at_from_n_elem(self):
-    #     ll = SLList()
-    #     for i in range(0, 2):
-    #         nn = SLListNode()
-    #         nn.value = 3 * i
-    #         ll.append(nn)
-    #     self.assertEqual(0, 0)
+    def testSll_get_node_at_from_n_elem(self):
+        ll = SLList(xrange(0, 100))
+        self.assertEqual(50, ll[50]())
 
     def testSll_remove_from_n_elem(self):
         ll = SLList()
@@ -99,6 +44,16 @@ class testLList(unittest.TestCase):
         to_del = ll[0]
         ll.remove(to_del)
         self.assertEqual(None, None)
+
+    def testSll_inser_after(self):
+        ll = SLList([1, 3, '123'])
+        ll.insert_after(100, ll.first)
+        self.assertEqual([1, 100, 3, '123'], list(ll))
+
+    def testSll_inser_before(self):
+        ll = SLList([1, 3, '123'])
+        ll.insert_before(100, ll.first)
+        self.assertEqual([100, 1, 3, '123'], list(ll))
 
 
 def suite():

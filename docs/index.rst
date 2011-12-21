@@ -10,14 +10,14 @@
    :synopsis: Linked list datatypes for Python
 
 .. moduleauthor:: Adam Jakubek <ajakubek@gmail.com>
-.. moduleauthor:: Rafał Gałczyński <>
+.. moduleauthor:: Rafał Gałczyński <rafal.galczynski@gmail.com>
 
 This module implements linked list data structures.
 Currently two types of lists are supported: a doubly linked :class:`DLList`
 and a singly linked :class:`SLList`.
 
 All data types defined in this module support efficient O(1)) insertion
-and removal of elements.
+and removal of elements (Except removal in SLList).
 Random access to elements using index is O(n). We do however cache the most
 recently accessed node which allows O(1) access to consecutive indexes.
 
@@ -252,6 +252,149 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    Note that iteration using :class:`DLListIterator` interface will
    directly yield values stored in nodes, not :class:`DLListNode`
+   objects.
+
+   Example:
+
+   .. doctest::
+
+      >>> from llist import DLList
+      >>> lst = DLList([1, 2, 3])
+      >>> for value in lst:
+      ...     print value * 2,
+      2 4 6
+
+
+:class:`SLList` objects
+-----------------------
+
+.. class:: SLList([iterable])
+
+   Return a new singly linked list initialized with elements from *iterable*.
+   If *iterable* is not specified, the new :class:`SLList` is empty.
+
+   SLList objects provide the following attributes:
+
+   .. attribute:: first
+
+      First :class:`SLListNode` object in the list. `None` if list is empty.
+
+   .. attribute:: last
+
+      Last :class:`SLListNode` object in the list. `None` if list is empty.
+
+   .. attribute:: size
+
+      Actual size of list. 0 if list is empty.
+
+   SLList objects also support the following methods:
+
+   .. method:: appendleft(x)
+
+      Add *x* to the begining of list in O(1)
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+   .. method:: appendright(x)
+
+      Add *x* to the end of list in O(1)
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+   .. method:: append(x)
+
+      Add *x* to the end of list in O(1)
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+   .. method:: insert_after(x, node) in O(1)
+
+      Inserts *x* after given node
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+
+   .. method:: insert_before(x, node) in O(n)
+
+      Inserts *x* before given node
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+
+   .. method:: pop(X) in O(1)
+
+      Remove and return an element from the left side of the list.
+
+   .. method:: pop(X) in O(n)
+
+      Remove and return an element from the right side of the list.
+
+   .. method:: popright(X) in O(n)
+
+      Remove and return an element from the right side of the list.
+
+   .. method:: popleft(X) in O(1)
+
+      Remove and return an element from the left side of the list.
+
+
+
+   .. method:: remove(node)
+
+     Remove *node* from the list.
+
+     Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+
+     Raises :exc:`ValueError` if *self* is empty, or *node* does
+     not belong to *self*.
+
+
+:class:`SLListNode` objects
+---------------------------
+
+.. class:: SLListNode([value])
+
+   Return a new singly linked list node, initialized (optionally)
+   with *value*.
+
+   SLListNode objects provide the following attributes:
+
+   .. attribute:: next
+
+      Next node in the list. This attribute is read-only.
+
+   .. attribute:: value
+
+      Value stored in this node.
+
+   Note that value stored in the node can also be obtained through
+   the :meth:`__call__()` method (using standard ``node()`` syntax).
+
+
+:class:`SLListIterator` objects
+-------------------------------
+
+.. class:: SLListIterator
+
+   Return a new singly linked list iterator.
+
+   SLListIterator objects are not meant to be created by user.
+   They are returned by the :meth:`SLList.__iter__()` method to hold
+   iteration state.
+
+   Note that iteration using :class:`SLListIterator` interface will
+   directly yield values stored in nodes, not :class:`SLListNode`
    objects.
 
    Example:
