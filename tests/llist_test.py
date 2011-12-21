@@ -96,8 +96,8 @@ class testLList(unittest.TestCase):
         ll = SLList()
         nn = SLListNode()
         ll.append(nn)
-        ll.remove(nn)
-        print ll.first
+        to_del = ll[0]
+        ll.remove(to_del)
         self.assertEqual(None, None)
 
 

@@ -557,8 +557,10 @@ static PyObject* sllist_popleft(SLListObject* self)
 
     --self->size;
 
-    Py_DECREF((PyObject*)del_node);
-    Py_RETURN_NONE;
+    /* Py_DECREF((PyObject*)del_node); */
+    /* Py_RETURN_NONE; */
+    /* returning whole node, i suppose decref in this case is not wanted*/
+    return (PyObject*)del_node;
 }
 
 
@@ -589,8 +591,11 @@ static PyObject* sllist_popright(SLListObject* self)
     }
     --self->size;
 
-    Py_DECREF((PyObject*)del_node);
-    Py_RETURN_NONE;
+    /* Py_DECREF((PyObject*)del_node); */
+    /* Py_RETURN_NONE; */
+    /* returning whole node, i suppose decref in this case is not wanted*/
+    return (PyObject*)del_node;
+
 }
 
 
