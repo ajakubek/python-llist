@@ -49,7 +49,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
     Py_XDECREF(args);
 
     /* next is initialized to Py_None by default
-     * (by dllistnode_new) */
+     * (by sllistnode_new) */
     if (next != NULL && next != Py_None)
         node->next = next;
 
@@ -259,8 +259,9 @@ static void sllist_dealloc(SLListObject* self)
     while (node != Py_None)
     {
         PyObject* next_node = ((SLListNodeObject*)node)->next;
-        Py_DECREF(node);
         node = next_node;
+        Py_DECREF(next_node);
+
     }
 
     Py_DECREF(Py_None);
@@ -285,7 +286,7 @@ static PyObject* sllist_new(PyTypeObject* type,
 
     self->first = Py_None;
     self->last = Py_None;
-    self->weakref_list = Py_None;
+    self->weakref_list = NULL;
     self->size = 0;
 
     return (PyObject*)self;
@@ -525,7 +526,7 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
         node = (SLListNodeObject*)sllist_get_node_at(list, index);
 
     /* nice played, migu :) */
-    val = ((DLListNodeObject*)val)->value;
+    val = ((SLListNodeObject*)val)->value;
 
     PyObject* oldval = node->value;
 
