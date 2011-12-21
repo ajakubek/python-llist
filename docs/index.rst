@@ -17,8 +17,8 @@ Currently two types of lists are supported: a doubly linked :class:`DLList`
 and a singly linked :class:`SLList`.
 
 All data types defined in this module support efficient O(1)) insertion
-and removal of elements (Except removal in SLList).
-Random access to elements using index is O(n). We do however cache the most
+and removal of elements (except removal in SLList).
+Random access to elements using index is O(n). It does however cache the most
 recently accessed node which allows O(1) access to consecutive indexes.
 
 :class:`DLList` objects
@@ -185,13 +185,16 @@ recently accessed node which allows O(1) access to consecutive indexes.
       DLList([0, 1, 1.5, 2, 3, 4, 5, 6])
 
       >>> lst.popleft()                 # remove leftmost node from the list
+      <DLListNode(0)>
       >>> print lst
       DLList([1, 1.5, 2, 3, 4, 5, 6])
       >>> lst.popright()                # remove rightmost node from the list
+      <DLListNode(6)>
       >>> print lst
       DLList([1, 1.5, 2, 3, 4, 5])
       >>> node = lst[1]
       >>> lst.remove(node)              # remove 2nd node from the list
+      <DLListNode(1.5)>
       >>> print lst
       DLList([1, 2, 3, 4, 5])
       >>> foreign_node = DLListNode()   # create an unassigned node
@@ -331,7 +334,6 @@ recently accessed node which allows O(1) access to consecutive indexes.
       Argument *x* might be a :class:`SLListNode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
-
    .. method:: pop(X) in O(1)
 
       Remove and return an element from the left side of the list.
@@ -347,8 +349,6 @@ recently accessed node which allows O(1) access to consecutive indexes.
    .. method:: popleft(X) in O(1)
 
       Remove and return an element from the left side of the list.
-
-
 
    .. method:: remove(node)
 

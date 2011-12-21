@@ -682,9 +682,11 @@ static PyObject* dllist_popleft(DLListObject* self)
 
     --self->size;
 
+    Py_INCREF((PyObject*)del_node);
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return (PyObject*)del_node;
 }
 
 static PyObject* dllist_popright(DLListObject* self)
@@ -712,9 +714,11 @@ static PyObject* dllist_popright(DLListObject* self)
 
     --self->size;
 
+    Py_INCREF((PyObject*)del_node);
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return (PyObject*)del_node;
 }
 
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
@@ -757,9 +761,11 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     --self->size;
 
+    Py_INCREF((PyObject*)del_node);
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return (PyObject*)del_node;
 }
 
 static PyObject* dllist_iter(PyObject* self)
