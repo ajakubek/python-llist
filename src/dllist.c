@@ -885,6 +885,8 @@ static PyMemberDef DLListMembers[] =
       "First node" },
     { "last", T_OBJECT_EX, offsetof(DLListObject, last), READONLY,
       "Next node" },
+    { "size", T_INT, offsetof(DLListObject, size), READONLY,
+      "Number of elements in the list" },
     { NULL },   /* sentinel */
 };
 
