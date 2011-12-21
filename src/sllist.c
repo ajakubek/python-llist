@@ -384,9 +384,9 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
     }
 
     if(self->first != Py_None) {
-        while(node != Py_None && node != next){
+        while((PyObject*)node != Py_None && node != next){
             prev = node;
-            node = node->next;
+            node = (SLListNodeObject*)node->next;
         }
         Py_INCREF(prev);
         return (SLListNodeObject*)prev;
@@ -470,6 +470,56 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* args)
 
     ++self->size;
     Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
+}
+
+static PyObject* sllist_insert_before(SLListObject* self, PyObject* args)
+{
+
+    PyObject* value = NULL;
+    PyObject* after = NULL;
+    PyObject* list_ref;
+
+    SLListNodeObject* new_node;
+    SLListNodeObject* prev;
+
+    if (!PyArg_UnpackTuple(args, "insert", 1, 2, &value, &after))
+        return NULL;
+
+    if (!PyObject_TypeCheck(after, &SLListNodeType)) {
+        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
+        return NULL;
+    }
+    list_ref = PyWeakref_GetObject(
+        ((SLListNodeObject*)after)->list_weakref);
+    if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                            "DLListNode belongs to another list");
+            return NULL;
+        }
+    value = ((SLListNodeObject*)value)->value;
+    new_node = sllistnode_create(Py_None,
+                                 value,
+                                 (PyObject*)self);
+
+    /* getting prev node for this from arg*/
+    prev = sllist_get_prev(self, (SLListNodeObject*)after);
+
+    /* putting new node in created gap, not first and exists */
+    if((PyObject*)prev != Py_None && prev != NULL) {
+        ((SLListNodeObject*)prev)->next = (PyObject*)new_node;
+        new_node->next = after;
+    } else {
+        new_node->next = after;
+        self->first = (PyObject*)new_node;
+    }
+    /* new_node->next = ((SLListNodeObject*)after)->next; */
+    /* ((SLListNodeObject*)before)->next = (PyObject*)new_node; */
+    Py_RETURN_NONE;
+    ++self->size;
+    Py_INCREF((PyObject*)new_node);
+    Py_DECREF((PyObject*)prev);
     return (PyObject*)new_node;
 }
 
@@ -584,9 +634,9 @@ static PyObject* sllist_popright(SLListObject* self)
     }
     /* more than one node */
     else {
-        prev = (PyObject*)sllist_get_prev(self, (SLListNodeObject*)del_node);
+        prev = sllist_get_prev(self, del_node);
         prev->next = Py_None;
-        self->last = prev;
+        self->last = (PyObject*)prev;
         Py_DECREF(prev);
     }
     --self->size;
@@ -756,6 +806,9 @@ static PyMethodDef SLListMethods[] =
 
         { "insert_after", (PyCFunction)sllist_insert_after, METH_VARARGS,
           "Inserts element after node" },
+
+        { "insert_before", (PyCFunction)sllist_insert_before, METH_VARARGS,
+          "Inserts element before node" },
 
         { "get_prev", (PyCFunction)sllist_get_prev, METH_VARARGS,
           "Get prevoius node for given one" },
