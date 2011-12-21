@@ -39,6 +39,10 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
       Last :class:`DLListNode` object in the list. `None` if list is empty.
 
+   .. attribute:: size
+
+      Number of elements in the list. 0 if list is empty.
+
    DLList objects also support the following methods:
 
    .. method:: append(x)
@@ -125,6 +129,8 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
       >>> print len(empty_lst)          # display length of the list
       0
+      >>> print empty_lst.size
+      0
 
       >>> print empty_lst.first         # display the first node (nonexistent)
       None
@@ -136,6 +142,8 @@ recently accessed node which allows O(1) access to consecutive indexes.
       DLList([1, 2, 3])
 
       >>> print len(lst)                # display length of the list
+      3
+      >>> print lst.size
       3
 
       >>> print lst[0]                  # access nodes by index
@@ -288,7 +296,7 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    .. attribute:: size
 
-      Actual size of list. 0 if list is empty.
+      Number of elements in the list. 0 if list is empty.
 
    SLList objects also support the following methods:
 
