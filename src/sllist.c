@@ -861,7 +861,7 @@ static PyMemberDef SLListMembers[] =
           "First node" },
         { "last", T_OBJECT_EX, offsetof(SLListObject, last), READONLY,
           "Next node" },
-        { "size", T_INT, offsetof(SLListObject, size), 0,
+        { "size", T_INT, offsetof(SLListObject, size), READONLY,
           "size" },
 
         { NULL },   /* sentinel */
