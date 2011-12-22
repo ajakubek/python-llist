@@ -1,0 +1,7 @@
+include Makefile LICENSE MANIFEST MANIFEST.in
+recursive-include src *.c *.h
+recursive-include docs .py *.rst Makefile make.bat
+graft docs/_static
+graft docs/_templates
+recursive-include examples *.py
+recursive-include tests *test*.py
