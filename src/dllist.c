@@ -1,3 +1,7 @@
+/* Copyright (c) 2011 Adam Jakubek, Rafał Gałczyński
+ * Released under the MIT license (see attached LICENSE file).
+ */
+
 #include <Python.h>
 #include <structmember.h>
 
@@ -655,6 +659,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 static PyObject* dllist_popleft(DLListObject* self)
 {
     DLListNodeObject* del_node;
+    PyObject* value;
 
     if (self->first == Py_None)
     {
@@ -682,14 +687,18 @@ static PyObject* dllist_popleft(DLListObject* self)
 
     --self->size;
 
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return value;
 }
 
 static PyObject* dllist_popright(DLListObject* self)
 {
     DLListNodeObject* del_node;
+    PyObject* value;
 
     if (self->last == Py_None)
     {
@@ -712,15 +721,19 @@ static PyObject* dllist_popright(DLListObject* self)
 
     --self->size;
 
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return value;
 }
 
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* del_node;
     PyObject* list_ref;
+    PyObject* value;
 
     if (!PyObject_TypeCheck(arg, &DLListNodeType))
     {
@@ -757,9 +770,12 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     --self->size;
 
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
     dllistnode_delete(del_node);
 
-    Py_RETURN_NONE;
+    return value;
 }
 
 static PyObject* dllist_iter(PyObject* self)
@@ -879,6 +895,8 @@ static PyMemberDef DLListMembers[] =
       "First node" },
     { "last", T_OBJECT_EX, offsetof(DLListObject, last), READONLY,
       "Next node" },
+    { "size", T_INT, offsetof(DLListObject, size), READONLY,
+      "Number of elements in the list" },
     { NULL },   /* sentinel */
 };
 

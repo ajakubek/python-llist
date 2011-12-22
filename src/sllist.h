@@ -1,3 +1,7 @@
+/* Copyright (c) 2011 Adam Jakubek, Rafał Gałczyński
+ * Released under the MIT license (see attached LICENSE file).
+ */
+
 #ifndef SLLIST_H
 #define SLLIST_H
 

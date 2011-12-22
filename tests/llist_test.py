@@ -1,138 +1,99 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import gc
 import unittest
 from llist import SLList
 from llist import SLListNode
 from llist import DLList
 from llist import DLListNode
 
+gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
 
 class testSLList(unittest.TestCase):
 
-    def testSll_append(self):
-        ll = SLList()
-        node = SLListNode()
-        ll.append(node)
-        ll.pop()
-        self.assertTrue(1)
-
     def testSll_append_left(self):
-        ll = SLList()
-        node = SLListNode()
-        node.value = 12
-        ll.appendleft(node)
-        self.assertTrue(1)
+        ll = SLList([1, 2, 3, 4])
+        ll.appendleft(5)
+        self.assertTrue([5, 1, 2, 3, 4], list(ll))
 
-    # def testSll_pop(self):
-    #     ll = SLList()
-    #     node = SLListNode()
-    #     node.value = 234
-    #     ll.append(node)
-    #     ll.append(node)
-    #     ll.popleft()
-    #     self.assertTrue()
-
-    def testSll_pop_left_from_empty(self):
-        ll = SLList()
-        try:
-            ll.popleft()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
-
-    def testSll_pop_right_from_empty(self):
-        ll = SLList()
-        try:
-            ll.popright()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
+    def testSll_append_right(self):
+        ll = SLList([1, 2, 3, 4])
+        ll.appendleft(5)
+        self.assertTrue([1, 2, 3, 4, 5], list(ll))
 
     def testSll_pop_left_from_one_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popleft()
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd.value, 0)
 
     def testSll_pop_right_from_one_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd.__class__, nn.__class__)
-
-    def testSll_pop_right_from_one_elem_and_later_from_empty(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
-        dd = ll.popright()
-        try:
-            ll.popright()
-            self.assertEqual(1, 0)
-        except RuntimeError:
-            self.assertEqual(0, 0)
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd.value, 99)
 
     def testSll_pop_right_from_n_elem(self):
-        ll = SLList()
-        nn = SLListNode()
-        nn.value = 3
-        ll.append(nn)
+        ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd.__class__, nn.__class__)
+        self.assertEqual(dd(), 99)
 
-    # def testSll_get_node_at_from_n_elem(self):
-    #     ll = SLList()
-    #     for i in range(0, 2):
-    #         nn = SLListNode()
-    #         nn.value = 3 * i
-    #         ll.append(nn)
-    #     self.assertEqual(0, 0)
+    def testSll_get_node_at_from_n_elem(self):
+        ll = SLList(xrange(0, 100))
+        self.assertEqual(50, ll[50]())
 
     def testSll_remove_from_n_elem(self):
         ll = SLList()
         nn = SLListNode()
         ll.append(nn)
-        ll.remove(nn)
-        print ll.first
+        to_del = ll[0]
+        ll.remove(to_del)
         self.assertEqual(None, None)
+
+    def testSll_inser_after(self):
+        ll = SLList([1, 3, '123'])
+        ll.insert_after(100, ll.first)
+        self.assertEqual([1, 100, 3, '123'], list(ll))
+
+    def testSll_inser_before(self):
+        ll = SLList([1, 3, '123'])
+        ll.insert_before(100, ll.first)
+        self.assertEqual([100, 1, 3, '123'], list(ll))
+
+    def always_success(self):
+        self.assertEqual(0, 0)
 
 
 class testDLList(unittest.TestCase):
 
-    def setUp(self):
-        self.v = [4 * x for x in xrange(1100)]
-        self.l = DLList()
-        for x in self.v:
-            node = DLListNode(x)
-            self.l.append(node)
+    def test_init_empty(self):
+        ll = DLList()
+        self.assertEqual(len(ll), 0)
+        self.assertEqual(ll.size, 0)
+        self.assertEqual(list(ll), [])
 
-    def testDll_init_with_sequence(self):
-        l = DLList(xrange(0,1100))
-        self.assertEqual(len(l), 1100)
+    def test_init_with_sequence(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        self.assertEqual(len(ll), len(ref))
+        self.assertEqual(ll.size, len(ref))
+        self.assertEqual(list(ll), ref)
 
-    def testDll_init_with_non_sequence(self):
+    def test_init_with_non_sequence(self):
         self.assertRaises(TypeError, DLList, None);
         self.assertRaises(TypeError, DLList, 1);
 
-    def testDll_str(self):
+    def test_str(self):
         a = DLList([])
         self.assertEqual(str(a), 'DLList()')
         b = DLList([None, 1, 'abc'])
         self.assertEqual(str(b), 'DLList([None, 1, abc])')
 
-    def testDll_repr(self):
+    def test_repr(self):
         a = DLList([])
         self.assertEqual(repr(a), 'DLList()')
         b = DLList([None, 1, 'abc'])
         self.assertEqual(repr(b), 'DLList([None, 1, \'abc\'])')
 
-    def testDll_node_str(self):
+    def test_node_str(self):
         a = DLList([None, None]).first
         self.assertEqual(str(a), 'DLListNode(None)')
         b = DLList([1, None]).first
@@ -141,7 +102,7 @@ class testDLList(unittest.TestCase):
         self.assertEqual(str(c), 'DLListNode(abc)')
         pass
 
-    def testDll_node_repr(self):
+    def test_node_repr(self):
         a = DLList([None]).first
         self.assertEqual(repr(a), '<DLListNode(None)>')
         b = DLList([1, None]).first
@@ -150,7 +111,7 @@ class testDLList(unittest.TestCase):
         self.assertEqual(repr(c), '<DLListNode(\'abc\')>')
         pass
 
-    def testDll_cmp(self):
+    def test_cmp(self):
         a = DLList(xrange(0, 1100))
         b = DLList(xrange(0, 1101))
         c = [xrange(0, 1100)]
@@ -163,73 +124,136 @@ class testDLList(unittest.TestCase):
         self.assertEqual(cmp([], a), -1)
         self.assertEqual(cmp(a, []), 1)
 
-    def testDll_iter(self):
-        correct_sum = sum(range(0, 1100)) * 4
-        list_sum = 0
-        for val in self.l:
-            list_sum += val
-        self.assertEqual(correct_sum, list_sum);
+    def test_iter(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        idx = 0
+        for val in ll:
+            self.assertEqual(val, ref[idx])
+            idx += 1
+        self.assertEqual(idx, len(ref))
 
-    def testDll_insert(self):
-        a = DLList(xrange(4))
-        b = DLList([0, 1, 2, 3, 10])
-        a.insert(10)
-        self.assertEqual(a, b)
+    def test_insert_value(self):
+        ll = DLList(xrange(4))
+        ref = DLList([0, 1, 2, 3, 10])
+        arg_node = DLListNode(10)
+        new_node = ll.insert(arg_node)
+        self.assertNotEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, ll[-2])
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(ll[-2].next, new_node)
+        self.assertEqual(new_node, ll.last)
+        self.assertEqual(ll, ref)
 
-    def testDll_insert_ref_node(self):
-        a = DLList(xrange(4))
-        b = DLList([0, 1, 10, 2, 3])
-        n = a[2]
-        a.insert(10, n)
-        self.assertEqual(a, b)
+    def test_insert_value_before(self):
+        ll = DLList(xrange(4))
+        ref = DLList([0, 1, 10, 2, 3])
+        arg_node = DLListNode(10)
+        new_node = ll.insert(arg_node, ll[2])
+        self.assertNotEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, ll[1])
+        self.assertEqual(new_node.next, ll[3])
+        self.assertEqual(ll[1].next, new_node)
+        self.assertEqual(ll[3].prev, new_node)
+        self.assertEqual(ll, ref)
 
-    def testDll_insert_invalid_ref(self):
-        self.assertRaises(TypeError, self.l.insert, 10, 1)
-        self.assertRaises(TypeError, self.l.insert, 10, 'abc')
-        self.assertRaises(TypeError, self.l.insert, 10, [])
+    def test_insert_invalid_ref(self):
+        ll = DLList()
+        self.assertRaises(TypeError, ll.insert, 10, 1)
+        self.assertRaises(TypeError, ll.insert, 10, 'abc')
+        self.assertRaises(TypeError, ll.insert, 10, [])
 
-    def testDll_append(self):
-        node = DLListNode()
-        node.value = 4
-        self.assertTrue(self.l.append(node))
+    def test_append(self):
+        ll = DLList(xrange(4))
+        ref = DLList([0, 1, 2, 3, 10])
+        arg_node = DLListNode(10)
+        new_node = ll.append(arg_node)
+        self.assertNotEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.prev, ll[-2])
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(ll[-2].next, new_node)
+        self.assertEqual(ll.last, new_node)
+        self.assertEqual(ll, ref)
 
-    def testDll_appendleft(self):
-        node = DLListNode()
-        node.value = 5
-        self.assertTrue(self.l.appendleft(node))
+    def test_appendleft(self):
+        ll = DLList(xrange(4))
+        ref = DLList([10, 0, 1, 2, 3])
+        arg_node = DLListNode(10)
+        new_node = ll.appendleft(arg_node)
+        self.assertNotEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.prev, None)
+        self.assertEqual(new_node.next, ll[1])
+        self.assertEqual(ll[1].prev, new_node)
+        self.assertEqual(ll.first, new_node)
+        self.assertEqual(ll, ref)
 
-    def testDll_popright(self):
-        orig_len = len(self.l)
-        orig_last = self.l.last()
-        self.l.popright()
-        self.assertEqual(len(self.l), orig_len - 1)
-        self.assertEqual(self.l.last(), orig_last - 4)
+    def test_appendright(self):
+        ll = DLList(xrange(4))
+        ref = DLList([0, 1, 2, 3, 10])
+        arg_node = DLListNode(10)
+        new_node = ll.appendright(arg_node)
+        self.assertNotEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.prev, ll[-2])
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(ll[-2].next, new_node)
+        self.assertEqual(ll.last, new_node)
+        self.assertEqual(ll, ref)
 
-    def testDll_popleft(self):
-        orig_len = len(self.l)
-        orig_first = self.l.first()
-        self.l.popleft()
-        self.assertEqual(len(self.l), orig_len - 1)
-        self.assertEqual(self.l.first(), orig_first + 4)
+    def test_pop(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        result = ll.pop();
+        self.assertEqual(result, ref[-1])
+        self.assertEqual(len(ll), len(ref) - 1)
+        self.assertEqual(ll.size, len(ref) - 1)
+        self.assertEqual(ll.last.value, ref[-2])
+        self.assertEqual(list(ll), ref[:-1])
 
-    def testDll_del(self):
-        del self.l[0]
-        del self.v[0]
-        self.assertEqual(list(self.l), self.v)
-        del self.l[len(self.l) - 1]
-        del self.v[len(self.v) - 1]
-        self.assertEqual(list(self.l), self.v)
-        del self.l[(len(self.l) - 1) / 2]
-        del self.v[(len(self.v) - 1) / 2]
-        self.assertEqual(list(self.l), self.v)
+    def test_popleft(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        result = ll.popleft()
+        self.assertEqual(result, ref[0])
+        self.assertEqual(len(ll), len(ref) - 1)
+        self.assertEqual(ll.size, len(ref) - 1)
+        self.assertEqual(ll.first.value, ref[1])
+        self.assertEqual(list(ll), ref[1:])
+
+    def test_popright(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        result = ll.popright()
+        self.assertEqual(result, ref[-1])
+        self.assertEqual(len(ll), len(ref) - 1)
+        self.assertEqual(ll.size, len(ref) - 1)
+        self.assertEqual(ll.last.value, ref[-2])
+        self.assertEqual(list(ll), ref[:-1])
+
+    def test_del(self):
+        ref = range(0, 1024, 4)
+        ll = DLList(ref)
+        del ll[0]
+        del ref[0]
+        self.assertEqual(list(ll), ref)
+        del ll[len(ll) - 1]
+        del ref[len(ref) - 1]
+        self.assertEqual(list(ll), ref)
+        del ll[(len(ll) - 1) / 2]
+        del ref[(len(ref) - 1) / 2]
+        self.assertEqual(list(ll), ref)
 
         def del_item(idx):
-            del self.l[idx]
-        self.assertRaises(IndexError, del_item, len(self.l))
+            del ll[idx]
+        self.assertRaises(IndexError, del_item, len(ll))
 
-        for i in xrange(len(self.l)):
-            del self.l[0]
-        self.assertEqual(len(self.l), 0)
+        for i in xrange(len(ll)):
+            del ll[0]
+        self.assertEqual(len(ll), 0)
 
 
 def suite():
