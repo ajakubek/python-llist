@@ -17,14 +17,13 @@ setup(name='llist',
       license='MIT',
       ext_modules=[ Extension('llist', sources) ],
       classifiers=[
-        'Development Status :: 3 - Alpha'
-        'Intended Audience :: End Users/Desktop',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License'
+        'License :: OSI Approved :: MIT License',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Programming Language :: C',
         'Programming Language :: Python :: 2',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Topic :: Software Development :: Libraries :: Python Modules',
         ],
       )
