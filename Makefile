@@ -9,6 +9,7 @@ install:
 	python setup.py install --install-lib ./tests
 
 clean:
+	cd docs && $(MAKE) $(MFLAGS) clean
 	python setup.py clean --all
 
 docs:
