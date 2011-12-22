@@ -1,3 +1,7 @@
+/* Copyright (c) 2011 Adam Jakubek, Rafał Gałczyński
+ * Released under the MIT license (see attached LICENSE file).
+ */
+
 #include <Python.h>
 #include <structmember.h>
 

@@ -1,3 +1,7 @@
+/* Copyright (c) 2011 Adam Jakubek, Rafał Gałczyński
+ * Released under the MIT license (see attached LICENSE file).
+ */
+
 #ifndef DLLIST_H
 #define DLLIST_H
 
