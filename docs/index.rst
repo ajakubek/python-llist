@@ -34,16 +34,20 @@ recently accessed node which allows O(1) access to consecutive indexes.
    .. attribute:: first
 
       First :class:`DLListNode` object in the list. `None` if list is empty.
+      This attribute is read-only.
 
    .. attribute:: last
 
       Last :class:`DLListNode` object in the list. `None` if list is empty.
+      This attribute is read-only.
 
    .. attribute:: size
 
       Number of elements in the list. 0 if list is empty.
+      This attribute is read-only.
 
-   DLList objects also support the following methods:
+   DLList objects also support the following methods (all methods below have
+   O(1) time complexity):
 
    .. method:: append(x)
 
@@ -107,7 +111,8 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
 
    In addition to these methods, DLList supports iteration, ``cmp(l1, l2)``,
-   constant time ``len(l)``, and subscript references ``l[1234]``.
+   constant time ``len(l)``, and subscript references ``l[1234]`` for
+   accessing elements by index.
 
    Indexed access has O(n) complexity, but most recently accessed node is
    cached, so that accessing its neighbours is O(1).
@@ -289,83 +294,100 @@ recently accessed node which allows O(1) access to consecutive indexes.
    .. attribute:: first
 
       First :class:`SLListNode` object in the list. `None` if list is empty.
+      This attribute is read-only.
 
    .. attribute:: last
 
       Last :class:`SLListNode` object in the list. `None` if list is empty.
+      This attribute is read-only.
 
    .. attribute:: size
 
       Number of elements in the list. 0 if list is empty.
+      This attribute is read-only.
 
    SLList objects also support the following methods:
 
-   .. method:: appendleft(x)
+   .. method:: append(x)
 
-      Add *x* to the begining of list in O(1)
+      Add *x* to the right side of the list and return inserted
       :class:`SLListNode`.
 
       Argument *x* might be a :class:`SLListNode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
+
+      This method has O(1) complexity.
+
+   .. method:: appendleft(x)
+
+      Add *x* to the left side of the list and return inserted
+      :class:`SLListNode`.
+
+      Argument *x* might be a :class:`SLListNode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+      This method has O(1) complexity.
 
    .. method:: appendright(x)
 
-      Add *x* to the end of list in O(1)
+      Add *x* to the right side of the list and return inserted
       :class:`SLListNode`.
 
       Argument *x* might be a :class:`SLListNode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
-   .. method:: append(x)
+      This method has O(1) complexity.
 
-      Add *x* to the end of list in O(1)
-      :class:`SLListNode`.
+   .. method:: insert_after(x, node)
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
-      node will be created and initialized with the value extracted from *x*.
-
-   .. method:: insert_after(x, node) in O(1)
-
-      Inserts *x* after given node
-      :class:`SLListNode`.
+      Inserts *x* after *node* and return inserted :class:`SLListNode`.
 
       Argument *x* might be a :class:`SLListNode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
       Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
 
-   .. method:: insert_before(x, node) in O(n)
+      This method has O(1) complexity.
 
-      Inserts *x* before given node
-      :class:`SLListNode`.
+   .. method:: insert_before(x, node)
+
+      Inserts *x* before *node* and return inserted :class:`SLListNode`.
 
       Argument *x* might be a :class:`SLListNode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
-   .. method:: pop(X) in O(1)
+      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
 
-      Remove and return an element from the left side of the list.
+      This method has O(n) complexity.
 
-   .. method:: pop(X) in O(n)
-
-      Remove and return an element from the right side of the list.
-
-   .. method:: popright(X) in O(n)
+   .. method:: pop()
 
       Remove and return an element from the right side of the list.
 
-   .. method:: popleft(X) in O(1)
+      This method has O(n) time complexity.
+
+   .. method:: popleft()
 
       Remove and return an element from the left side of the list.
+
+      This method has O(1) time complexity.
+
+   .. method:: popright()
+
+      Remove and return an element from the right side of the list.
+
+      This method has O(n) time complexity.
 
    .. method:: remove(node)
 
-     Remove *node* from the list.
+      Remove *node* from the list.
 
-     Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
 
-     Raises :exc:`ValueError` if *self* is empty, or *node* does
-     not belong to *self*.
+      Raises :exc:`ValueError` if *self* is empty, or *node* does
+      not belong to *self*.
+
+      This method has O(n) time complexity.
 
 
 :class:`SLListNode` objects
@@ -409,8 +431,8 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    .. doctest::
 
-      >>> from llist import DLList
-      >>> lst = DLList([1, 2, 3])
+      >>> from llist import SLList
+      >>> lst = SLList([1, 2, 3])
       >>> for value in lst:
       ...     print value * 2,
       2 4 6
