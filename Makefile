@@ -1,12 +1,12 @@
-.PHONY: clean docs test
+.PHONY: build clean docs install test
 
-all: clean build install test
+all: clean build test
 
 build:
 	python setup.py build
 
 install:
-	python setup.py install --install-lib ./tests
+	python setup.py install
 
 clean:
 	cd docs && $(MAKE) $(MFLAGS) clean
@@ -20,3 +20,6 @@ docs:
 test:
 	python setup.py install --install-lib ./tests
 	python tests/llist_test.py
+
+	@echo ""
+	@echo "Tests passed successfully!"
