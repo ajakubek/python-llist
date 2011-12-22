@@ -439,6 +439,15 @@ recently accessed node which allows O(1) access to consecutive indexes.
       2 4 6
 
 
+Copyright
+=========
+
+This module is copyrighted by Adam Jakubek and Rafał Gałczyński.
+
+It is distributed under the MIT license. Please see the LICENSE file
+include in this package for more details.
+
+
 Indices and tables
 ==================
 
