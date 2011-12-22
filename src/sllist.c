@@ -1038,7 +1038,7 @@ static PyTypeObject SLListIteratorType =
 
 
 
-int sllist_init_type()
+int sllist_init_type(void)
 {
     return
         ((PyType_Ready(&SLListType) == 0) &&

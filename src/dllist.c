@@ -1071,7 +1071,7 @@ static PyTypeObject DLListIteratorType =
 };
 
 
-int dllist_init_type()
+int dllist_init_type(void)
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
