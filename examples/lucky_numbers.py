@@ -12,7 +12,8 @@ from llist import DLList
 import sys
 import time
 
-N = 128*1024
+N = 128 * 1024
+
 
 def generate_lucky_deque(max_num):
     lucky_numbers = deque(xrange(1, max_num + 1, 2))
@@ -35,6 +36,7 @@ def generate_lucky_deque(max_num):
 
     return lucky_numbers
 
+
 def generate_lucky_list(max_num):
     lucky_numbers = DLList(xrange(1, max_num + 1, 2))
 
@@ -54,6 +56,7 @@ def generate_lucky_list(max_num):
 
     return lucky_numbers
 
+
 def time_execution(bench_func):
     start_time = time.clock()
     result = bench_func()
@@ -62,12 +65,12 @@ def time_execution(bench_func):
 
 
 if __name__ == '__main__':
-    print 'Calculating lucky numbers using deque...', 
+    print 'Calculating lucky numbers using deque...',
     sys.stdout.flush()
     result_deque, time_deque = time_execution(lambda: generate_lucky_deque(N))
     print '%gs' % time_deque
 
-    print 'Calculating lucky numbers using DLList...', 
+    print 'Calculating lucky numbers using DLList...',
     sys.stdout.flush()
     result_list, time_list = time_execution(lambda: generate_lucky_list(N))
     print '%gs' % time_list

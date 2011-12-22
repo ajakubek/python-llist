@@ -24,17 +24,17 @@ class testSLList(unittest.TestCase):
     def testSll_pop_left_from_one_elem(self):
         ll = SLList(xrange(0, 100))
         dd = ll.popleft()
-        self.assertEqual(dd.value, 0)
+        self.assertEqual(dd, 0)
 
     def testSll_pop_right_from_one_elem(self):
         ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd.value, 99)
+        self.assertEqual(dd, 99)
 
     def testSll_pop_right_from_n_elem(self):
         ll = SLList(xrange(0, 100))
         dd = ll.popright()
-        self.assertEqual(dd(), 99)
+        self.assertEqual(dd, 99)
 
     def testSll_get_node_at_from_n_elem(self):
         ll = SLList(xrange(0, 100))

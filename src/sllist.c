@@ -446,7 +446,7 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
 
     ++self->size;
 
-    /* Py_INCREF((PyObject*)new_node); */
+    Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
 }
 
@@ -639,11 +639,8 @@ static PyObject* sllist_popleft(SLListObject* self)
         self->last = Py_None;
 
     --self->size;
-
-    /* Py_DECREF((PyObject*)del_node); */
-    /* py_RETURN_NONE; */
-    /* returning whole node, i suppose decref in this case is not wanted*/
-    return (PyObject*)del_node;
+    Py_INCREF((PyObject*)del_node->value);
+    return (PyObject*)del_node->value;
 }
 
 
@@ -673,11 +670,8 @@ static PyObject* sllist_popright(SLListObject* self)
         Py_DECREF(prev);
     }
     --self->size;
-
-    /* Py_DECREF((PyObject*)del_node); */
-    /* Py_RETURN_NONE; */
-    /* returning whole node, i suppose decref in this case is not wanted*/
-    return (PyObject*)del_node;
+    Py_INCREF((PyObject*)del_node->value);
+    return (PyObject*)del_node->value;
 
 }
 
@@ -715,10 +709,10 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
         prev->next = ((SLListNodeObject*)arg)->next;
         self->last = (PyObject*)prev;
     }
-    Py_DECREF(arg);
 
     --self->size;
-    Py_RETURN_NONE;
+    Py_INCREF(((SLListNodeObject*)arg)->value);
+    return ((SLListNodeObject*)arg)->value;
 
 }
 
@@ -1002,44 +996,44 @@ static PyObject* sllistiterator_iternext(PyObject* self)
 static PyTypeObject SLListIteratorType =
 {
     PyObject_HEAD_INIT(NULL)
-    0,                                  /* ob_size */
-    "llist.SLListIterator",             /* tp_name */
-    sizeof(SLListIteratorObject),       /* tp_basicsize */
-    0,                                  /* tp_itemsize */
-    (destructor)sllistiterator_dealloc, /* tp_dealloc */
-    0,                                  /* tp_print */
-    0,                                  /* tp_getattr */
-    0,                                  /* tp_setattr */
-    0,                                  /* tp_compare */
-    0,                                  /* tp_repr */
-    0,                                  /* tp_as_number */
-    0,                                  /* tp_as_sequence */
-    0,                                  /* tp_as_mapping */
-    0,                                  /* tp_hash */
-    0,                                  /* tp_call */
-    0,                                  /* tp_str */
-    0,                                  /* tp_getattro */
-    0,                                  /* tp_setattro */
-    0,                                  /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                 /* tp_flags */
-    "Singly linked list iterator",      /* tp_doc */
-    0,                                  /* tp_traverse */
-    0,                                  /* tp_clear */
-    0,                                  /* tp_richcompare */
+    0,                                  /* ob_size           */
+    "llist.SLListIterator",             /* tp_name           */
+    sizeof(SLListIteratorObject),       /* tp_basicsize      */
+    0,                                  /* tp_itemsize       */
+    (destructor)sllistiterator_dealloc, /* tp_dealloc        */
+    0,                                  /* tp_print          */
+    0,                                  /* tp_getattr        */
+    0,                                  /* tp_setattr        */
+    0,                                  /* tp_compare        */
+    0,                                  /* tp_repr           */
+    0,                                  /* tp_as_number      */
+    0,                                  /* tp_as_sequence    */
+    0,                                  /* tp_as_mapping     */
+    0,                                  /* tp_hash           */
+    0,                                  /* tp_call           */
+    0,                                  /* tp_str            */
+    0,                                  /* tp_getattro       */
+    0,                                  /* tp_setattro       */
+    0,                                  /* tp_as_buffer      */
+    Py_TPFLAGS_DEFAULT,                 /* tp_flags          */
+    "Singly linked list iterator",      /* tp_doc            */
+    0,                                  /* tp_traverse       */
+    0,                                  /* tp_clear          */
+    0,                                  /* tp_richcompare    */
     0,                                  /* tp_weaklistoffset */
-    0,                                  /* tp_iter */
-    sllistiterator_iternext,            /* tp_iternext */
-    0,                                  /* tp_methods */
-    0,                                  /* tp_members */
-    0,                                  /* tp_getset */
-    0,                                  /* tp_base */
-    0,                                  /* tp_dict */
-    0,                                  /* tp_descr_get */
-    0,                                  /* tp_descr_set */
-    0,                                  /* tp_dictoffset */
-    0,                                  /* tp_init */
-    0,                                  /* tp_alloc */
-    sllistiterator_new,                 /* tp_new */
+    0,                                  /* tp_iter           */
+    sllistiterator_iternext,            /* tp_iternext       */
+    0,                                  /* tp_methods        */
+    0,                                  /* tp_members        */
+    0,                                  /* tp_getset         */
+    0,                                  /* tp_base           */
+    0,                                  /* tp_dict           */
+    0,                                  /* tp_descr_get      */
+    0,                                  /* tp_descr_set      */
+    0,                                  /* tp_dictoffset     */
+    0,                                  /* tp_init           */
+    0,                                  /* tp_alloc          */
+    sllistiterator_new,                 /* tp_new            */
 };
 
 
