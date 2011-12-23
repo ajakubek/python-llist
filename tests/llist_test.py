@@ -255,6 +255,17 @@ class testDLList(unittest.TestCase):
             del ll[0]
         self.assertEqual(len(ll), 0)
 
+    def test_list_readonly_attributes(self):
+        ll = DLList(range(4))
+        self.assertRaises(TypeError, setattr, ll, 'first', None)
+        self.assertRaises(TypeError, setattr, ll, 'last', None)
+        self.assertRaises(TypeError, setattr, ll, 'size', None)
+
+    def test_node_readonly_attributes(self):
+        ll = DLListNode()
+        self.assertRaises(TypeError, setattr, ll, 'prev', None)
+        self.assertRaises(TypeError, setattr, ll, 'next', None)
+
 
 def suite():
     suite = unittest.TestSuite()
