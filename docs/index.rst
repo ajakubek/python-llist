@@ -89,20 +89,20 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    .. method:: pop()
 
-      Remove and return an element from the right side of the list.
+      Remove and return an element's value from the right side of the list.
 
    .. method:: popleft()
 
-      Remove and return an element from the left side of the list.
+      Remove and return an element's value from the left side of the list.
 
    .. method:: popright()
 
-      Remove and return an element from the right side of the list
+      Remove and return an element's value from the right side of the list
       (synonymous with :meth:`pop`).
 
    .. method:: remove(node)
 
-      Remove *node* from the list.
+      Remove *node* from the list. Returns *node's* value.
 
       Raises :exc:`TypeError` if *node* is not of type :class:`DLListNode`.
 
@@ -362,19 +362,19 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    .. method:: pop()
 
-      Remove and return an element from the right side of the list.
+      Remove and return an element's value from the right side of the list.
 
       This method has O(n) time complexity.
 
    .. method:: popleft()
 
-      Remove and return an element from the left side of the list.
+      Remove and return an element's value from the left side of the list.
 
       This method has O(1) time complexity.
 
    .. method:: popright()
 
-      Remove and return an element from the right side of the list.
+      Remove and return an element's value from the right side of the list.
 
       This method has O(n) time complexity.
 

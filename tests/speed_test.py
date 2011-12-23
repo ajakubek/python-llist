@@ -3,9 +3,8 @@
 from collections import deque
 from llist import SLList, DLList
 import time
-import gc
-
-gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
+# import gc
+# gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
 
 num = 10000
 
@@ -34,8 +33,16 @@ def popleft(c):
             c.pop()
 
 
+def remove(c):
+    for i in range(0, num, 2):
+        try:
+            c.remove(num)
+        except:
+            pass
+
+
 for container in [deque, DLList, SLList]:
-    for operation in [append, appendleft, pop, popleft]:
+    for operation in [append, appendleft, pop, popleft, remove]:
         c = container(range(num))
         start = time.time()
         operation(c)
