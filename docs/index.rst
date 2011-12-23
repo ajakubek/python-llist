@@ -445,7 +445,7 @@ Copyright
 This module is copyrighted by Adam Jakubek and Rafał Gałczyński.
 
 It is distributed under the MIT license. Please see the LICENSE file
-include in this package for more details.
+included in this package for more details.
 
 
 Indices and tables
