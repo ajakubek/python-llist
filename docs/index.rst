@@ -102,7 +102,8 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
    .. method:: remove(node)
 
-      Remove *node* from the list. Returns *node's* value.
+      Remove *node* from the list and return the element which was
+      stored in it.
 
       Raises :exc:`TypeError` if *node* is not of type :class:`DLListNode`.
 
@@ -198,16 +199,16 @@ recently accessed node which allows O(1) access to consecutive indexes.
       DLList([0, 1, 1.5, 2, 3, 4, 5, 6])
 
       >>> lst.popleft()                 # remove leftmost node from the list
-      <DLListNode(0)>
+      0
       >>> print lst
       DLList([1, 1.5, 2, 3, 4, 5, 6])
       >>> lst.popright()                # remove rightmost node from the list
-      <DLListNode(6)>
+      6
       >>> print lst
       DLList([1, 1.5, 2, 3, 4, 5])
       >>> node = lst[1]
       >>> lst.remove(node)              # remove 2nd node from the list
-      <DLListNode(1.5)>
+      1.5
       >>> print lst
       DLList([1, 2, 3, 4, 5])
       >>> foreign_node = DLListNode()   # create an unassigned node
@@ -436,6 +437,15 @@ recently accessed node which allows O(1) access to consecutive indexes.
       >>> for value in lst:
       ...     print value * 2,
       2 4 6
+
+
+Copyright
+=========
+
+This module is copyrighted by Adam Jakubek and Rafał Gałczyński.
+
+It is distributed under the MIT license. Please see the LICENSE file
+included in this package for more details.
 
 
 Indices and tables

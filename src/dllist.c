@@ -659,6 +659,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 static PyObject* dllist_popleft(DLListObject* self)
 {
     DLListNodeObject* del_node;
+    PyObject* value;
 
     if (self->first == Py_None)
     {
@@ -686,16 +687,18 @@ static PyObject* dllist_popleft(DLListObject* self)
 
     --self->size;
 
-    Py_INCREF((PyObject*)del_node);
+    Py_INCREF(del_node->value);
+    value = del_node->value;
 
     dllistnode_delete(del_node);
 
-    return (PyObject*)del_node;
+    return value;
 }
 
 static PyObject* dllist_popright(DLListObject* self)
 {
     DLListNodeObject* del_node;
+    PyObject* value;
 
     if (self->last == Py_None)
     {
@@ -718,17 +721,19 @@ static PyObject* dllist_popright(DLListObject* self)
 
     --self->size;
 
-    Py_INCREF((PyObject*)del_node);
+    Py_INCREF(del_node->value);
+    value = del_node->value;
 
     dllistnode_delete(del_node);
 
-    return (PyObject*)del_node;
+    return value;
 }
 
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* del_node;
     PyObject* list_ref;
+    PyObject* value;
 
     if (!PyObject_TypeCheck(arg, &DLListNodeType))
     {
@@ -765,11 +770,12 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     --self->size;
 
-    Py_INCREF((PyObject*)del_node);
+    Py_INCREF(del_node->value);
+    value = del_node->value;
 
     dllistnode_delete(del_node);
 
-    return (PyObject*)del_node;
+    return value;
 }
 
 static PyObject* dllist_iter(PyObject* self)
@@ -1065,7 +1071,7 @@ static PyTypeObject DLListIteratorType =
 };
 
 
-int dllist_init_type()
+int dllist_init_type(void)
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
