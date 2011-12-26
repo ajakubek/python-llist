@@ -282,7 +282,7 @@ typedef struct
     PyObject* weakref_list;
 } DLListObject;
 
-static inline Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
+static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
 {
     return (x >= 0) ? x : -x;
 }
@@ -826,6 +826,7 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 {
     DLListObject* list = (DLListObject*)self;
     DLListNodeObject* node;
+    PyObject* oldval;
 
     node = dllist_get_node_at(list, index);
     if (node == NULL)
@@ -859,7 +860,7 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     if (PyObject_TypeCheck(val, &DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
 
-    PyObject* oldval = node->value;
+    oldval = node->value;
 
     Py_INCREF(val);
     node->value = val;

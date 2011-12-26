@@ -431,12 +431,14 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
 
 static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
 {
+    SLListNodeObject* new_node;
+
     if (PyObject_TypeCheck(arg, &SLListNodeType))
         arg = ((SLListNodeObject*)arg)->value;
 
-    SLListNodeObject* new_node = sllistnode_create(self->first,
-                                                   arg,
-                                                   (PyObject*)self);
+    new_node = sllistnode_create(self->first,
+                                 arg,
+                                 (PyObject*)self);
     /* setting head as new node */
     self->first  = (PyObject*)new_node;
 
@@ -452,13 +454,14 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
 
 static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
 {
+    SLListNodeObject* new_node;
 
     if (PyObject_TypeCheck(arg, &SLListNodeType))
         arg = ((SLListNodeObject*)arg)->value;
 
-    SLListNodeObject* new_node = sllistnode_create(Py_None,
-                                                   arg,
-                                                   (PyObject*)self);
+    new_node = sllistnode_create(Py_None,
+                                 arg,
+                                 (PyObject*)self);
 
     /* appending to empty list */
     if(self->first == Py_None)
@@ -591,12 +594,13 @@ static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 {
     SLListObject* list = (SLListObject*)self;
+    SLListNodeObject* node;
+    PyObject* oldval;
 
     if (!PyObject_TypeCheck(val, &SLListNodeType)) {
         PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
         return -1;
     }
-    SLListNodeObject* node;
     /* setting fist node */
     if(index==0)
         node = (SLListNodeObject*)list->first;
@@ -611,7 +615,7 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     /* nice played, migu :) */
     val = ((SLListNodeObject*)val)->value;
 
-    PyObject* oldval = node->value;
+    oldval = node->value;
 
     Py_INCREF(val);
     node->value = val;
@@ -678,13 +682,13 @@ static PyObject* sllist_popright(SLListObject* self)
 
 static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 {
+    SLListNodeObject* prev;
+    PyObject* list_ref;
+
     if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
         PyErr_SetString(PyExc_TypeError, "Argument is not a SLLNodeObject");
         return NULL;
     }
-
-    SLListNodeObject* prev;
-    PyObject* list_ref;
 
     if (self->first == Py_None) {
         PyErr_SetString(PyExc_RuntimeError, "List is empty");
