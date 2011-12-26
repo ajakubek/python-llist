@@ -439,6 +439,12 @@ recently accessed node which allows O(1) access to consecutive indexes.
       2 4 6
 
 
+Changes
+=======
+
+.. include:: ../CHANGES
+
+
 Copyright
 =========
 
