@@ -165,7 +165,7 @@ static PyObject* dllistnode_repr(DLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("<DLListNode(");
+    str = PyString_FromString("<dllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -192,7 +192,7 @@ static PyObject* dllistnode_str(DLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("DLListNode(");
+    str = PyString_FromString("dllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -229,7 +229,7 @@ static PyTypeObject DLListNodeType =
 {
     PyObject_HEAD_INIT(NULL)
     0,                              /* ob_size */
-    "llist.DLListNode",             /* tp_name */
+    "llist.dllistnode",             /* tp_name */
     sizeof(DLListNodeObject),       /* tp_basicsize */
     0,                              /* tp_itemsize */
     (destructor)dllistnode_dealloc, /* tp_dealloc */
@@ -404,13 +404,13 @@ static PyObject* dllist_to_string(DLListObject* self,
 
     if (self->first == Py_None)
     {
-        str = PyString_FromString("DLList()");
+        str = PyString_FromString("dllist()");
         if (str == NULL)
             goto str_alloc_error;
         return str;
     }
 
-    str = PyString_FromString("DLList([");
+    str = PyString_FromString("dllist([");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -622,7 +622,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
         if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
         {
             PyErr_SetString(PyExc_TypeError,
-                "ref_node argument must be a DLListNode");
+                "ref_node argument must be a dllistnode");
             return NULL;
         }
 
@@ -631,7 +631,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
         if (list_ref != (PyObject*)self)
         {
             PyErr_SetString(PyExc_ValueError,
-                "DLListNode belongs to another list");
+                "dllistnode belongs to another list");
             return NULL;
         }
 
@@ -737,7 +737,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     if (!PyObject_TypeCheck(arg, &DLListNodeType))
     {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a DLListNode");
+        PyErr_SetString(PyExc_TypeError, "Argument must be a dllistnode");
         return NULL;
     }
 
@@ -753,7 +753,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     if (list_ref != (PyObject*)self)
     {
         PyErr_SetString(PyExc_ValueError,
-            "DLListNode belongs to another list");
+            "dllistnode belongs to another list");
         return NULL;
     }
 
@@ -916,7 +916,7 @@ static PyTypeObject DLListType =
 {
     PyObject_HEAD_INIT(NULL)
     0,                          /* ob_size */
-    "llist.DLList",             /* tp_name */
+    "llist.dllist",             /* tp_name */
     sizeof(DLListObject),       /* tp_basicsize */
     0,                          /* tp_itemsize */
     (destructor)dllist_dealloc, /* tp_dealloc */
@@ -986,7 +986,7 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
 
     if (!PyObject_TypeCheck(owner_list, &DLListType))
     {
-        PyErr_SetString(PyExc_TypeError, "DLList argument expected");
+        PyErr_SetString(PyExc_TypeError, "dllist argument expected");
         return NULL;
     }
 
@@ -1032,7 +1032,7 @@ static PyTypeObject DLListIteratorType =
 {
     PyObject_HEAD_INIT(NULL)
     0,                                  /* ob_size */
-    "llist.DLListIterator",             /* tp_name */
+    "llist.dllistiterator",             /* tp_name */
     sizeof(DLListIteratorObject),       /* tp_basicsize */
     0,                                  /* tp_itemsize */
     (destructor)dllistiterator_dealloc, /* tp_dealloc */
@@ -1087,7 +1087,7 @@ void dllist_register(PyObject* module)
     Py_INCREF(&DLListNodeType);
     Py_INCREF(&DLListIteratorType);
 
-    PyModule_AddObject(module, "DLList", (PyObject*)&DLListType);
-    PyModule_AddObject(module, "DLListNode", (PyObject*)&DLListNodeType);
-    PyModule_AddObject(module, "DLListIterator", (PyObject*)&DLListIteratorType);
+    PyModule_AddObject(module, "dllist", (PyObject*)&DLListType);
+    PyModule_AddObject(module, "dllistnode", (PyObject*)&DLListNodeType);
+    PyModule_AddObject(module, "dllistiterator", (PyObject*)&DLListIteratorType);
 }

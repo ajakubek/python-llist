@@ -12,8 +12,8 @@ collections.deque or standard Python lists.
 Note that Python 3.x is not supported yet!
 
 Currently llist provides the following types of linked lists:
- - DLList - a doubly linked list
- - SLList - a singly linked list
+ - dllist - a doubly linked list
+ - sllist - a singly linked list
 
 Full documentation of these classes is available at:
 http://packages.python.org/llist/

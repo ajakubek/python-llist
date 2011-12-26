@@ -119,7 +119,7 @@ static PyObject* sllistnode_repr(SLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("<SLListNode(");
+    str = PyString_FromString("<sllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -146,7 +146,7 @@ static PyObject* sllistnode_str(SLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("SLListNode(");
+    str = PyString_FromString("sllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -197,7 +197,7 @@ static PyTypeObject SLListNodeType =
     {
         PyObject_HEAD_INIT(NULL)
         0,                              /* ob_size           */
-        "llist.SLListNode",             /* tp_name           */
+        "llist.sllistnode",             /* tp_name           */
         sizeof(SLListNodeObject),       /* tp_basicsize      */
         0,                              /* tp_itemsize       */
         (destructor)sllistnode_dealloc, /* tp_dealloc        */
@@ -401,7 +401,7 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
     SLListNodeObject* node = (SLListNodeObject*)self->first;
 
     if (!PyObject_TypeCheck(next, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
@@ -489,7 +489,7 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
         return NULL;
 
     if (!PyObject_TypeCheck(before, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
@@ -523,7 +523,7 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
         return NULL;
 
     if (!PyObject_TypeCheck(after, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
     if (PyObject_TypeCheck(value, &SLListNodeType))
@@ -534,7 +534,7 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
     if (list_ref != (PyObject*)self)
         {
             PyErr_SetString(PyExc_ValueError,
-                            "DLListNode belongs to another list");
+                            "sllistnode belongs to another list");
             return NULL;
         }
     new_node = sllistnode_create(Py_None,
@@ -598,7 +598,7 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     PyObject* oldval;
 
     if (!PyObject_TypeCheck(val, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return -1;
     }
     /* setting fist node */
@@ -686,7 +686,7 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     PyObject* list_ref;
 
     if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Argument is not a SLLNodeObject");
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
@@ -699,7 +699,7 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     if (list_ref != (PyObject*)self)
     {
         PyErr_SetString(PyExc_TypeError,
-            "SLListNode belongs to another list");
+            "sllistnode belongs to another list");
         return NULL;
     }
 
@@ -763,13 +763,13 @@ static PyObject* sllist_to_string(SLListObject* self,
 
     if (self->first == Py_None)
     {
-        str = PyString_FromString("SLList()");
+        str = PyString_FromString("sllist()");
         if (str == NULL)
             goto str_alloc_error;
         return str;
     }
 
-    str = PyString_FromString("SLList([");
+    str = PyString_FromString("sllist([");
     if (str == NULL)
         goto str_alloc_error;
 
@@ -884,7 +884,7 @@ static PyTypeObject SLListType =
     {
         PyObject_HEAD_INIT(NULL)
         0,                           /* ob_size           */
-        "llist.SLList",              /* tp_name           */
+        "llist.sllist",              /* tp_name           */
         sizeof(SLListObject),        /* tp_basicsize      */
         0,                           /* tp_itemsize       */
         (destructor)sllist_dealloc,  /* tp_dealloc        */
@@ -952,7 +952,7 @@ static PyObject* sllistiterator_new(PyTypeObject* type,
 
     if (!PyObject_TypeCheck(owner_list, &SLListType))
     {
-        PyErr_SetString(PyExc_TypeError, "SLList argument expected");
+        PyErr_SetString(PyExc_TypeError, "sllist argument expected");
         return NULL;
     }
 
@@ -1001,7 +1001,7 @@ static PyTypeObject SLListIteratorType =
 {
     PyObject_HEAD_INIT(NULL)
     0,                                  /* ob_size           */
-    "llist.SLListIterator",             /* tp_name           */
+    "llist.sllistiterator",             /* tp_name           */
     sizeof(SLListIteratorObject),       /* tp_basicsize      */
     0,                                  /* tp_itemsize       */
     (destructor)sllistiterator_dealloc, /* tp_dealloc        */
@@ -1057,7 +1057,7 @@ void sllist_register(PyObject* module)
     Py_INCREF(&SLListNodeType);
     Py_INCREF(&SLListIteratorType);
 
-    PyModule_AddObject(module, "SLList", (PyObject*)&SLListType);
-    PyModule_AddObject(module, "SLListNode", (PyObject*)&SLListNodeType);
-    PyModule_AddObject(module, "SLListIterator", (PyObject*)&SLListIteratorType);
+    PyModule_AddObject(module, "sllist", (PyObject*)&SLListType);
+    PyModule_AddObject(module, "sllistnode", (PyObject*)&SLListNodeType);
+    PyModule_AddObject(module, "sllistiterator", (PyObject*)&SLListIteratorType);
 }

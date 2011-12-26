@@ -1,5 +1,5 @@
 """
-This example compares performance of llist.DLList and collections.deque
+This example compares performance of llist.dllist and collections.deque
 datatypes.
 It calculates a sequence of N lucky numbers
 (see http://en.wikipedia.org/wiki/Lucky_number for definition).
@@ -8,7 +8,7 @@ from container, which is much faster with linked lists.
 """
 
 from collections import deque
-from llist import DLList
+from llist import dllist
 import sys
 import time
 
@@ -38,7 +38,7 @@ def generate_lucky_deque(max_num):
 
 
 def generate_lucky_list(max_num):
-    lucky_numbers = DLList(xrange(1, max_num + 1, 2))
+    lucky_numbers = dllist(xrange(1, max_num + 1, 2))
 
     multiple_node = lucky_numbers[1]
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     result_deque, time_deque = time_execution(lambda: generate_lucky_deque(N))
     print '%gs' % time_deque
 
-    print 'Calculating lucky numbers using DLList...',
+    print 'Calculating lucky numbers using dllist...',
     sys.stdout.flush()
     result_list, time_list = time_execution(lambda: generate_lucky_list(N))
     print '%gs' % time_list

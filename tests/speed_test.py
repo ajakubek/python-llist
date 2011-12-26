@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from collections import deque
-from llist import SLList, DLList
+from llist import sllist, dllist
 import time
 # import gc
 # gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
@@ -41,7 +41,7 @@ def remove(c):
             pass
 
 
-for container in [deque, DLList, SLList]:
+for container in [deque, dllist, sllist]:
     for operation in [append, appendleft, pop, popleft, remove]:
         c = container(range(num))
         start = time.time()

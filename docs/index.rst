@@ -13,32 +13,32 @@
 .. moduleauthor:: Rafał Gałczyński <rafal.galczynski@gmail.com>
 
 This module implements linked list data structures.
-Currently two types of lists are supported: a doubly linked :class:`DLList`
-and a singly linked :class:`SLList`.
+Currently two types of lists are supported: a doubly linked :class:`dllist`
+and a singly linked :class:`sllist`.
 
 All data types defined in this module support efficient O(1)) insertion
-and removal of elements (except removal in SLList).
+and removal of elements (except removal in sllist).
 Random access to elements using index is O(n). It does however cache the most
 recently accessed node which allows O(1) access to consecutive indexes.
 
-:class:`DLList` objects
+:class:`dllist` objects
 -----------------------
 
-.. class:: DLList([iterable])
+.. class:: dllist([iterable])
 
    Return a new doubly linked list initialized with elements from *iterable*.
-   If *iterable* is not specified, the new :class:`DLList` is empty.
+   If *iterable* is not specified, the new :class:`dllist` is empty.
 
-   DLList objects provide the following attributes:
+   dllist objects provide the following attributes:
 
    .. attribute:: first
 
-      First :class:`DLListNode` object in the list. `None` if list is empty.
+      First :class:`dllistnode` object in the list. `None` if list is empty.
       This attribute is read-only.
 
    .. attribute:: last
 
-      Last :class:`DLListNode` object in the list. `None` if list is empty.
+      Last :class:`dllistnode` object in the list. `None` if list is empty.
       This attribute is read-only.
 
    .. attribute:: size
@@ -46,44 +46,44 @@ recently accessed node which allows O(1) access to consecutive indexes.
       Number of elements in the list. 0 if list is empty.
       This attribute is read-only.
 
-   DLList objects also support the following methods (all methods below have
+   dllist objects also support the following methods (all methods below have
    O(1) time complexity):
 
    .. method:: append(x)
 
       Add *x* to the right side of the list and return inserted
-      :class:`DLListNode`.
+      :class:`dllistnode`.
 
-      Argument *x* might be a :class:`DLListNode`. In that case a new
+      Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
    .. method:: appendleft(x)
 
       Add *x* to the left side of the list and return inserted
-      :class:`DLListNode`.
+      :class:`dllistnode`.
 
-      Argument *x* might be a :class:`DLListNode`. In that case a new
+      Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
    .. method:: appendright(x)
 
       Add *x* to the right side of the list and return inserted
-      :class:`DLListNode` (synonymous with :meth:`append`).
+      :class:`dllistnode` (synonymous with :meth:`append`).
 
-      Argument *x* might be a :class:`DLListNode`. In that case a new
+      Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
    .. method:: insert(x, [before])
 
       Add *x* to the right side of the list if *before* is not specified,
-      or insert *x* to the left side of :class:`DLListNode` *before*.
-      Return inserted :class:`DLListNode`.
+      or insert *x* to the left side of :class:`dllistnode` *before*.
+      Return inserted :class:`dllistnode`.
 
-      Argument *x* might be a :class:`DLListNode`. In that case a new
+      Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
       Raises :exc:`TypeError` if *before* is not of type
-      :class:`DLListNode`.
+      :class:`dllistnode`.
 
       Raises :exc:`ValueError` if *before* does not belong to *self*.
 
@@ -105,13 +105,13 @@ recently accessed node which allows O(1) access to consecutive indexes.
       Remove *node* from the list and return the element which was
       stored in it.
 
-      Raises :exc:`TypeError` if *node* is not of type :class:`DLListNode`.
+      Raises :exc:`TypeError` if *node* is not of type :class:`dllistnode`.
 
       Raises :exc:`ValueError` if *self* is empty, or *node* does
       not belong to *self*.
 
 
-   In addition to these methods, DLList supports iteration, ``cmp(l1, l2)``,
+   In addition to these methods, dllist supports iteration, ``cmp(l1, l2)``,
    constant time ``len(l)``, and subscript references ``l[1234]`` for
    accessing elements by index.
 
@@ -120,18 +120,18 @@ recently accessed node which allows O(1) access to consecutive indexes.
    Note that inserting/deleting a node in the middle of the list will
    invalidate this cache.
 
-   Subscript references like ``n = l[1234]`` return a :class:`DLListNode`
+   Subscript references like ``n = l[1234]`` return a :class:`dllistnode`
    object, and not a value stored at that location.
 
    Example:
 
    .. doctest::
 
-      >>> from llist import DLList, DLListNode
+      >>> from llist import dllist, dllistnode
 
-      >>> empty_lst = DLList()          # create an empty list
+      >>> empty_lst = dllist()          # create an empty list
       >>> print empty_lst
-      DLList()
+      dllist()
 
       >>> print len(empty_lst)          # display length of the list
       0
@@ -143,9 +143,9 @@ recently accessed node which allows O(1) access to consecutive indexes.
       >>> print empty_lst.last          # display the last node (nonexistent)
       None
 
-      >>> lst = DLList([1, 2, 3])       # create and initialize a list
+      >>> lst = dllist([1, 2, 3])       # create and initialize a list
       >>> print lst                     # display elements in the list
-      DLList([1, 2, 3])
+      dllist([1, 2, 3])
 
       >>> print len(lst)                # display length of the list
       3
@@ -153,15 +153,15 @@ recently accessed node which allows O(1) access to consecutive indexes.
       3
 
       >>> print lst[0]                  # access nodes by index
-      DLListNode(1)
+      dllistnode(1)
       >>> print lst[1]
-      DLListNode(2)
+      dllistnode(2)
       >>> print lst[2]
-      DLListNode(3)
+      dllistnode(3)
 
       >>> node = lst.first              # get the first node (same as lst[0])
       >>> print node
-      DLListNode(1)
+      dllistnode(1)
 
       >>> print node.value              # get value of node
       1
@@ -170,75 +170,75 @@ recently accessed node which allows O(1) access to consecutive indexes.
       >>> print node.prev               # get the previous node (nonexistent)
       None
       >>> print node.next               # get the next node
-      DLListNode(2)
+      dllistnode(2)
       >>> print node.next.value         # get value of the next node
       2
 
       >>> lst.appendright(4)            # append value to the right side of the list
-      <DLListNode(4)>
+      <dllistnode(4)>
       >>> print lst
-      DLList([1, 2, 3, 4])
-      >>> new_node = DLListNode(5)
+      dllist([1, 2, 3, 4])
+      >>> new_node = dllistnode(5)
       >>> lst.appendright(new_node)     # append value from a node
-      <DLListNode(5)>
+      <dllistnode(5)>
       >>> print lst
-      DLList([1, 2, 3, 4, 5])
+      dllist([1, 2, 3, 4, 5])
       >>> lst.appendleft(0)             # append value to the left side of the list
-      <DLListNode(0)>
+      <dllistnode(0)>
       >>> print lst
-      DLList([0, 1, 2, 3, 4, 5])
+      dllist([0, 1, 2, 3, 4, 5])
 
       >>> node = lst[2]
       >>> lst.insert(1.5, node)         # insert 1.5 before node
-      <DLListNode(1.5)>
+      <dllistnode(1.5)>
       >>> print lst
-      DLList([0, 1, 1.5, 2, 3, 4, 5])
+      dllist([0, 1, 1.5, 2, 3, 4, 5])
       >>> lst.insert(6)                 # append value to the right side of the list
-      <DLListNode(6)>
+      <dllistnode(6)>
       >>> print lst
-      DLList([0, 1, 1.5, 2, 3, 4, 5, 6])
+      dllist([0, 1, 1.5, 2, 3, 4, 5, 6])
 
       >>> lst.popleft()                 # remove leftmost node from the list
       0
       >>> print lst
-      DLList([1, 1.5, 2, 3, 4, 5, 6])
+      dllist([1, 1.5, 2, 3, 4, 5, 6])
       >>> lst.popright()                # remove rightmost node from the list
       6
       >>> print lst
-      DLList([1, 1.5, 2, 3, 4, 5])
+      dllist([1, 1.5, 2, 3, 4, 5])
       >>> node = lst[1]
       >>> lst.remove(node)              # remove 2nd node from the list
       1.5
       >>> print lst
-      DLList([1, 2, 3, 4, 5])
-      >>> foreign_node = DLListNode()   # create an unassigned node
+      dllist([1, 2, 3, 4, 5])
+      >>> foreign_node = dllistnode()   # create an unassigned node
       >>> lst.remove(foreign_node)      # try to remove node not present in the list
       Traceback (most recent call last):
         File "/usr/lib/python2.6/doctest.py", line 1253, in __run
           compileflags, 1) in test.globs
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
-      ValueError: DLListNode belongs to another list
+      ValueError: dllistnode belongs to another list
 
-      >>> cmp(DLList(), DLList([]))     # list comparison (lexicographical order)
+      >>> cmp(dllist(), dllist([]))     # list comparison (lexicographical order)
       0
-      >>> cmp(DLList([1, 2, 3]), DLList([1, 3, 3]))
+      >>> cmp(dllist([1, 2, 3]), dllist([1, 3, 3]))
       -1
-      >>> cmp(DLList([1, 2]), DLList([1, 2, 3]))
+      >>> cmp(dllist([1, 2]), dllist([1, 2, 3]))
       -1
-      >>> cmp(DLList([1, 2, 3]), DLList())
+      >>> cmp(dllist([1, 2, 3]), dllist())
       1
 
 
-:class:`DLListNode` objects
+:class:`dllistnode` objects
 ---------------------------
 
-.. class:: DLListNode([value])
+.. class:: dllistnode([value])
 
    Return a new doubly linked list node, initialized (optionally)
    with *value*.
 
-   DLListNode objects provide the following attributes:
+   dllistnode objects provide the following attributes:
 
    .. attribute:: next
 
@@ -256,50 +256,50 @@ recently accessed node which allows O(1) access to consecutive indexes.
    the :meth:`__call__()` method (using standard ``node()`` syntax).
 
 
-:class:`DLListIterator` objects
+:class:`dllistiterator` objects
 -------------------------------
 
-.. class:: DLListIterator
+.. class:: dllistiterator
 
    Return a new doubly linked list iterator.
 
-   DLListIterator objects are not meant to be created by user.
-   They are returned by the :meth:`DLList.__iter__()` method to hold
+   dllistiterator objects are not meant to be created by user.
+   They are returned by the :meth:`dllist.__iter__()` method to hold
    iteration state.
 
-   Note that iteration using :class:`DLListIterator` interface will
-   directly yield values stored in nodes, not :class:`DLListNode`
+   Note that iteration using :class:`dllistiterator` interface will
+   directly yield values stored in nodes, not :class:`dllistnode`
    objects.
 
    Example:
 
    .. doctest::
 
-      >>> from llist import DLList
-      >>> lst = DLList([1, 2, 3])
+      >>> from llist import dllist
+      >>> lst = dllist([1, 2, 3])
       >>> for value in lst:
       ...     print value * 2,
       2 4 6
 
 
-:class:`SLList` objects
+:class:`sllist` objects
 -----------------------
 
-.. class:: SLList([iterable])
+.. class:: sllist([iterable])
 
    Return a new singly linked list initialized with elements from *iterable*.
-   If *iterable* is not specified, the new :class:`SLList` is empty.
+   If *iterable* is not specified, the new :class:`sllist` is empty.
 
-   SLList objects provide the following attributes:
+   sllist objects provide the following attributes:
 
    .. attribute:: first
 
-      First :class:`SLListNode` object in the list. `None` if list is empty.
+      First :class:`sllistnode` object in the list. `None` if list is empty.
       This attribute is read-only.
 
    .. attribute:: last
 
-      Last :class:`SLListNode` object in the list. `None` if list is empty.
+      Last :class:`sllistnode` object in the list. `None` if list is empty.
       This attribute is read-only.
 
    .. attribute:: size
@@ -307,14 +307,14 @@ recently accessed node which allows O(1) access to consecutive indexes.
       Number of elements in the list. 0 if list is empty.
       This attribute is read-only.
 
-   SLList objects also support the following methods:
+   sllist objects also support the following methods:
 
    .. method:: append(x)
 
       Add *x* to the right side of the list and return inserted
-      :class:`SLListNode`.
+      :class:`sllistnode`.
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
+      Argument *x* might be a :class:`sllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
       This method has O(1) complexity.
@@ -322,9 +322,9 @@ recently accessed node which allows O(1) access to consecutive indexes.
    .. method:: appendleft(x)
 
       Add *x* to the left side of the list and return inserted
-      :class:`SLListNode`.
+      :class:`sllistnode`.
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
+      Argument *x* might be a :class:`sllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
       This method has O(1) complexity.
@@ -332,32 +332,32 @@ recently accessed node which allows O(1) access to consecutive indexes.
    .. method:: appendright(x)
 
       Add *x* to the right side of the list and return inserted
-      :class:`SLListNode`.
+      :class:`sllistnode`.
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
+      Argument *x* might be a :class:`sllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
       This method has O(1) complexity.
 
    .. method:: insert_after(x, node)
 
-      Inserts *x* after *node* and return inserted :class:`SLListNode`.
+      Inserts *x* after *node* and return inserted :class:`sllistnode`.
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
+      Argument *x* might be a :class:`sllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
-      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+      Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
 
       This method has O(1) complexity.
 
    .. method:: insert_before(x, node)
 
-      Inserts *x* before *node* and return inserted :class:`SLListNode`.
+      Inserts *x* before *node* and return inserted :class:`sllistnode`.
 
-      Argument *x* might be a :class:`SLListNode`. In that case a new
+      Argument *x* might be a :class:`sllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
-      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+      Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
 
       This method has O(n) complexity.
 
@@ -383,7 +383,7 @@ recently accessed node which allows O(1) access to consecutive indexes.
 
       Remove *node* from the list.
 
-      Raises :exc:`TypeError` if *node* is not of type :class:`SLListNode`.
+      Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
 
       Raises :exc:`ValueError` if *self* is empty, or *node* does
       not belong to *self*.
@@ -391,15 +391,15 @@ recently accessed node which allows O(1) access to consecutive indexes.
       This method has O(n) time complexity.
 
 
-:class:`SLListNode` objects
+:class:`sllistnode` objects
 ---------------------------
 
-.. class:: SLListNode([value])
+.. class:: sllistnode([value])
 
    Return a new singly linked list node, initialized (optionally)
    with *value*.
 
-   SLListNode objects provide the following attributes:
+   sllistnode objects provide the following attributes:
 
    .. attribute:: next
 
@@ -413,27 +413,27 @@ recently accessed node which allows O(1) access to consecutive indexes.
    the :meth:`__call__()` method (using standard ``node()`` syntax).
 
 
-:class:`SLListIterator` objects
+:class:`sllistiterator` objects
 -------------------------------
 
-.. class:: SLListIterator
+.. class:: sllistiterator
 
    Return a new singly linked list iterator.
 
-   SLListIterator objects are not meant to be created by user.
-   They are returned by the :meth:`SLList.__iter__()` method to hold
+   sllistiterator objects are not meant to be created by user.
+   They are returned by the :meth:`sllist.__iter__()` method to hold
    iteration state.
 
-   Note that iteration using :class:`SLListIterator` interface will
-   directly yield values stored in nodes, not :class:`SLListNode`
+   Note that iteration using :class:`sllistiterator` interface will
+   directly yield values stored in nodes, not :class:`sllistnode`
    objects.
 
    Example:
 
    .. doctest::
 
-      >>> from llist import SLList
-      >>> lst = SLList([1, 2, 3])
+      >>> from llist import sllist
+      >>> lst = sllist([1, 2, 3])
       >>> for value in lst:
       ...     print value * 2,
       2 4 6
