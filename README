@@ -9,7 +9,7 @@ the middle of a sequence.
 For this kind of workload, they can be significantly faster than
 collections.deque or standard Python lists.
 
-Note that Python 3.x is not supported yet!
+Note that Python 3.x is not supported.
 
 Currently llist provides the following types of linked lists:
  - dllist - a doubly linked list
