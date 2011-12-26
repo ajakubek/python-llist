@@ -1,4 +1,4 @@
-include Makefile LICENSE MANIFEST MANIFEST.in
+include Makefile CHANGES LICENSE MANIFEST MANIFEST.in
 recursive-include src *.c *.h
 recursive-include docs .py *.rst Makefile make.bat
 graft docs/_static
