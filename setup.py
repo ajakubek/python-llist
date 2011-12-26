@@ -10,6 +10,7 @@ sources=[ 'src/llist.c',
 
 setup(name='llist',
       description='Linked list data structures for Python',
+      long_description=open('README').read(),
       author=u'Adam Jakubek <ajakubek@gmail.com>, ' \
              u'Rafał Gałczyński <rafal.galczynski@gmail.com>',
       version='0.1',
