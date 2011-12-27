@@ -20,9 +20,7 @@ setup(name='llist',
       download_url='http://pypi.python.org/pypi/llist/%s' % VERSION,
       license='MIT',
       keywords='linked list, list',
-      ext_modules=[Extension('llist',
-                             sources,
-                             extra_compile_args=['-ansi', '-pedantic'])],
+      ext_modules=[Extension('llist', sources)
       classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
