@@ -1,14 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-VERSION='0.1'
+VERSION = '0.1'
 
 from distutils.core import setup, Extension
 
-sources=[ 'src/llist.c',
-          'src/dllist.c',
-          'src/sllist.c',
-          ]
+sources = ['src/llist.c',
+           'src/dllist.c',
+           'src/sllist.c',
+           ]
 
 setup(name='llist',
       description='Linked list data structures for Python',
@@ -20,7 +20,9 @@ setup(name='llist',
       download_url='http://pypi.python.org/pypi/llist/%s' % VERSION,
       license='MIT',
       keywords='linked list, list',
-      ext_modules=[ Extension('llist', sources) ],
+      ext_modules=[Extension('llist',
+                             sources,
+                             extra_compile_args=['-ansi', '-pedantic'])],
       classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
