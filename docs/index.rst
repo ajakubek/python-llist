@@ -16,10 +16,10 @@ This module implements linked list data structures.
 Currently two types of lists are supported: a doubly linked :class:`dllist`
 and a singly linked :class:`sllist`.
 
-All data types defined in this module support efficient O(1)) insertion
-and removal of elements (except removal in sllist).
-Random access to elements using index is O(n). It does however cache the most
-recently accessed node which allows O(1) access to consecutive indexes.
+All data types defined in this module support efficient O(1) insertion
+and removal of elements (except removal in :class:`sllist` which is O(n)).
+Random access to elements using index is O(n).
+
 
 :class:`dllist` objects
 -----------------------
@@ -111,9 +111,9 @@ recently accessed node which allows O(1) access to consecutive indexes.
       not belong to *self*.
 
 
-   In addition to these methods, dllist supports iteration, ``cmp(l1, l2)``,
-   constant time ``len(l)``, and subscript references ``l[1234]`` for
-   accessing elements by index.
+   In addition to these methods, :class:`dllist` supports iteration,
+   ``cmp(l1, l2)``, constant time ``len(l)``, and subscript references
+   ``l[1234]`` for accessing elements by index.
 
    Indexed access has O(n) complexity, but most recently accessed node is
    cached, so that accessing its neighbours is O(1).
@@ -121,7 +121,7 @@ recently accessed node which allows O(1) access to consecutive indexes.
    invalidate this cache.
 
    Subscript references like ``n = l[1234]`` return a :class:`dllistnode`
-   object, and not a value stored at that location.
+   object, not a value stored at that location.
 
    Example:
 
