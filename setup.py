@@ -30,6 +30,7 @@ setup(name='llist',
         'Operating System :: POSIX',
         'Programming Language :: C',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
       )
