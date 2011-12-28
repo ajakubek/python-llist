@@ -47,7 +47,7 @@ Random access to elements using index is O(n).
       This attribute is read-only.
 
    dllist objects also support the following methods (all methods below have
-   O(1) time complexity):
+   O(1) time complexity unless specifically documented otherwise):
 
    .. method:: append(x)
 
@@ -87,6 +87,20 @@ Random access to elements using index is O(n).
 
       Raises :exc:`ValueError` if *before* does not belong to *self*.
 
+   .. method:: nodeat(index)
+
+      Return node (of type :class:`dllistnode`) at *index*.
+      Negative indices are allowed (to count nodes from the right).
+
+      Raises :exc:`TypeError` if index is not an integer.
+
+      Raises :exc:`IndexError` if index is out of range.
+
+      This method has O(n) complexity, but most recently accessed node is
+      cached, so that accessing its neighbours is O(1).
+      Note that inserting/deleting a node in the middle of the list will
+      invalidate this cache.
+
    .. method:: pop()
 
       Remove and return an element's value from the right side of the list.
@@ -120,8 +134,11 @@ Random access to elements using index is O(n).
    Note that inserting/deleting a node in the middle of the list will
    invalidate this cache.
 
-   Subscript references like ``n = l[1234]`` return a :class:`dllistnode`
-   object, not a value stored at that location.
+   Subscript references like ``n = l[1234]`` return values stored in nodes.
+   Negative indices are allowed (to count nodes from the right).
+
+   Iteration over :class:`dllist` elements (using *for* or list
+   comprehensions) will also directly yield values stored in nodes.
 
    Example:
 
@@ -152,12 +169,19 @@ Random access to elements using index is O(n).
       >>> print lst.size
       3
 
-      >>> print lst[0]                  # access nodes by index
+      >>> print lst.nodeat(0)           # access nodes by index
       dllistnode(1)
-      >>> print lst[1]
+      >>> print lst.nodeat(1)
       dllistnode(2)
-      >>> print lst[2]
+      >>> print lst.nodeat(2)
       dllistnode(3)
+
+      >>> print lst[0]                  # access elements by index
+      1
+      >>> print lst[1]
+      2
+      >>> print lst[2]
+      3
 
       >>> node = lst.first              # get the first node (same as lst[0])
       >>> print node
@@ -174,6 +198,10 @@ Random access to elements using index is O(n).
       >>> print node.next.value         # get value of the next node
       2
 
+      >>> for value in lst:             # iterate over list elements
+      ...     print value * 2,
+      2 4 6
+
       >>> lst.appendright(4)            # append value to the right side of the list
       <dllistnode(4)>
       >>> print lst
@@ -188,7 +216,7 @@ Random access to elements using index is O(n).
       >>> print lst
       dllist([0, 1, 2, 3, 4, 5])
 
-      >>> node = lst[2]
+      >>> node = lst.nodeat(2)
       >>> lst.insert(1.5, node)         # insert 1.5 before node
       <dllistnode(1.5)>
       >>> print lst
@@ -206,7 +234,7 @@ Random access to elements using index is O(n).
       6
       >>> print lst
       dllist([1, 1.5, 2, 3, 4, 5])
-      >>> node = lst[1]
+      >>> node = lst.nodeat(1)
       >>> lst.remove(node)              # remove 2nd node from the list
       1.5
       >>> print lst
@@ -361,6 +389,17 @@ Random access to elements using index is O(n).
 
       This method has O(n) complexity.
 
+   .. method:: nodeat(index)
+
+      Return node (of type :class:`sllistnode`) at *index*.
+      Negative indices are allowed (to count nodes from the right).
+
+      Raises :exc:`TypeError` if index is not an integer.
+
+      Raises :exc:`IndexError` if index is out of range.
+
+      This method has O(n) complexity.
+
    .. method:: pop()
 
       Remove and return an element's value from the right side of the list.
@@ -389,6 +428,17 @@ Random access to elements using index is O(n).
       not belong to *self*.
 
       This method has O(n) time complexity.
+
+
+   In addition to these methods, :class:`sllist` supports iteration,
+   ``cmp(l1, l2)``, constant time ``len(l)``, and subscript references
+   ``l[1234]`` for accessing elements by index.
+
+   Subscript references like ``n = l[1234]`` return values stored in nodes.
+   Negative indices are allowed (to count nodes from the right).
+
+   Iteration over :class:`sllist` elements (using *for* or list
+   comprehensions) will also directly yield values stored in nodes.
 
 
 :class:`sllistnode` objects

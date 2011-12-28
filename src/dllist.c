@@ -288,8 +288,8 @@ static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
 }
 
 /* Convenience function for locating list nodes using index. */
-static DLListNodeObject* dllist_get_node_at(DLListObject* self,
-                                            Py_ssize_t index)
+static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
+                                                  Py_ssize_t index)
 {
     Py_ssize_t i;
     Py_ssize_t middle = self->size / 2;
@@ -299,7 +299,7 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
 
     if (index >= self->size || index < 0)
     {
-        PyErr_SetString(PyExc_IndexError, "No such index");
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
 
@@ -509,6 +509,28 @@ static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
     }
 
     return dllist_extend(self, sequence) ? 0 : -1;
+}
+
+static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
+{
+    DLListNodeObject* node;
+    Py_ssize_t index;
+
+    if (!PyInt_Check(indexObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = PyInt_AsSsize_t(indexObject);
+
+    if (index < 0)
+        index = ((DLListObject*)self)->size + index;
+
+    node = dllist_get_node_internal((DLListObject*)self, index);
+    Py_XINCREF(node);
+
+    return (PyObject*)node;
 }
 
 static int dllist_compare(DLListObject* self, DLListObject* other)
@@ -816,10 +838,16 @@ static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
 {
     DLListNodeObject* node;
 
-    node = dllist_get_node_at((DLListObject*)self, index);
-    Py_XINCREF(node);
+    node = dllist_get_node_internal((DLListObject*)self, index);
+    if (node != NULL)
+    {
+        PyObject* value = node->value;
 
-    return (PyObject*)node;
+        Py_XINCREF(value);
+        return value;
+    }
+
+    return NULL;
 }
 
 static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
@@ -828,7 +856,7 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     DLListNodeObject* node;
     PyObject* oldval;
 
-    node = dllist_get_node_at(list, index);
+    node = dllist_get_node_internal(list, index);
     if (node == NULL)
         return -1;
 
@@ -879,6 +907,8 @@ static PyMethodDef DLListMethods[] =
       "Append element at the end of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
+    { "nodeat", (PyCFunction)dllist_node_at, METH_O,
+      "Return node at index" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
     { "pop", (PyCFunction)dllist_popright, METH_NOARGS,

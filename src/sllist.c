@@ -560,14 +560,14 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
 }
 
 
-static SLListNodeObject* sllist_get_node_at(SLListObject* self,
-                                            Py_ssize_t pos)
+static SLListNodeObject* sllist_get_node_internal(SLListObject* self,
+                                                  Py_ssize_t pos)
 {
     SLListNodeObject* node;
     long counter;
 
-    if(pos >= self->size || pos < 0){
-        PyErr_SetString(PyExc_IndexError, "No such index");
+    if (pos < 0 || pos >= self->size) {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
     /* taking head */
@@ -581,14 +581,41 @@ static SLListNodeObject* sllist_get_node_at(SLListObject* self,
 }
 
 
+static PyObject* sllist_node_at(PyObject* self, PyObject* indexObject)
+{
+    SLListNodeObject* node;
+    Py_ssize_t index;
+
+    if (!PyInt_Check(indexObject)) {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = PyInt_AsSsize_t(indexObject);
+
+    if (index < 0)
+        index = ((SLListObject*)self)->size + index;
+
+    node = sllist_get_node_internal((SLListObject*)self, index);
+    Py_XINCREF(node);
+
+    return (PyObject*)node;
+}
+
+
 static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 {
     SLListNodeObject* node;
 
-    node = sllist_get_node_at((SLListObject*)self, index);
-    Py_XINCREF(node);
+    node = sllist_get_node_internal((SLListObject*)self, index);
+    if (node != NULL) {
+        PyObject* value = node->value;
 
-    return (PyObject*)node;
+        Py_XINCREF(value);
+        return value;
+    }
+
+    return NULL;
 }
 
 static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
@@ -609,8 +636,8 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
         node = (SLListNodeObject*)list->last;
     /* setting nth node,  */
     else
-        /* get_node_at will rise error for index out of scale */
-        node = (SLListNodeObject*)sllist_get_node_at(list, index);
+        /* get_node_internal will rise error for index out of scale */
+        node = (SLListNodeObject*)sllist_get_node_internal(list, index);
 
     /* nice played, migu :) */
     val = ((SLListNodeObject*)val)->value;
@@ -840,6 +867,9 @@ static PyMethodDef SLListMethods[] =
 
         { "insert_before", (PyCFunction)sllist_insert_before, METH_VARARGS,
           "Inserts element before node" },
+
+        { "nodeat", (PyCFunction)sllist_node_at, METH_O,
+          "Return node at index" },
 
         { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
           "Remove last element from the list and return it" },
