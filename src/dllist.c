@@ -877,6 +877,15 @@ static PyObject* dllist_concat(PyObject* self, PyObject* other)
     return (PyObject*)new_list;
 }
 
+static PyObject* dllist_inplace_concat(PyObject* self, PyObject* other)
+{
+    if (!dllist_extend((DLListObject*)self, other))
+        return NULL;
+
+    Py_INCREF(self);
+    return self;
+}
+
 static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
 {
     DLListNodeObject* node;
@@ -982,7 +991,10 @@ static PySequenceMethods DLListSequenceMethods[] =
     dllist_get_item,            /* sq_item */
     0,                          /* sq_slice */
     dllist_set_item,            /* sq_ass_item */
-    0                           /* sq_ass_slice */
+    0,                          /* sq_ass_slice */
+    0,                          /* sq_contains */
+    dllist_inplace_concat,      /* sq_inplace_concat */
+    0,                          /* sq_inplace_repeat */
 };
 
 static PyTypeObject DLListType =

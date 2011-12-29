@@ -709,6 +709,16 @@ static PyObject* sllist_concat(PyObject* self, PyObject* other)
 }
 
 
+static PyObject* sllist_inplace_concat(PyObject* self, PyObject* other)
+{
+    if (!sllist_extend((SLListObject*)self, other))
+        return NULL;
+
+    Py_INCREF(self);
+    return self;
+}
+
+
 static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 {
     SLListNodeObject* node;
@@ -988,7 +998,10 @@ static PySequenceMethods SLListSequenceMethods =
         sllist_get_item,             /* sq_item           */
         0,                           /* sq_slice;         */
         sllist_set_item,             /* sq_ass_item       */
-        0                            /* sq_ass_slice      */
+        0,                           /* sq_ass_slice      */
+        0,                           /* sq_contains       */
+        sllist_inplace_concat,       /* sq_inplace_concat */
+        0,                           /* sq_inplace_repeat */
     };
 
 static PyTypeObject SLListType =

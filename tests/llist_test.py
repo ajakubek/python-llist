@@ -365,6 +365,36 @@ class testsllist(unittest.TestCase):
         self.assertEqual(res, sllist(filled_ref + []))
         self.assertEqual(len(res), len(filled_ref))
 
+    def test_concat_inplace(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = sllist(b_ref)
+        ab_ref = sllist(a_ref + b_ref)
+        a = sllist(a_ref)
+        a += b
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a += b_ref
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+
+    def test_concat_inplace_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = sllist(filled_ref)
+        empty = sllist()
+        empty += empty
+        self.assertEqual(empty, sllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = sllist()
+        empty += filled
+        self.assertEqual(empty, sllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = sllist()
+        filled += empty
+        self.assertEqual(filled, sllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
+
     def test_list_readonly_attributes(self):
         ll = sllist(range(4))
         self.assertRaises(TypeError, setattr, ll, 'first', None)
@@ -678,6 +708,36 @@ class testdllist(unittest.TestCase):
         res = filled + empty
         self.assertEqual(res, dllist(filled_ref + []))
         self.assertEqual(len(res), len(filled_ref))
+
+    def test_concat_inplace(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = dllist(b_ref)
+        ab_ref = dllist(a_ref + b_ref)
+        a = dllist(a_ref)
+        a += b
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a += b_ref
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+
+    def test_concat_inplace_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = dllist(filled_ref)
+        empty = dllist()
+        empty += empty
+        self.assertEqual(empty, dllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = dllist()
+        empty += filled
+        self.assertEqual(empty, dllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = dllist()
+        filled += empty
+        self.assertEqual(filled, dllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
 
     def test_list_readonly_attributes(self):
         ll = dllist(range(4))
