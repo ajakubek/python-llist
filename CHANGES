@@ -4,6 +4,9 @@
     in the list, not dllistnode objects
   - implemented nodeat() method in dllist and sllist
   - implemented __reverse__ in dllist
+  - fixed segmentation faults in sllist.insert and sllist.delete
+    methods
+  - added missing Py_DECREFs to sllist
 
 -----------------------------------------------------------------------
 
