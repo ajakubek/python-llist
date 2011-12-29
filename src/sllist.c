@@ -700,10 +700,12 @@ static PyObject* sllist_concat(PyObject* self, PyObject* other)
     new_list = (SLListObject*)PyObject_CallObject(
         (PyObject*)&SLListType, NULL);
 
-    if (!sllist_extend(new_list, self))
+    if (!sllist_extend(new_list, self) ||
+        !sllist_extend(new_list, other))
+    {
+        Py_DECREF(new_list);
         return NULL;
-    if (!sllist_extend(new_list, other))
-        return NULL;
+    }
 
     return (PyObject*)new_list;
 }
@@ -716,6 +718,27 @@ static PyObject* sllist_inplace_concat(PyObject* self, PyObject* other)
 
     Py_INCREF(self);
     return self;
+}
+
+
+static PyObject* sllist_repeat(PyObject* self, Py_ssize_t count)
+{
+    SLListObject* new_list;
+    Py_ssize_t i;
+
+    new_list = (SLListObject*)PyObject_CallObject(
+        (PyObject*)&SLListType, NULL);
+
+    for (i = 0; i < count; ++i)
+    {
+        if (!sllist_extend(new_list, self))
+        {
+            Py_DECREF(new_list);
+            return NULL;
+        }
+    }
+
+    return (PyObject*)new_list;
 }
 
 
@@ -994,7 +1017,7 @@ static PySequenceMethods SLListSequenceMethods =
     {
         sllist_len,                  /* sq_length         */
         sllist_concat,               /* sq_concat         */
-        0,                           /* sq_repeat         */
+        sllist_repeat,               /* sq_repeat         */
         sllist_get_item,             /* sq_item           */
         0,                           /* sq_slice;         */
         sllist_set_item,             /* sq_ass_item       */

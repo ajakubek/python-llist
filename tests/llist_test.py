@@ -395,6 +395,15 @@ class testsllist(unittest.TestCase):
         self.assertEqual(filled, sllist(filled_ref + []))
         self.assertEqual(len(filled), len(filled_ref))
 
+    def test_repeat(self):
+        ref = range(0, 1024, 4)
+        ll = sllist(ref)
+        self.assertEqual(ll * 4, sllist(ref * 4));
+
+    def test_repeat_empty(self):
+        ll = sllist()
+        self.assertEqual(ll * 4, sllist([] * 4));
+
     def test_list_readonly_attributes(self):
         ll = sllist(range(4))
         self.assertRaises(TypeError, setattr, ll, 'first', None)
@@ -738,6 +747,15 @@ class testdllist(unittest.TestCase):
         filled += empty
         self.assertEqual(filled, dllist(filled_ref + []))
         self.assertEqual(len(filled), len(filled_ref))
+
+    def test_repeat(self):
+        ref = range(0, 1024, 4)
+        ll = dllist(ref)
+        self.assertEqual(ll * 4, dllist(ref * 4));
+
+    def test_repeat_empty(self):
+        ll = dllist()
+        self.assertEqual(ll * 4, dllist([] * 4));
 
     def test_list_readonly_attributes(self):
         ll = dllist(range(4))

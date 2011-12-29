@@ -869,10 +869,12 @@ static PyObject* dllist_concat(PyObject* self, PyObject* other)
     new_list = (DLListObject*)PyObject_CallObject(
         (PyObject*)&DLListType, NULL);
 
-    if (!dllist_extend(new_list, self))
+    if (!dllist_extend(new_list, self) ||
+        !dllist_extend(new_list, other))
+    {
+        Py_DECREF(new_list);
         return NULL;
-    if (!dllist_extend(new_list, other))
-        return NULL;
+    }
 
     return (PyObject*)new_list;
 }
@@ -884,6 +886,26 @@ static PyObject* dllist_inplace_concat(PyObject* self, PyObject* other)
 
     Py_INCREF(self);
     return self;
+}
+
+static PyObject* dllist_repeat(PyObject* self, Py_ssize_t count)
+{
+    DLListObject* new_list;
+    Py_ssize_t i;
+
+    new_list = (DLListObject*)PyObject_CallObject(
+        (PyObject*)&DLListType, NULL);
+
+    for (i = 0; i < count; ++i)
+    {
+        if (!dllist_extend(new_list, self))
+        {
+            Py_DECREF(new_list);
+            return NULL;
+        }
+    }
+
+    return (PyObject*)new_list;
 }
 
 static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
@@ -987,7 +1009,7 @@ static PySequenceMethods DLListSequenceMethods[] =
 {
     dllist_len,                 /* sq_length */
     dllist_concat,              /* sq_concat */
-    0,                          /* sq_repeat */
+    dllist_repeat,              /* sq_repeat */
     dllist_get_item,            /* sq_item */
     0,                          /* sq_slice */
     dllist_set_item,            /* sq_ass_item */
