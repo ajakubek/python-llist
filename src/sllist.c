@@ -314,6 +314,7 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
          * It's not strictly required but it will maintain
          * the last accessed item. */
         PyObject* iter_node_obj = ((SLListObject *)sequence)->first;
+        PyObject* last_node_obj = self->last;
 
         while (iter_node_obj != Py_None)
         {
@@ -331,6 +332,12 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
             self->last = new_node;
 
             ++self->size;
+
+            if (iter_node_obj == last_node_obj)
+            {
+                /* This is needed to terminate loop if self == sequence. */
+                break;
+            }
 
             iter_node_obj = iter_node->next;
         }
