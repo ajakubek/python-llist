@@ -21,6 +21,3 @@ docs:
 test:
 	python setup.py install --install-lib ./tests
 	python tests/llist_test.py
-
-	@echo ""
-	@echo "Tests passed successfully!"
