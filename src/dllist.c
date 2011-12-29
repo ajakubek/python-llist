@@ -5,6 +5,7 @@
 #include <Python.h>
 #include <structmember.h>
 
+staticforward PyTypeObject DLListType;
 staticforward PyTypeObject DLListNodeType;
 staticforward PyTypeObject DLListIteratorType;
 
@@ -354,6 +355,33 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &DLListType))
+    {
+        /* Special path for extending with a DLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((DLListObject *)sequence)->first;
+
+        while (iter_node_obj != Py_None)
+        {
+            DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)dllistnode_create(
+                self->last, NULL, iter_node->value, (PyObject*)self);
+
+            if (self->first == Py_None)
+                self->first = new_node;
+            self->last = new_node;
+
+            ++self->size;
+
+            iter_node_obj = iter_node->next;
+        }
+
+        return 1;
+    }
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
@@ -834,6 +862,21 @@ static Py_ssize_t dllist_len(PyObject* self)
     return list->size;
 }
 
+static PyObject* dllist_concat(PyObject* self, PyObject* other)
+{
+    DLListObject* new_list;
+
+    new_list = (DLListObject*)PyObject_CallObject(
+        (PyObject*)&DLListType, NULL);
+
+    if (!dllist_extend(new_list, self))
+        return NULL;
+    if (!dllist_extend(new_list, other))
+        return NULL;
+
+    return (PyObject*)new_list;
+}
+
 static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
 {
     DLListNodeObject* node;
@@ -934,7 +977,7 @@ static PyMemberDef DLListMembers[] =
 static PySequenceMethods DLListSequenceMethods[] =
 {
     dllist_len,                 /* sq_length */
-    0,                          /* sq_concat */
+    dllist_concat,              /* sq_concat */
     0,                          /* sq_repeat */
     dllist_get_item,            /* sq_item */
     0,                          /* sq_slice */

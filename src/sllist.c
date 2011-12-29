@@ -5,6 +5,7 @@
 #include <Python.h>
 #include <structmember.h>
 
+staticforward PyTypeObject SLListType;
 staticforward PyTypeObject SLListNodeType;
 staticforward PyTypeObject SLListIteratorType;
 
@@ -306,6 +307,36 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &SLListType))
+    {
+        /* Special path for extending with a SLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((SLListObject *)sequence)->first;
+
+        while (iter_node_obj != Py_None)
+        {
+            SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)sllistnode_create(
+                Py_None, iter_node->value, (PyObject*)self);
+
+            if (self->last != Py_None)
+                ((SLListNodeObject*)self->last)->next = new_node;
+
+            if (self->first == Py_None)
+                self->first = new_node;
+            self->last = new_node;
+
+            ++self->size;
+
+            iter_node_obj = iter_node->next;
+        }
+
+        return 1;
+    }
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
@@ -662,6 +693,22 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 }
 
 
+static PyObject* sllist_concat(PyObject* self, PyObject* other)
+{
+    SLListObject* new_list;
+
+    new_list = (SLListObject*)PyObject_CallObject(
+        (PyObject*)&SLListType, NULL);
+
+    if (!sllist_extend(new_list, self))
+        return NULL;
+    if (!sllist_extend(new_list, other))
+        return NULL;
+
+    return (PyObject*)new_list;
+}
+
+
 static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 {
     SLListNodeObject* node;
@@ -936,7 +983,7 @@ static PyMemberDef SLListMembers[] =
 static PySequenceMethods SLListSequenceMethods =
     {
         sllist_len,                  /* sq_length         */
-        0,                           /* sq_concat         */
+        sllist_concat,               /* sq_concat         */
         0,                           /* sq_repeat         */
         sllist_get_item,             /* sq_item           */
         0,                           /* sq_slice;         */
