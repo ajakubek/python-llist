@@ -961,6 +961,7 @@ static PyObject* sllist_repr(SLListObject* self)
     return sllist_to_string(self, PyObject_Repr);
 }
 
+
 static PyObject* sllist_str(SLListObject* self)
 {
     return sllist_to_string(self, PyObject_Str);
@@ -971,6 +972,29 @@ static Py_ssize_t sllist_len(PyObject* self)
 {
     return ((SLListObject*)self)->size;
 }
+
+
+static long sllist_hash(SLListObject* self)
+{
+    long hash = 0;
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None)
+    {
+        long obj_hash;
+        SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+
+        obj_hash = PyObject_Hash(iter_node->value);
+        if (obj_hash == -1)
+            return -1;
+
+        hash ^= obj_hash;
+        iter_node_obj = iter_node->next;
+    }
+
+    return hash;
+}
+
 
 static PyMethodDef SLListMethods[] =
     {
@@ -1045,12 +1069,12 @@ static PyTypeObject SLListType =
         0,                           /* tp_print          */
         0,                           /* tp_getattr        */
         0,                           /* tp_setattr        */
-        (cmpfunc)sllist_compare,     /* tp_compare */
+        (cmpfunc)sllist_compare,     /* tp_compare        */
         (reprfunc)sllist_repr,       /* tp_repr           */
         0,                           /* tp_as_number      */
         &SLListSequenceMethods,      /* tp_as_sequence    */
         0,                           /* tp_as_mapping     */
-        0,                           /* tp_hash           */
+        (hashfunc)sllist_hash,       /* tp_hash           */
         0,                           /* tp_call           */
         (reprfunc)sllist_str,        /* tp_str            */
         0,                           /* tp_getattro       */

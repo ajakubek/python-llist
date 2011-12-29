@@ -429,6 +429,12 @@ class testsllist(unittest.TestCase):
         ll = sllistnode()
         self.assertRaises(TypeError, setattr, ll, 'next', None)
 
+    def test_list_hash(self):
+        self.assertEqual(hash(sllist()), hash(sllist()))
+        self.assertEqual(hash(sllist(range(0, 1024, 4))),
+            hash(sllist(range(0, 1024, 4))))
+        self.assertEqual(hash(sllist([0, 2])), hash(sllist([0.0, 2.0])))
+
 
 class testdllist(unittest.TestCase):
 
@@ -797,6 +803,12 @@ class testdllist(unittest.TestCase):
         ll = dllistnode()
         self.assertRaises(TypeError, setattr, ll, 'prev', None)
         self.assertRaises(TypeError, setattr, ll, 'next', None)
+
+    def test_list_hash(self):
+        self.assertEqual(hash(dllist()), hash(dllist()))
+        self.assertEqual(hash(dllist(range(0, 1024, 4))),
+            hash(dllist(range(0, 1024, 4))))
+        self.assertEqual(hash(dllist([0, 2])), hash(dllist([0.0, 2.0])))
 
 
 def suite():

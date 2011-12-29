@@ -606,6 +606,27 @@ static PyObject* dllist_str(DLListObject* self)
     return dllist_to_string(self, PyObject_Str);
 }
 
+static long dllist_hash(DLListObject* self)
+{
+    long hash = 0;
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None)
+    {
+        long obj_hash;
+        DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+
+        obj_hash = PyObject_Hash(iter_node->value);
+        if (obj_hash == -1)
+            return -1;
+
+        hash ^= obj_hash;
+        iter_node_obj = iter_node->next;
+    }
+
+    return hash;
+}
+
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
@@ -1042,7 +1063,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
-    0,                          /* tp_hash */
+    (hashfunc)dllist_hash,      /* tp_hash */
     0,                          /* tp_call */
     (reprfunc)dllist_str,       /* tp_str */
     0,                          /* tp_getattro */
