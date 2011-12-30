@@ -92,9 +92,9 @@ Random access to elements using index is O(n).
       Return node (of type :class:`dllistnode`) at *index*.
       Negative indices are allowed (to count nodes from the right).
 
-      Raises :exc:`TypeError` if index is not an integer.
+      Raises :exc:`TypeError` if *index* is not an integer.
 
-      Raises :exc:`IndexError` if index is out of range.
+      Raises :exc:`IndexError` if *index* is out of range.
 
       This method has O(n) complexity, but most recently accessed node is
       cached, so that accessing its neighbours is O(1).
@@ -105,14 +105,20 @@ Random access to elements using index is O(n).
 
       Remove and return an element's value from the right side of the list.
 
+      Raises :exc:`ValueError` if *self* is empty.
+
    .. method:: popleft()
 
       Remove and return an element's value from the left side of the list.
+
+      Raises :exc:`ValueError` if *self* is empty.
 
    .. method:: popright()
 
       Remove and return an element's value from the right side of the list
       (synonymous with :meth:`pop`).
+
+      Raises :exc:`ValueError` if *self* is empty.
 
    .. method:: remove(node)
 
@@ -126,19 +132,23 @@ Random access to elements using index is O(n).
 
 
    In addition to these methods, :class:`dllist` supports iteration,
-   ``cmp(l1, l2)``, constant time ``len(l)``, and subscript references
-   ``l[1234]`` for accessing elements by index.
+   ``cmp(lst1, lst2)``, constant time ``len(lst)``, ``hash(lst)`` and
+   subscript references ``lst[1234]`` for accessing elements by index.
 
    Indexed access has O(n) complexity, but most recently accessed node is
    cached, so that accessing its neighbours is O(1).
    Note that inserting/deleting a node in the middle of the list will
    invalidate this cache.
 
-   Subscript references like ``n = l[1234]`` return values stored in nodes.
+   Subscript references like ``v = lst[1234]`` return values stored in nodes.
    Negative indices are allowed (to count nodes from the right).
 
    Iteration over :class:`dllist` elements (using *for* or list
    comprehensions) will also directly yield values stored in nodes.
+
+   Like most containers, :class:`dllist` objects can be extended using
+   ``lst1 + lst2`` and ``lst * num`` syntax (including in-place ``+=``
+   and ``*=`` variants of these operators).
 
    Example:
 
@@ -256,6 +266,15 @@ Random access to elements using index is O(n).
       -1
       >>> cmp(dllist([1, 2, 3]), dllist())
       1
+
+      >>> lst1 = dllist([1, 2, 3, 4])   # extending lists
+      >>> lst2 = dllist([5, 6, 7, 8])
+      >>> lst1 + lst2
+      dllist([1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = dllist([1, 2, 3, 4])
+      >>> lst * 2
+      dllist([1, 2, 3, 4, 1, 2, 3, 4])
 
 
 :class:`dllistnode` objects
@@ -376,6 +395,8 @@ Random access to elements using index is O(n).
 
       Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
 
+      Raises :exc:`ValueError` if *before* does not belong to *self*.
+
       This method has O(1) complexity.
 
    .. method:: insert_before(x, node)
@@ -387,6 +408,8 @@ Random access to elements using index is O(n).
 
       Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
 
+      Raises :exc:`ValueError` if *before* does not belong to *self*.
+
       This method has O(n) complexity.
 
    .. method:: nodeat(index)
@@ -394,9 +417,9 @@ Random access to elements using index is O(n).
       Return node (of type :class:`sllistnode`) at *index*.
       Negative indices are allowed (to count nodes from the right).
 
-      Raises :exc:`TypeError` if index is not an integer.
+      Raises :exc:`TypeError` if *index* is not an integer.
 
-      Raises :exc:`IndexError` if index is out of range.
+      Raises :exc:`IndexError` if *index* is out of range.
 
       This method has O(n) complexity.
 
@@ -404,17 +427,23 @@ Random access to elements using index is O(n).
 
       Remove and return an element's value from the right side of the list.
 
+      Raises :exc:`ValueError` if *self* is empty.
+
       This method has O(n) time complexity.
 
    .. method:: popleft()
 
       Remove and return an element's value from the left side of the list.
 
+      Raises :exc:`ValueError` if *self* is empty.
+
       This method has O(1) time complexity.
 
    .. method:: popright()
 
       Remove and return an element's value from the right side of the list.
+
+      Raises :exc:`ValueError` if *self* is empty.
 
       This method has O(n) time complexity.
 
@@ -431,14 +460,142 @@ Random access to elements using index is O(n).
 
 
    In addition to these methods, :class:`sllist` supports iteration,
-   ``cmp(l1, l2)``, constant time ``len(l)``, and subscript references
-   ``l[1234]`` for accessing elements by index.
+   ``cmp(lst1, lst2)``, constant time ``len(lst)``, ``hash(lst)`` and
+   subscript references ``lst[1234]`` for accessing elements by index.
 
-   Subscript references like ``n = l[1234]`` return values stored in nodes.
+   Subscript references like ``v = lst[1234]`` return values stored in nodes.
    Negative indices are allowed (to count nodes from the right).
 
    Iteration over :class:`sllist` elements (using *for* or list
    comprehensions) will also directly yield values stored in nodes.
+
+   Like most containers, :class:`sllist` objects can be extended using
+   ``lst1 + lst2`` and ``lst * num`` syntax (including in-place ``+=``
+   and ``*=`` variants of these operators).
+
+   Example:
+
+   .. doctest::
+
+      >>> from llist import sllist, sllistnode
+
+      >>> empty_lst = sllist()          # create an empty list
+      >>> print empty_lst
+      sllist()
+
+      >>> print len(empty_lst)          # display length of the list
+      0
+      >>> print empty_lst.size
+      0
+
+      >>> print empty_lst.first         # display the first node (nonexistent)
+      None
+      >>> print empty_lst.last          # display the last node (nonexistent)
+      None
+
+      >>> lst = sllist([1, 2, 3])       # create and initialize a list
+      >>> print lst                     # display elements in the list
+      sllist([1, 2, 3])
+
+      >>> print len(lst)                # display length of the list
+      3
+      >>> print lst.size
+      3
+
+      >>> print lst.nodeat(0)           # access nodes by index
+      sllistnode(1)
+      >>> print lst.nodeat(1)
+      sllistnode(2)
+      >>> print lst.nodeat(2)
+      sllistnode(3)
+
+      >>> print lst[0]                  # access elements by index
+      1
+      >>> print lst[1]
+      2
+      >>> print lst[2]
+      3
+
+      >>> node = lst.first              # get the first node (same as lst[0])
+      >>> print node
+      sllistnode(1)
+
+      >>> print node.value              # get value of node
+      1
+      >>> print node()                  # get value of node
+      1
+      >>> print node.next               # get the next node
+      sllistnode(2)
+      >>> print node.next.value         # get value of the next node
+      2
+
+      >>> for value in lst:             # iterate over list elements
+      ...     print value * 2,
+      2 4 6
+
+      >>> lst.appendright(4)            # append value to the right side of the list
+      <sllistnode(4)>
+      >>> print lst
+      sllist([1, 2, 3, 4])
+      >>> new_node = sllistnode(5)
+      >>> lst.appendright(new_node)     # append value from a node
+      <sllistnode(5)>
+      >>> print lst
+      sllist([1, 2, 3, 4, 5])
+      >>> lst.appendleft(0)             # append value to the left side of the list
+      <sllistnode(0)>
+      >>> print lst
+      sllist([0, 1, 2, 3, 4, 5])
+
+      >>> node = lst.nodeat(2)
+      >>> lst.insert_before(1.5, node)  # insert 1.5 before node
+      <sllistnode(1.5)>
+      >>> print lst
+      sllist([0, 1, 1.5, 2, 3, 4, 5])
+      >>> lst.insert_after(2.5, node)   # insert 2.5 after node
+      <sllistnode(2.5)>
+      >>> print lst
+      sllist([0, 1, 1.5, 2, 2.5, 3, 4, 5])
+
+      >>> lst.popleft()                 # remove leftmost node from the list
+      0
+      >>> print lst
+      sllist([1, 1.5, 2, 2.5, 3, 4, 5])
+      >>> lst.popright()                # remove rightmost node from the list
+      5
+      >>> print lst
+      sllist([1, 1.5, 2, 2.5, 3, 4])
+      >>> node = lst.nodeat(1)
+      >>> lst.remove(node)              # remove 2nd node from the list
+      1.5
+      >>> print lst
+      sllist([1, 2, 2.5, 3, 4])
+      >>> foreign_node = sllistnode()   # create an unassigned node
+      >>> lst.remove(foreign_node)      # try to remove node not present in the list
+      Traceback (most recent call last):
+        File "/usr/lib/python2.6/doctest.py", line 1253, in __run
+          compileflags, 1) in test.globs
+        File "<doctest default[39]>", line 1, in <module>
+          lst.remove(foreign_node)
+      ValueError: dllistnode belongs to another list
+
+      >>> cmp(sllist(), sllist([]))     # list comparison (lexicographical order)
+      0
+      >>> cmp(sllist([1, 2, 3]), sllist([1, 3, 3]))
+      -1
+      >>> cmp(sllist([1, 2]), sllist([1, 2, 3]))
+      -1
+      >>> cmp(sllist([1, 2, 3]), sllist())
+      1
+
+      >>> lst1 = sllist([1, 2, 3, 4])   # extending lists
+      >>> lst2 = sllist([5, 6, 7, 8])
+      >>> lst1 + lst2
+      sllist([1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = sllist([1, 2, 3, 4])
+      >>> lst * 2
+      sllist([1, 2, 3, 4, 1, 2, 3, 4])
 
 
 :class:`sllistnode` objects
