@@ -223,13 +223,15 @@ class testsllist(unittest.TestCase):
         self.assertEqual(ll, ref)
 
     def test_insert_invalid_ref(self):
-        ll = sllist()
+        ll = sllist([1, 2, 3, 4])
         self.assertRaises(TypeError, ll.insert_after, 10, 1)
         self.assertRaises(TypeError, ll.insert_after, 10, 'abc')
         self.assertRaises(TypeError, ll.insert_after, 10, [])
+        self.assertRaises(ValueError, ll.insert_after, 10, sllistnode())
         self.assertRaises(TypeError, ll.insert_before, 10, 1)
         self.assertRaises(TypeError, ll.insert_before, 10, 'abc')
         self.assertRaises(TypeError, ll.insert_before, 10, [])
+        self.assertRaises(ValueError, ll.insert_before, 10, sllistnode())
 
     def test_append(self):
         ll = sllist(xrange(4))
@@ -295,6 +297,20 @@ class testsllist(unittest.TestCase):
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+
+    def test_pop_from_empty_list(self):
+        ll = sllist()
+        self.assertRaises(ValueError, ll.pop)
+        self.assertRaises(ValueError, ll.popleft)
+        self.assertRaises(ValueError, ll.popright)
+
+    def test_remove_from_empty_list(self):
+        ll = sllist()
+        self.assertRaises(ValueError, ll.remove, sllistnode())
+
+    def test_remove_invalid_node(self):
+        ll = sllist([1, 2, 3, 4])
+        self.assertRaises(ValueError, ll.remove, sllistnode())
 
     def test_getitem(self):
         ref = range(0, 1024, 4)
@@ -600,6 +616,7 @@ class testdllist(unittest.TestCase):
         self.assertRaises(TypeError, ll.insert, 10, 1)
         self.assertRaises(TypeError, ll.insert, 10, 'abc')
         self.assertRaises(TypeError, ll.insert, 10, [])
+        self.assertRaises(ValueError, ll.insert, 10, dllistnode())
 
     def test_append(self):
         ll = dllist(xrange(4))
@@ -669,6 +686,20 @@ class testdllist(unittest.TestCase):
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+
+    def test_pop_from_empty_list(self):
+        ll = dllist()
+        self.assertRaises(ValueError, ll.pop)
+        self.assertRaises(ValueError, ll.popleft)
+        self.assertRaises(ValueError, ll.popright)
+
+    def test_remove_from_empty_list(self):
+        ll = dllist()
+        self.assertRaises(ValueError, ll.remove, dllistnode())
+
+    def test_remove_invalid_node(self):
+        ll = dllist([1, 2, 3, 4])
+        self.assertRaises(ValueError, ll.remove, dllistnode())
 
     def test_getitem(self):
         ref = range(0, 1024, 4)
