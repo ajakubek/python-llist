@@ -1,7 +1,7 @@
-llist - linked lists for Python
-===============================
+llist - linked lists for CPython
+================================
 
-llist is an extension module for Python providing basic linked list
+llist is an extension module for CPython providing basic linked list
 data structures.
 Collections implemented in the llist module perform well in problems
 which rely on fast insertions and/or deletions of elements in
@@ -9,7 +9,11 @@ the middle of a sequence.
 For this kind of workload, they can be significantly faster than
 collections.deque or standard Python lists.
 
-Note that Python 3.x is not supported.
+This extension requires CPython 2.6 or newer. Python 3.x is not supported.
+If you are looking for an implementation of linked lists in pure Python,
+visit http://github.com/rgsoda/pypy-llist/
+The pypy-llist module has the same API as this extension, but is
+significantly slower in CPython.
 
 Currently llist provides the following types of linked lists:
  - dllist - a doubly linked list
