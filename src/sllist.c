@@ -526,6 +526,7 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
 
     PyObject* value = NULL;
     PyObject* before = NULL;
+    PyObject* list_ref;
     SLListNodeObject* new_node;
 
     if (!PyArg_UnpackTuple(arg, "insert_after", 2, 2, &value, &before))
@@ -538,6 +539,15 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
 
     if (PyObject_TypeCheck(value, &SLListNodeType))
         value = ((SLListNodeObject*)value)->value;
+
+    list_ref = PyWeakref_GetObject(
+        ((SLListNodeObject*)before)->list_weakref);
+    if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                            "sllistnode belongs to another list");
+            return NULL;
+        }
 
     new_node = sllistnode_create(Py_None,
                                  value,
@@ -661,14 +671,14 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     }
 
     if (self->first == Py_None) {
-        PyErr_SetString(PyExc_RuntimeError, "List is empty");
+        PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
 
     list_ref = PyWeakref_GetObject(((SLListNodeObject*)arg)->list_weakref);
     if (list_ref != (PyObject*)self)
     {
-        PyErr_SetString(PyExc_TypeError,
+        PyErr_SetString(PyExc_ValueError,
             "sllistnode belongs to another list");
         return NULL;
     }
@@ -820,7 +830,7 @@ static PyObject* sllist_popleft(SLListObject* self)
 
     if (self->first == Py_None)
         {
-            PyErr_SetString(PyExc_RuntimeError, "List is empty");
+            PyErr_SetString(PyExc_ValueError, "List is empty");
             return NULL;
         }
 
@@ -846,7 +856,7 @@ static PyObject* sllist_popright(SLListObject* self)
 
     if (self->last == Py_None)
         {
-            PyErr_SetString(PyExc_RuntimeError, "List is empty");
+            PyErr_SetString(PyExc_ValueError, "List is empty");
             return NULL;
         }
 
