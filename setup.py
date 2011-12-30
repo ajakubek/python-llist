@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-VERSION='0.1'
+VERSION='0.2'
 
 from distutils.core import setup, Extension
 
