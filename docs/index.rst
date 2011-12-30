@@ -269,11 +269,13 @@ Random access to elements using index is O(n).
 
       >>> lst1 = dllist([1, 2, 3, 4])   # extending lists
       >>> lst2 = dllist([5, 6, 7, 8])
-      >>> lst1 + lst2
+      >>> ext_lst = lst1 + lst2
+      >>> print ext_lst
       dllist([1, 2, 3, 4, 5, 6, 7, 8])
 
       >>> lst = dllist([1, 2, 3, 4])
-      >>> lst * 2
+      >>> ext_lst = lst * 2
+      >>> print ext_lst
       dllist([1, 2, 3, 4, 1, 2, 3, 4])
 
 
@@ -590,11 +592,13 @@ Random access to elements using index is O(n).
 
       >>> lst1 = sllist([1, 2, 3, 4])   # extending lists
       >>> lst2 = sllist([5, 6, 7, 8])
-      >>> lst1 + lst2
+      >>> ext_lst = lst1 + lst2
+      >>> print ext_lst
       sllist([1, 2, 3, 4, 5, 6, 7, 8])
 
       >>> lst = sllist([1, 2, 3, 4])
-      >>> lst * 2
+      >>> ext_lst = lst * 2
+      >>> print ext_lst
       sllist([1, 2, 3, 4, 1, 2, 3, 4])
 
 
