@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-VERSION = '0.1'
+VERSION = '0.2'
 
 from distutils.core import setup, Extension
 
@@ -30,6 +30,7 @@ setup(name='llist',
         'Operating System :: POSIX',
         'Programming Language :: C',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
       )

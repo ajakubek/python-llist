@@ -5,6 +5,7 @@
 #include <Python.h>
 #include <structmember.h>
 
+staticforward PyTypeObject DLListType;
 staticforward PyTypeObject DLListNodeType;
 staticforward PyTypeObject DLListIteratorType;
 
@@ -288,8 +289,8 @@ static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
 }
 
 /* Convenience function for locating list nodes using index. */
-static DLListNodeObject* dllist_get_node_at(DLListObject* self,
-                                            Py_ssize_t index)
+static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
+                                                  Py_ssize_t index)
 {
     Py_ssize_t i;
     Py_ssize_t middle = self->size / 2;
@@ -299,7 +300,7 @@ static DLListNodeObject* dllist_get_node_at(DLListObject* self,
 
     if (index >= self->size || index < 0)
     {
-        PyErr_SetString(PyExc_IndexError, "No such index");
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
 
@@ -354,6 +355,40 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &DLListType))
+    {
+        /* Special path for extending with a DLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((DLListObject *)sequence)->first;
+        PyObject* last_node_obj = self->last;
+
+        while (iter_node_obj != Py_None)
+        {
+            DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)dllistnode_create(
+                self->last, NULL, iter_node->value, (PyObject*)self);
+
+            if (self->first == Py_None)
+                self->first = new_node;
+            self->last = new_node;
+
+            ++self->size;
+
+            if (iter_node_obj == last_node_obj)
+            {
+                /* This is needed to terminate loop if self == sequence. */
+                break;
+            }
+
+            iter_node_obj = iter_node->next;
+        }
+
+        return 1;
+    }
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
@@ -511,6 +546,28 @@ static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
     return dllist_extend(self, sequence) ? 0 : -1;
 }
 
+static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
+{
+    DLListNodeObject* node;
+    Py_ssize_t index;
+
+    if (!PyInt_Check(indexObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = PyInt_AsSsize_t(indexObject);
+
+    if (index < 0)
+        index = ((DLListObject*)self)->size + index;
+
+    node = dllist_get_node_internal((DLListObject*)self, index);
+    Py_XINCREF(node);
+
+    return (PyObject*)node;
+}
+
 static int dllist_compare(DLListObject* self, DLListObject* other)
 {
     DLListNodeObject* self_node = (DLListNodeObject*)self->first;
@@ -547,6 +604,27 @@ static PyObject* dllist_repr(DLListObject* self)
 static PyObject* dllist_str(DLListObject* self)
 {
     return dllist_to_string(self, PyObject_Str);
+}
+
+static long dllist_hash(DLListObject* self)
+{
+    long hash = 0;
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None)
+    {
+        long obj_hash;
+        DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+
+        obj_hash = PyObject_Hash(iter_node->value);
+        if (obj_hash == -1)
+            return -1;
+
+        hash ^= obj_hash;
+        iter_node_obj = iter_node->next;
+    }
+
+    return hash;
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -812,14 +890,66 @@ static Py_ssize_t dllist_len(PyObject* self)
     return list->size;
 }
 
+static PyObject* dllist_concat(PyObject* self, PyObject* other)
+{
+    DLListObject* new_list;
+
+    new_list = (DLListObject*)PyObject_CallObject(
+        (PyObject*)&DLListType, NULL);
+
+    if (!dllist_extend(new_list, self) ||
+        !dllist_extend(new_list, other))
+    {
+        Py_DECREF(new_list);
+        return NULL;
+    }
+
+    return (PyObject*)new_list;
+}
+
+static PyObject* dllist_inplace_concat(PyObject* self, PyObject* other)
+{
+    if (!dllist_extend((DLListObject*)self, other))
+        return NULL;
+
+    Py_INCREF(self);
+    return self;
+}
+
+static PyObject* dllist_repeat(PyObject* self, Py_ssize_t count)
+{
+    DLListObject* new_list;
+    Py_ssize_t i;
+
+    new_list = (DLListObject*)PyObject_CallObject(
+        (PyObject*)&DLListType, NULL);
+
+    for (i = 0; i < count; ++i)
+    {
+        if (!dllist_extend(new_list, self))
+        {
+            Py_DECREF(new_list);
+            return NULL;
+        }
+    }
+
+    return (PyObject*)new_list;
+}
+
 static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
 {
     DLListNodeObject* node;
 
-    node = dllist_get_node_at((DLListObject*)self, index);
-    Py_XINCREF(node);
+    node = dllist_get_node_internal((DLListObject*)self, index);
+    if (node != NULL)
+    {
+        PyObject* value = node->value;
 
-    return (PyObject*)node;
+        Py_XINCREF(value);
+        return value;
+    }
+
+    return NULL;
 }
 
 static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
@@ -828,7 +958,7 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     DLListNodeObject* node;
     PyObject* oldval;
 
-    node = dllist_get_node_at(list, index);
+    node = dllist_get_node_internal(list, index);
     if (node == NULL)
         return -1;
 
@@ -879,6 +1009,8 @@ static PyMethodDef DLListMethods[] =
       "Append element at the end of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
+    { "nodeat", (PyCFunction)dllist_node_at, METH_O,
+      "Return node at index" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
     { "pop", (PyCFunction)dllist_popright, METH_NOARGS,
@@ -904,12 +1036,15 @@ static PyMemberDef DLListMembers[] =
 static PySequenceMethods DLListSequenceMethods[] =
 {
     dllist_len,                 /* sq_length */
-    0,                          /* sq_concat */
-    0,                          /* sq_repeat */
+    dllist_concat,              /* sq_concat */
+    dllist_repeat,              /* sq_repeat */
     dllist_get_item,            /* sq_item */
     0,                          /* sq_slice */
     dllist_set_item,            /* sq_ass_item */
-    0                           /* sq_ass_slice */
+    0,                          /* sq_ass_slice */
+    0,                          /* sq_contains */
+    dllist_inplace_concat,      /* sq_inplace_concat */
+    0,                          /* sq_inplace_repeat */
 };
 
 static PyTypeObject DLListType =
@@ -928,7 +1063,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
-    0,                          /* tp_hash */
+    (hashfunc)dllist_hash,      /* tp_hash */
     0,                          /* tp_call */
     (reprfunc)dllist_str,       /* tp_str */
     0,                          /* tp_getattro */

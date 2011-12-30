@@ -5,6 +5,7 @@
 #include <Python.h>
 #include <structmember.h>
 
+staticforward PyTypeObject SLListType;
 staticforward PyTypeObject SLListNodeType;
 staticforward PyTypeObject SLListIteratorType;
 
@@ -66,7 +67,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
-    /* Py_DECREF(Py_None); */
+    Py_DECREF(Py_None);
     Py_DECREF(self->value);
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -103,12 +104,16 @@ static PyObject* sllistnode_new(PyTypeObject* type,
     if (self == NULL)
         return NULL;
 
-
+    /* A single reference to Py_None is held for the whole
+     * lifetime of a node. */
     Py_INCREF(Py_None);
 
     self->next = Py_None;
     self->value = Py_None;
     self->list_weakref = Py_None;
+
+    Py_INCREF(self->value);
+
     return (PyObject*)self;
 }
 
@@ -263,8 +268,8 @@ static void sllist_dealloc(SLListObject* self)
     while (node != Py_None)
     {
         PyObject* next_node = ((SLListNodeObject*)node)->next;
+        Py_DECREF(node);
         node = next_node;
-        Py_DECREF(next_node);
 
     }
 
@@ -286,6 +291,8 @@ static PyObject* sllist_new(PyTypeObject* type,
     if (self == NULL)
         return NULL;
 
+    /* A single reference to Py_None is held for the whole
+     * lifetime of a list. */
     Py_INCREF(Py_None);
 
     self->first = Py_None;
@@ -300,6 +307,43 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &SLListType))
+    {
+        /* Special path for extending with a SLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((SLListObject *)sequence)->first;
+        PyObject* last_node_obj = self->last;
+
+        while (iter_node_obj != Py_None)
+        {
+            SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)sllistnode_create(
+                Py_None, iter_node->value, (PyObject*)self);
+
+            if (self->last != Py_None)
+                ((SLListNodeObject*)self->last)->next = new_node;
+
+            if (self->first == Py_None)
+                self->first = new_node;
+            self->last = new_node;
+
+            ++self->size;
+
+            if (iter_node_obj == last_node_obj)
+            {
+                /* This is needed to terminate loop if self == sequence. */
+                break;
+            }
+
+            iter_node_obj = iter_node->next;
+        }
+
+        return 1;
+    }
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
@@ -421,7 +465,6 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
             prev = node;
             node = (SLListNodeObject*)node->next;
         }
-        Py_INCREF(prev);
         return (SLListNodeObject*)prev;
     }
     return NULL;
@@ -483,9 +526,10 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
 
     PyObject* value = NULL;
     PyObject* before = NULL;
+    PyObject* list_ref;
     SLListNodeObject* new_node;
 
-    if (!PyArg_UnpackTuple(arg, "insert", 1, 2, &value, &before))
+    if (!PyArg_UnpackTuple(arg, "insert_after", 2, 2, &value, &before))
         return NULL;
 
     if (!PyObject_TypeCheck(before, &SLListNodeType)) {
@@ -494,7 +538,16 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     }
 
     if (PyObject_TypeCheck(value, &SLListNodeType))
-        value = ((SLListNodeObject*)arg)->value;
+        value = ((SLListNodeObject*)value)->value;
+
+    list_ref = PyWeakref_GetObject(
+        ((SLListNodeObject*)before)->list_weakref);
+    if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                            "sllistnode belongs to another list");
+            return NULL;
+        }
 
     new_node = sllistnode_create(Py_None,
                                  value,
@@ -503,6 +556,9 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     /* putting new node in created gap */
     new_node->next = ((SLListNodeObject*)before)->next;
     ((SLListNodeObject*)before)->next = (PyObject*)new_node;
+
+    if (self->last == before)
+        self->last = (PyObject*)new_node;
 
     ++self->size;
     Py_INCREF((PyObject*)new_node);
@@ -519,7 +575,7 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
     SLListNodeObject* new_node;
     SLListNodeObject* prev;
 
-    if (!PyArg_UnpackTuple(arg, "insert", 1, 2, &value, &after))
+    if (!PyArg_UnpackTuple(arg, "insert_before", 2, 2, &value, &after))
         return NULL;
 
     if (!PyObject_TypeCheck(after, &SLListNodeType)) {
@@ -527,7 +583,7 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
         return NULL;
     }
     if (PyObject_TypeCheck(value, &SLListNodeType))
-        value = ((SLListNodeObject*)arg)->value;
+        value = ((SLListNodeObject*)value)->value;
 
     list_ref = PyWeakref_GetObject(
         ((SLListNodeObject*)after)->list_weakref);
@@ -560,14 +616,14 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
 }
 
 
-static SLListNodeObject* sllist_get_node_at(SLListObject* self,
-                                            Py_ssize_t pos)
+static SLListNodeObject* sllist_get_node_internal(SLListObject* self,
+                                                  Py_ssize_t pos)
 {
     SLListNodeObject* node;
     long counter;
 
-    if(pos >= self->size || pos < 0){
-        PyErr_SetString(PyExc_IndexError, "No such index");
+    if (pos < 0 || pos >= self->size) {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
     /* taking head */
@@ -581,14 +637,141 @@ static SLListNodeObject* sllist_get_node_at(SLListObject* self,
 }
 
 
+static PyObject* sllist_node_at(PyObject* self, PyObject* indexObject)
+{
+    SLListNodeObject* node;
+    Py_ssize_t index;
+
+    if (!PyInt_Check(indexObject)) {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = PyInt_AsSsize_t(indexObject);
+
+    if (index < 0)
+        index = ((SLListObject*)self)->size + index;
+
+    node = sllist_get_node_internal((SLListObject*)self, index);
+    Py_XINCREF(node);
+
+    return (PyObject*)node;
+}
+
+
+static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
+{
+    SLListNodeObject* prev;
+    PyObject* list_ref;
+    PyObject* value;
+
+    if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
+        return NULL;
+    }
+
+    if (self->first == Py_None) {
+        PyErr_SetString(PyExc_ValueError, "List is empty");
+        return NULL;
+    }
+
+    list_ref = PyWeakref_GetObject(((SLListNodeObject*)arg)->list_weakref);
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode belongs to another list");
+        return NULL;
+    }
+
+    /* remove first node case */
+    if(self->first == arg) {
+        self->first = ((SLListNodeObject*)arg)->next;
+        if (self->last == arg)
+            self->last = Py_None;
+    }
+    /* we are sure that we have more than 1 node */
+    else {
+        /* making gap */
+        prev = sllist_get_prev(self, (SLListNodeObject*)arg);
+        prev->next = ((SLListNodeObject*)arg)->next;
+
+        if (self->last == arg)
+            self->last = (PyObject*)prev;
+    }
+
+    --self->size;
+
+    value = ((SLListNodeObject*)arg)->value;
+    Py_INCREF(value);
+    Py_DECREF(arg);
+
+    return value;
+
+}
+
+
+static PyObject* sllist_concat(PyObject* self, PyObject* other)
+{
+    SLListObject* new_list;
+
+    new_list = (SLListObject*)PyObject_CallObject(
+        (PyObject*)&SLListType, NULL);
+
+    if (!sllist_extend(new_list, self) ||
+        !sllist_extend(new_list, other))
+    {
+        Py_DECREF(new_list);
+        return NULL;
+    }
+
+    return (PyObject*)new_list;
+}
+
+
+static PyObject* sllist_inplace_concat(PyObject* self, PyObject* other)
+{
+    if (!sllist_extend((SLListObject*)self, other))
+        return NULL;
+
+    Py_INCREF(self);
+    return self;
+}
+
+
+static PyObject* sllist_repeat(PyObject* self, Py_ssize_t count)
+{
+    SLListObject* new_list;
+    Py_ssize_t i;
+
+    new_list = (SLListObject*)PyObject_CallObject(
+        (PyObject*)&SLListType, NULL);
+
+    for (i = 0; i < count; ++i)
+    {
+        if (!sllist_extend(new_list, self))
+        {
+            Py_DECREF(new_list);
+            return NULL;
+        }
+    }
+
+    return (PyObject*)new_list;
+}
+
+
 static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
 {
     SLListNodeObject* node;
 
-    node = sllist_get_node_at((SLListObject*)self, index);
-    Py_XINCREF(node);
+    node = sllist_get_node_internal((SLListObject*)self, index);
+    if (node != NULL) {
+        PyObject* value = node->value;
 
-    return (PyObject*)node;
+        Py_XINCREF(value);
+        return value;
+    }
+
+    return NULL;
 }
 
 static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
@@ -597,10 +780,6 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     SLListNodeObject* node;
     PyObject* oldval;
 
-    if (!PyObject_TypeCheck(val, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
-        return -1;
-    }
     /* setting fist node */
     if(index==0)
         node = (SLListNodeObject*)list->first;
@@ -609,8 +788,29 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
         node = (SLListNodeObject*)list->last;
     /* setting nth node,  */
     else
-        /* get_node_at will rise error for index out of scale */
-        node = (SLListNodeObject*)sllist_get_node_at(list, index);
+        /* get_node_internal will rise error for index out of scale */
+        node = (SLListNodeObject*)sllist_get_node_internal(list, index);
+
+    if (node == NULL)
+        return -1;
+
+    /* Here is a tricky (and undocumented) part of sequence protocol.
+     * Python will pass NULL as item value when item is deleted with:
+     * del list[index] */
+    if (val == NULL) {
+        PyObject* result = sllist_remove(list, (PyObject*)node);
+
+        Py_XDECREF(result);
+
+        return (result != NULL) ? 0 : -1;
+    }
+
+    /* The rest of this function handles normal assignment:
+     * list[index] = item */
+    if (!PyObject_TypeCheck(val, &SLListNodeType)) {
+        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
+        return -1;
+    }
 
     /* nice played, migu :) */
     val = ((SLListNodeObject*)val)->value;
@@ -630,7 +830,7 @@ static PyObject* sllist_popleft(SLListObject* self)
 
     if (self->first == Py_None)
         {
-            PyErr_SetString(PyExc_RuntimeError, "List is empty");
+            PyErr_SetString(PyExc_ValueError, "List is empty");
             return NULL;
         }
 
@@ -656,7 +856,7 @@ static PyObject* sllist_popright(SLListObject* self)
 
     if (self->last == Py_None)
         {
-            PyErr_SetString(PyExc_RuntimeError, "List is empty");
+            PyErr_SetString(PyExc_ValueError, "List is empty");
             return NULL;
         }
 
@@ -671,52 +871,10 @@ static PyObject* sllist_popright(SLListObject* self)
         prev = sllist_get_prev(self, del_node);
         prev->next = Py_None;
         self->last = (PyObject*)prev;
-        Py_DECREF(prev);
     }
     --self->size;
     Py_INCREF((PyObject*)del_node->value);
     return (PyObject*)del_node->value;
-
-}
-
-
-static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
-{
-    SLListNodeObject* prev;
-    PyObject* list_ref;
-
-    if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
-        PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
-        return NULL;
-    }
-
-    if (self->first == Py_None) {
-        PyErr_SetString(PyExc_RuntimeError, "List is empty");
-        return NULL;
-    }
-
-    list_ref = PyWeakref_GetObject(((SLListNodeObject*)arg)->list_weakref);
-    if (list_ref != (PyObject*)self)
-    {
-        PyErr_SetString(PyExc_TypeError,
-            "sllistnode belongs to another list");
-        return NULL;
-    }
-
-    /* remove first node case */
-    if(self->first == arg)
-        self->first = ((SLListNodeObject*)arg)->next;
-    /* we are sure that we have more than 1 node */
-    else {
-        /* making gap */
-        prev = sllist_get_prev(self, (SLListNodeObject*)arg);
-        prev->next = ((SLListNodeObject*)arg)->next;
-        self->last = (PyObject*)prev;
-    }
-
-    --self->size;
-    Py_INCREF(((SLListNodeObject*)arg)->value);
-    return ((SLListNodeObject*)arg)->value;
 
 }
 
@@ -813,6 +971,7 @@ static PyObject* sllist_repr(SLListObject* self)
     return sllist_to_string(self, PyObject_Repr);
 }
 
+
 static PyObject* sllist_str(SLListObject* self)
 {
     return sllist_to_string(self, PyObject_Str);
@@ -823,6 +982,29 @@ static Py_ssize_t sllist_len(PyObject* self)
 {
     return ((SLListObject*)self)->size;
 }
+
+
+static long sllist_hash(SLListObject* self)
+{
+    long hash = 0;
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None)
+    {
+        long obj_hash;
+        SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+
+        obj_hash = PyObject_Hash(iter_node->value);
+        if (obj_hash == -1)
+            return -1;
+
+        hash ^= obj_hash;
+        iter_node_obj = iter_node->next;
+    }
+
+    return hash;
+}
+
 
 static PyMethodDef SLListMethods[] =
     {
@@ -840,6 +1022,9 @@ static PyMethodDef SLListMethods[] =
 
         { "insert_before", (PyCFunction)sllist_insert_before, METH_VARARGS,
           "Inserts element before node" },
+
+        { "nodeat", (PyCFunction)sllist_node_at, METH_O,
+          "Return node at index" },
 
         { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
           "Remove last element from the list and return it" },
@@ -872,12 +1057,15 @@ static PyMemberDef SLListMembers[] =
 static PySequenceMethods SLListSequenceMethods =
     {
         sllist_len,                  /* sq_length         */
-        0,                           /* sq_concat         */
-        0,                           /* sq_repeat         */
+        sllist_concat,               /* sq_concat         */
+        sllist_repeat,               /* sq_repeat         */
         sllist_get_item,             /* sq_item           */
         0,                           /* sq_slice;         */
         sllist_set_item,             /* sq_ass_item       */
-        0                            /* sq_ass_slice      */
+        0,                           /* sq_ass_slice      */
+        0,                           /* sq_contains       */
+        sllist_inplace_concat,       /* sq_inplace_concat */
+        0,                           /* sq_inplace_repeat */
     };
 
 static PyTypeObject SLListType =
@@ -891,12 +1079,12 @@ static PyTypeObject SLListType =
         0,                           /* tp_print          */
         0,                           /* tp_getattr        */
         0,                           /* tp_setattr        */
-        (cmpfunc)sllist_compare,     /* tp_compare */
+        (cmpfunc)sllist_compare,     /* tp_compare        */
         (reprfunc)sllist_repr,       /* tp_repr           */
         0,                           /* tp_as_number      */
         &SLListSequenceMethods,      /* tp_as_sequence    */
         0,                           /* tp_as_mapping     */
-        0,                           /* tp_hash           */
+        (hashfunc)sllist_hash,       /* tp_hash           */
         0,                           /* tp_call           */
         (reprfunc)sllist_str,        /* tp_str            */
         0,                           /* tp_getattro       */

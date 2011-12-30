@@ -40,7 +40,7 @@ def generate_lucky_deque(max_num):
 def generate_lucky_list(max_num):
     lucky_numbers = dllist(xrange(1, max_num + 1, 2))
 
-    multiple_node = lucky_numbers[1]
+    multiple_node = lucky_numbers.nodeat(1)
 
     while multiple_node != None:
         removed_multiple = multiple_node()

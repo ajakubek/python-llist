@@ -1,3 +1,17 @@
+* llist-0.2 (2011-12-30)
+
+  - subscript operator `lst[x]` now directly returns values stored
+    in the list, not dllistnode objects
+  - implemented nodeat() method in dllist and sllist
+  - fixed segmentation faults in sllist.insert and sllist.delete
+    methods
+  - added missing Py_DECREFs to sllist
+  - added concatenation and in-place concatenation operator
+  - added repeat operator
+  - added hash() support
+
+-----------------------------------------------------------------------
+
 * llist-0.1 (2011-12-26)
 
   Initial release
