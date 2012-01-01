@@ -579,7 +579,7 @@ Random access to elements using index is O(n).
           compileflags, 1) in test.globs
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
-      ValueError: dllistnode belongs to another list
+      ValueError: sllistnode belongs to another list
 
       >>> cmp(sllist(), sllist([]))     # list comparison (lexicographical order)
       0
