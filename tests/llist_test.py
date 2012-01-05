@@ -274,38 +274,60 @@ class testsllist(unittest.TestCase):
     def test_pop(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.pop()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.next, None)
 
     def test_popleft(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
+        self.assertEqual(del_node.next, None)
 
     def test_popright(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.next, None)
 
     def test_pop_from_empty_list(self):
         ll = sllist()
         self.assertRaises(ValueError, ll.pop)
         self.assertRaises(ValueError, ll.popleft)
         self.assertRaises(ValueError, ll.popright)
+
+    def test_remove(self):
+        ref = range(0, 1024, 4)
+        ll = sllist(ref)
+        prev_node = ll.nodeat(3)
+        del_node = ll.nodeat(4)
+        next_node = ll.nodeat(5)
+        result = ll.remove(del_node)
+        ref_result = ref[4]
+        del ref[4]
+        self.assertEqual(list(ll), ref)
+        self.assertEqual(result, ref_result)
+        self.assertEqual(len(ll), len(ref))
+        self.assertEqual(ll.size, len(ref))
+        self.assertEqual(prev_node.next, next_node)
+        self.assertEqual(del_node.next, None)
 
     def test_remove_from_empty_list(self):
         ll = sllist()
@@ -666,38 +688,65 @@ class testdllist(unittest.TestCase):
     def test_pop(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.pop();
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_popleft(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_popright(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_pop_from_empty_list(self):
         ll = dllist()
         self.assertRaises(ValueError, ll.pop)
         self.assertRaises(ValueError, ll.popleft)
         self.assertRaises(ValueError, ll.popright)
+
+    def test_remove(self):
+        ref = range(0, 1024, 4)
+        ll = dllist(ref)
+        prev_node = ll.nodeat(3)
+        del_node = ll.nodeat(4)
+        next_node = ll.nodeat(5)
+        result = ll.remove(del_node)
+        ref_result = ref[4]
+        del ref[4]
+        self.assertEqual(list(ll), ref)
+        self.assertEqual(result, ref_result)
+        self.assertEqual(len(ll), len(ref))
+        self.assertEqual(ll.size, len(ref))
+        self.assertEqual(prev_node.next, next_node)
+        self.assertEqual(next_node.prev, prev_node)
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_remove_from_empty_list(self):
         ll = dllist()

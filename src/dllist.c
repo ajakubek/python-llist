@@ -98,6 +98,9 @@ static void dllistnode_delete(DLListNodeObject* node)
         next->prev = node->prev;
     }
 
+    node->prev = Py_None;
+    node->next = Py_None;
+
     Py_DECREF((PyObject*)node);
 }
 
@@ -493,7 +496,7 @@ static void dllist_dealloc(DLListObject* self)
     while (node != Py_None)
     {
         PyObject* next_node = ((DLListNodeObject*)node)->next;
-        Py_DECREF(node);
+        dllistnode_delete((DLListNodeObject*)node);
         node = next_node;
     }
 

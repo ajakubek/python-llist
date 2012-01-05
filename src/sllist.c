@@ -268,17 +268,15 @@ static void sllist_dealloc(SLListObject* self)
     while (node != Py_None)
     {
         PyObject* next_node = ((SLListNodeObject*)node)->next;
+        ((SLListNodeObject*)node)->next = Py_None;
         Py_DECREF(node);
         node = next_node;
-
     }
 
     Py_DECREF(Py_None);
 
     self->ob_type->tp_free((PyObject*)self);
-
 }
-
 
 
 static PyObject* sllist_new(PyTypeObject* type,
@@ -703,6 +701,8 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 
     value = ((SLListNodeObject*)arg)->value;
     Py_INCREF(value);
+
+    ((SLListNodeObject*)arg)->next = Py_None;
     Py_DECREF(arg);
 
     return value;
@@ -827,6 +827,7 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 static PyObject* sllist_popleft(SLListObject* self)
 {
     SLListNodeObject* del_node;
+    PyObject* value;
 
     if (self->first == Py_None)
         {
@@ -843,16 +844,22 @@ static PyObject* sllist_popleft(SLListObject* self)
         self->last = Py_None;
 
     --self->size;
-    Py_INCREF((PyObject*)del_node->value);
-    return (PyObject*)del_node->value;
+
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
+    del_node->next = Py_None;
+    Py_DECREF((PyObject*)del_node);
+
+    return value;
 }
 
 
 static PyObject* sllist_popright(SLListObject* self)
 {
-
     SLListNodeObject* del_node;
     SLListNodeObject* prev;
+    PyObject* value;
 
     if (self->last == Py_None)
         {
@@ -872,10 +879,16 @@ static PyObject* sllist_popright(SLListObject* self)
         prev->next = Py_None;
         self->last = (PyObject*)prev;
     }
-    --self->size;
-    Py_INCREF((PyObject*)del_node->value);
-    return (PyObject*)del_node->value;
 
+    --self->size;
+
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
+    del_node->next = Py_None;
+    Py_DECREF((PyObject*)del_node);
+
+    return value;
 }
 
 
