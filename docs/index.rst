@@ -73,6 +73,10 @@ Random access to elements using index is O(n).
       Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
+   .. method:: clear()
+
+      Remove all nodes from the list.
+
    .. method:: insert(x, [before])
 
       Add *x* to the right side of the list if *before* is not specified,
@@ -257,6 +261,9 @@ Random access to elements using index is O(n).
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
       ValueError: dllistnode belongs to another list
+      >>> lst.clear()
+      >>> print lst
+      dllist()
 
       >>> cmp(dllist(), dllist([]))     # list comparison (lexicographical order)
       0
@@ -387,6 +394,10 @@ Random access to elements using index is O(n).
       node will be created and initialized with the value extracted from *x*.
 
       This method has O(1) complexity.
+
+   .. method:: clear()
+
+      Remove all nodes from the list.
 
    .. method:: insert_after(x, node)
 
@@ -580,6 +591,9 @@ Random access to elements using index is O(n).
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
       ValueError: sllistnode belongs to another list
+      >>> lst.clear()
+      >>> print lst
+      sllist()
 
       >>> cmp(sllist(), sllist([]))     # list comparison (lexicographical order)
       0

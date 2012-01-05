@@ -824,6 +824,26 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     return 0;
 }
 
+static PyObject* sllist_clear(SLListObject* self)
+{
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None) {
+        SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+
+        iter_node_obj = iter_node->next;
+
+        iter_node->next = Py_None;
+        Py_DECREF((PyObject*)iter_node);
+    }
+
+    self->first = Py_None;
+    self->last = Py_None;
+    self->size = 0;
+
+    Py_RETURN_NONE;
+}
+
 static PyObject* sllist_popleft(SLListObject* self)
 {
     SLListNodeObject* del_node;
@@ -1029,6 +1049,9 @@ static PyMethodDef SLListMethods[] =
 
         { "append", (PyCFunction)sllist_appendright, METH_O,
           "Append element at the end of the list" },
+
+        { "clear", (PyCFunction)sllist_clear, METH_NOARGS,
+          "Remove all elements from the list" },
 
         { "insert_after", (PyCFunction)sllist_insert_after, METH_VARARGS,
           "Inserts element after node" },

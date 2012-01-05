@@ -271,6 +271,24 @@ class testsllist(unittest.TestCase):
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
 
+    def test_clear_empty(self):
+        empty_list = sllist()
+        empty_list.clear()
+        self.assertEqual(empty_list.first, None)
+        self.assertEqual(empty_list.last, None)
+        self.assertEqual(empty_list.size, 0)
+        self.assertEqual(list(empty_list), [])
+
+    def test_clear(self):
+        ll = sllist(xrange(0, 1024, 4))
+        del_node = ll.nodeat(4)
+        ll.clear()
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+        self.assertEqual(ll.size, 0)
+        self.assertEqual(list(ll), [])
+        self.assertEqual(del_node.next, None)
+
     def test_pop(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
@@ -684,6 +702,25 @@ class testdllist(unittest.TestCase):
         self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
+
+    def test_clear_empty(self):
+        empty_list = dllist()
+        empty_list.clear()
+        self.assertEqual(empty_list.first, None)
+        self.assertEqual(empty_list.last, None)
+        self.assertEqual(empty_list.size, 0)
+        self.assertEqual(list(empty_list), [])
+
+    def test_clear(self):
+        ll = dllist(xrange(0, 1024, 4))
+        del_node = ll.nodeat(4)
+        ll.clear()
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+        self.assertEqual(ll.size, 0)
+        self.assertEqual(list(ll), [])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_pop(self):
         ref = range(0, 1024, 4)

@@ -737,6 +737,29 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     return (PyObject*)new_node;
 }
 
+static PyObject* dllist_clear(DLListObject* self)
+{
+    PyObject* iter_node_obj = self->first;
+
+    while (iter_node_obj != Py_None)
+    {
+        DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+
+        iter_node_obj = iter_node->next;
+        dllistnode_delete(iter_node);
+    }
+
+    /* invalidate last accessed item */
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
+
+    self->first = Py_None;
+    self->last = Py_None;
+    self->size = 0;
+
+    Py_RETURN_NONE;
+}
+
 static PyObject* dllist_popleft(DLListObject* self)
 {
     DLListNodeObject* del_node;
@@ -1010,6 +1033,8 @@ static PyMethodDef DLListMethods[] =
       "Append element at the end of the list" },
     { "appendright", (PyCFunction)dllist_appendright, METH_O,
       "Append element at the end of the list" },
+    { "clear", (PyCFunction)dllist_clear, METH_NOARGS,
+      "Remove all elements from the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
