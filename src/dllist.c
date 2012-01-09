@@ -346,9 +346,6 @@ static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
             node = (DLListNodeObject*)node->prev;
     }
 
-    self->last_accessed_node = (PyObject*)node;
-    self->last_accessed_idx = index;
-
     return node;
 }
 
@@ -566,7 +563,14 @@ static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
         index = ((DLListObject*)self)->size + index;
 
     node = dllist_get_node_internal((DLListObject*)self, index);
-    Py_XINCREF(node);
+    if (node != NULL)
+    {
+        /* update last accessed node */
+        ((DLListObject*)self)->last_accessed_node = (PyObject*)node;
+        ((DLListObject*)self)->last_accessed_idx = index;
+
+        Py_INCREF(node);
+    }
 
     return (PyObject*)node;
 }
@@ -1022,6 +1026,11 @@ static PyObject* dllist_get_item(PyObject* self, Py_ssize_t index)
         PyObject* value = node->value;
 
         Py_XINCREF(value);
+
+        /* update last accessed node */
+        ((DLListObject*)self)->last_accessed_node = (PyObject*)node;
+        ((DLListObject*)self)->last_accessed_idx = index;
+
         return value;
     }
 
@@ -1071,6 +1080,10 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     Py_INCREF(val);
     node->value = val;
     Py_DECREF(oldval);
+
+    /* update last accessed node */
+    list->last_accessed_node = (PyObject*)node;
+    list->last_accessed_idx = index;
 
     return 0;
 }
