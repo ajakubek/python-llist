@@ -882,6 +882,56 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     return value;
 }
 
+static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
+{
+    Py_ssize_t n;
+    Py_ssize_t split_idx;
+    Py_ssize_t n_mod;
+    DLListNodeObject* new_first;
+    DLListNodeObject* new_last;
+
+    if (self->size <= 1)
+        Py_RETURN_NONE;
+
+    if (!PyInt_Check(nObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "n must be an integer");
+        return NULL;
+    }
+
+    n = PyInt_AsSsize_t(nObject);
+    n_mod = py_ssize_t_abs(n) % self->size;
+
+    if (n_mod == 0)
+        Py_RETURN_NONE; /* no-op */
+
+    if (n > 0)
+        split_idx = self->size - n_mod; /* rotate right */
+    else
+        split_idx = n_mod;  /* rotate left */
+
+    new_last = dllist_get_node_internal(self, split_idx - 1);
+    assert(new_last != NULL);
+    new_first = (DLListNodeObject*)new_last->next;
+
+    ((DLListNodeObject*)self->first)->prev = self->last;
+    ((DLListNodeObject*)self->last)->next = self->first;
+
+    new_first->prev = Py_None;
+    new_last->next = Py_None;
+
+    self->first = (PyObject*)new_first;
+    self->last = (PyObject*)new_last;
+
+    if (self->last_accessed_idx >= 0)
+    {
+        self->last_accessed_idx =
+            (self->last_accessed_idx + split_idx) % self->size;
+    }
+
+    Py_RETURN_NONE;
+}
+
 static PyObject* dllist_iter(PyObject* self)
 {
     PyObject* args;
@@ -1047,6 +1097,8 @@ static PyMethodDef DLListMethods[] =
       "Remove last element from the list and return it" },
     { "remove", (PyCFunction)dllist_remove, METH_O,
       "Remove element from the list" },
+    { "rotate", (PyCFunction)dllist_rotate, METH_O,
+      "Rotate the list n steps to the right" },
     { NULL },   /* sentinel */
 };
 

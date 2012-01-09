@@ -710,6 +710,49 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 }
 
 
+static PyObject* sllist_rotate(SLListObject* self, PyObject* nObject)
+{
+    Py_ssize_t n;
+    Py_ssize_t split_idx;
+    Py_ssize_t n_mod;
+    SLListNodeObject* new_first;
+    SLListNodeObject* new_last;
+
+    if (self->size <= 1)
+        Py_RETURN_NONE;
+
+    if (!PyInt_Check(nObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "n must be an integer");
+        return NULL;
+    }
+
+    n = PyInt_AsSsize_t(nObject);
+    n_mod = (n >= 0 ? n : -n) % self->size;
+
+    if (n_mod == 0)
+        Py_RETURN_NONE; /* no-op */
+
+    if (n > 0)
+        split_idx = self->size - n_mod; /* rotate right */
+    else
+        split_idx = n_mod;  /* rotate left */
+
+    new_last = sllist_get_node_internal(self, split_idx - 1);
+    assert(new_last != NULL);
+    new_first = (SLListNodeObject*)new_last->next;
+
+    ((SLListNodeObject*)self->last)->next = self->first;
+
+    new_last->next = Py_None;
+
+    self->first = (PyObject*)new_first;
+    self->last = (PyObject*)new_last;
+
+    Py_RETURN_NONE;
+}
+
+
 static PyObject* sllist_concat(PyObject* self, PyObject* other)
 {
     SLListObject* new_list;
@@ -1073,6 +1116,9 @@ static PyMethodDef SLListMethods[] =
 
         { "remove", (PyCFunction)sllist_remove, METH_O,
           "Remove element from the list" },
+
+        { "rotate", (PyCFunction)sllist_rotate, METH_O,
+          "Rotate the list n steps to the right" },
 
         { NULL },   /* sentinel */
     };

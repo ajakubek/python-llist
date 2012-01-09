@@ -134,6 +134,16 @@ Random access to elements using index is O(n).
       Raises :exc:`ValueError` if *self* is empty, or *node* does
       not belong to *self*.
 
+   .. method:: rotate(n)
+
+      Rotate the list *n* steps to the right. If *n* is negative, rotate
+      to the left. If *n* is 0, do nothing.
+
+      Raises :exc:`TypeError` if *n* is not an integer.
+
+      This method has O(n) time complexity (with regards to the size of
+      the list).
+
 
    In addition to these methods, :class:`dllist` supports iteration,
    ``cmp(lst1, lst2)``, constant time ``len(lst)``, ``hash(lst)`` and
@@ -264,6 +274,15 @@ Random access to elements using index is O(n).
       >>> lst.clear()
       >>> print lst
       dllist()
+
+      >>> lst = dllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(2)
+      >>> print lst
+      dllist([4, 5, 1, 2, 3])
+      >>> lst = dllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(-2)
+      >>> print lst
+      dllist([3, 4, 5, 1, 2])
 
       >>> cmp(dllist(), dllist([]))     # list comparison (lexicographical order)
       0
@@ -471,6 +490,16 @@ Random access to elements using index is O(n).
 
       This method has O(n) time complexity.
 
+   .. method:: rotate(n)
+
+      Rotate the list *n* steps to the right. If *n* is negative, rotate
+      to the left. If *n* is 0, do nothing.
+
+      Raises :exc:`TypeError` if *n* is not an integer.
+
+      This method has O(n) time complexity (with regards to the size of
+      the list).
+
 
    In addition to these methods, :class:`sllist` supports iteration,
    ``cmp(lst1, lst2)``, constant time ``len(lst)``, ``hash(lst)`` and
@@ -594,6 +623,15 @@ Random access to elements using index is O(n).
       >>> lst.clear()
       >>> print lst
       sllist()
+
+      >>> lst = sllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(2)
+      >>> print lst
+      sllist([4, 5, 1, 2, 3])
+      >>> lst = sllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(-2)
+      >>> print lst
+      sllist([3, 4, 5, 1, 2])
 
       >>> cmp(sllist(), sllist([]))     # list comparison (lexicographical order)
       0

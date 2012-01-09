@@ -355,6 +355,54 @@ class testsllist(unittest.TestCase):
         ll = sllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, sllistnode())
 
+    def test_rotate_left(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[split:] + ref[:split]
+            ll = sllist(ref)
+            new_first = ll.nodeat(split)
+            last_idx = split - 1
+            new_last = ll.nodeat(split - 1)
+            ll.rotate(-n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.last.next, None)
+
+    def test_rotate_right(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[-split:] + ref[:-split]
+            ll = sllist(ref)
+            new_first = ll.nodeat(-split)
+            last_idx = -split - 1
+            new_last = ll.nodeat(last_idx)
+            ll.rotate(n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.last.next, None)
+
+    def test_rotate_left_empty(self):
+        for n in xrange(4):
+            ll = sllist()
+            ll.rotate(-n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
+
+    def test_rotate_right_empty(self):
+        for n in xrange(4):
+            ll = sllist()
+            ll.rotate(n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
+
     def test_getitem(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
@@ -792,6 +840,60 @@ class testdllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = dllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, dllistnode())
+
+    def test_rotate_left(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[split:] + ref[:split]
+            ll = dllist(ref)
+            new_first = ll.nodeat(split)
+            last_idx = split - 1
+            new_last = ll.nodeat(split - 1)
+            ll.rotate(-n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.first.prev, None)
+            self.assertEqual(ll.first.next.prev, ll.first)
+            self.assertEqual(ll.last.next, None)
+            self.assertEqual(ll.last.prev.next, ll.last)
+
+    def test_rotate_right(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[-split:] + ref[:-split]
+            ll = dllist(ref)
+            new_first = ll.nodeat(-split)
+            last_idx = -split - 1
+            new_last = ll.nodeat(last_idx)
+            ll.rotate(n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.first.prev, None)
+            self.assertEqual(ll.first.next.prev, ll.first)
+            self.assertEqual(ll.last.next, None)
+            self.assertEqual(ll.last.prev.next, ll.last)
+
+    def test_rotate_left_empty(self):
+        for n in xrange(4):
+            ll = dllist()
+            ll.rotate(-n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
+
+    def test_rotate_right_empty(self):
+        for n in xrange(4):
+            ll = dllist()
+            ll.rotate(n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
 
     def test_getitem(self):
         ref = range(0, 1024, 4)

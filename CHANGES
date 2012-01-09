@@ -2,6 +2,7 @@
 
   - fixed neighbour references (prev and next) in dangling nodes
   - implemented clear() method in dllist and sllist
+  - implemented rotate() method in dllist and sllist
 
 -----------------------------------------------------------------------
 * llist-0.2 (2011-12-30)
