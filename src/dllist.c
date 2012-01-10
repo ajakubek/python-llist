@@ -714,6 +714,13 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
             return NULL;
         }
 
+        if (((DLListNodeObject*)ref_node)->list_weakref == Py_None)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "dllistnode does not belong to a list");
+            return NULL;
+        }
+
         list_ref = PyWeakref_GetObject(
             ((DLListNodeObject*)ref_node)->list_weakref);
         if (list_ref != (PyObject*)self)
@@ -860,6 +867,13 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     del_node = (DLListNodeObject*)arg;
 
+    if (del_node->list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "dllistnode does not belong to a list");
+        return NULL;
+    }
+
     list_ref = PyWeakref_GetObject(del_node->list_weakref);
     if (list_ref != (PyObject*)self)
     {
@@ -883,6 +897,11 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     Py_INCREF(del_node->value);
     value = del_node->value;
+
+    /* unlink from parent list */
+    Py_DECREF(del_node->list_weakref);
+    Py_INCREF(Py_None);
+    del_node->list_weakref = Py_None;
 
     dllistnode_delete(del_node);
 

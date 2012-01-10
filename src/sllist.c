@@ -534,7 +534,8 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     if (!PyArg_UnpackTuple(arg, "insert_after", 2, 2, &value, &before))
         return NULL;
 
-    if (!PyObject_TypeCheck(before, &SLListNodeType)) {
+    if (!PyObject_TypeCheck(before, &SLListNodeType))
+    {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
@@ -542,14 +543,21 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     if (PyObject_TypeCheck(value, &SLListNodeType))
         value = ((SLListNodeObject*)value)->value;
 
+    if (((SLListNodeObject*)before)->list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode does not belong to a list");
+        return NULL;
+    }
+
     list_ref = PyWeakref_GetObject(
         ((SLListNodeObject*)before)->list_weakref);
     if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                            "sllistnode belongs to another list");
-            return NULL;
-        }
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode belongs to another list");
+        return NULL;
+    }
 
     new_node = sllistnode_create(Py_None,
                                  value,
@@ -580,21 +588,29 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
     if (!PyArg_UnpackTuple(arg, "insert_before", 2, 2, &value, &after))
         return NULL;
 
-    if (!PyObject_TypeCheck(after, &SLListNodeType)) {
+    if (!PyObject_TypeCheck(after, &SLListNodeType))
+    {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
     if (PyObject_TypeCheck(value, &SLListNodeType))
         value = ((SLListNodeObject*)value)->value;
 
+    if (after == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode does not belong to a list");
+        return NULL;
+    }
+
     list_ref = PyWeakref_GetObject(
         ((SLListNodeObject*)after)->list_weakref);
     if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                            "sllistnode belongs to another list");
-            return NULL;
-        }
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode belongs to another list");
+        return NULL;
+    }
     new_node = sllistnode_create(Py_None,
                                  value,
                                  (PyObject*)self);
@@ -622,7 +638,7 @@ static SLListNodeObject* sllist_get_node_internal(SLListObject* self,
                                                   Py_ssize_t pos)
 {
     SLListNodeObject* node;
-    long counter;
+    Py_ssize_t counter;
 
     if (pos < 0 || pos >= self->size) {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
@@ -680,6 +696,13 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 
     del_node = (SLListNodeObject*)arg;
 
+    if (del_node->list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "sllistnode does not belong to a list");
+        return NULL;
+    }
+
     list_ref = PyWeakref_GetObject(del_node->list_weakref);
     if (list_ref != (PyObject*)self)
     {
@@ -708,6 +731,11 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 
     value = del_node->value;
     Py_INCREF(value);
+
+    /* unlink from parent list */
+    Py_DECREF(del_node->list_weakref);
+    Py_INCREF(Py_None);
+    del_node->list_weakref = Py_None;
 
     del_node->next = Py_None;
     Py_DECREF(arg);
