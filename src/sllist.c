@@ -663,6 +663,7 @@ static PyObject* sllist_node_at(PyObject* self, PyObject* indexObject)
 
 static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 {
+    SLListNodeObject* del_node;
     SLListNodeObject* prev;
     PyObject* list_ref;
     PyObject* value;
@@ -677,7 +678,9 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
         return NULL;
     }
 
-    list_ref = PyWeakref_GetObject(((SLListNodeObject*)arg)->list_weakref);
+    del_node = (SLListNodeObject*)arg;
+
+    list_ref = PyWeakref_GetObject(del_node->list_weakref);
     if (list_ref != (PyObject*)self)
     {
         PyErr_SetString(PyExc_ValueError,
@@ -687,15 +690,15 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 
     /* remove first node case */
     if(self->first == arg) {
-        self->first = ((SLListNodeObject*)arg)->next;
+        self->first = del_node->next;
         if (self->last == arg)
             self->last = Py_None;
     }
     /* we are sure that we have more than 1 node */
     else {
         /* making gap */
-        prev = sllist_get_prev(self, (SLListNodeObject*)arg);
-        prev->next = ((SLListNodeObject*)arg)->next;
+        prev = sllist_get_prev(self, del_node);
+        prev->next = del_node->next;
 
         if (self->last == arg)
             self->last = (PyObject*)prev;
@@ -703,10 +706,10 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
 
     --self->size;
 
-    value = ((SLListNodeObject*)arg)->value;
+    value = del_node->value;
     Py_INCREF(value);
 
-    ((SLListNodeObject*)arg)->next = Py_None;
+    del_node->next = Py_None;
     Py_DECREF(arg);
 
     return value;
