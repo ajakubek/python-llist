@@ -860,6 +860,9 @@ class testdllist(unittest.TestCase):
             ll = dllist(ref)
             new_first = ll.nodeat(split)
             new_last = ll.nodeat(split - 1)
+            # touch future middle element to initialize cache
+            cached_idx = (len(ll) / 2 + n) % len(ll)
+            ll[cached_idx]
             ll.rotate(-n)
             self.assertEqual(list(ll), ref_result)
             self.assertEqual(ll.first, new_first)
@@ -869,6 +872,8 @@ class testdllist(unittest.TestCase):
             self.assertEqual(ll.first.next.prev, ll.first)
             self.assertEqual(ll.last.next, None)
             self.assertEqual(ll.last.prev.next, ll.last)
+            # check if cached index is updated correctly
+            self.assertEqual(ll[len(ll) / 2], ref_result[len(ref_result) / 2])
 
     def test_rotate_right(self):
         for n in xrange(128):
@@ -879,6 +884,9 @@ class testdllist(unittest.TestCase):
             new_first = ll.nodeat(-split)
             last_idx = -split - 1
             new_last = ll.nodeat(last_idx)
+            # touch future middle element to initialize cache
+            cached_idx = len(ll) - (len(ll) / 2 + n) % len(ll) - 1
+            ll[cached_idx]
             ll.rotate(n)
             self.assertEqual(list(ll), ref_result)
             self.assertEqual(ll.first, new_first)
@@ -888,6 +896,8 @@ class testdllist(unittest.TestCase):
             self.assertEqual(ll.first.next.prev, ll.first)
             self.assertEqual(ll.last.next, None)
             self.assertEqual(ll.last.prev.next, ll.last)
+            # check if cached index is updated correctly
+            self.assertEqual(ll[len(ll) / 2], ref_result[len(ref_result) / 2])
 
     def test_rotate_left_empty(self):
         for n in xrange(4):

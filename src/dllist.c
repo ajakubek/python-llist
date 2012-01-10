@@ -952,7 +952,7 @@ static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
     if (self->last_accessed_idx >= 0)
     {
         self->last_accessed_idx =
-            (self->last_accessed_idx + split_idx) % self->size;
+            (self->last_accessed_idx + self->size - split_idx) % self->size;
     }
 
     Py_RETURN_NONE;
