@@ -368,7 +368,6 @@ class testsllist(unittest.TestCase):
             ref_result = ref[split:] + ref[:split]
             ll = sllist(ref)
             new_first = ll.nodeat(split)
-            last_idx = split - 1
             new_last = ll.nodeat(split - 1)
             ll.rotate(-n)
             self.assertEqual(list(ll), ref_result)
@@ -860,7 +859,6 @@ class testdllist(unittest.TestCase):
             ref_result = ref[split:] + ref[:split]
             ll = dllist(ref)
             new_first = ll.nodeat(split)
-            last_idx = split - 1
             new_last = ll.nodeat(split - 1)
             ll.rotate(-n)
             self.assertEqual(list(ll), ref_result)
