@@ -355,6 +355,12 @@ class testsllist(unittest.TestCase):
         ll = sllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, sllistnode())
 
+    def test_remove_already_deleted_node(self):
+        ll = sllist([1, 2, 3, 4])
+        node = ll.nodeat(2)
+        ll.remove(node)
+        self.assertRaises(ValueError, ll.remove, node)
+
     def test_rotate_left(self):
         for n in xrange(128):
             ref = range(32)
@@ -840,6 +846,12 @@ class testdllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = dllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, dllistnode())
+
+    def test_remove_already_deleted_node(self):
+        ll = dllist([1, 2, 3, 4])
+        node = ll.nodeat(2)
+        ll.remove(node)
+        self.assertRaises(ValueError, ll.remove, node)
 
     def test_rotate_left(self):
         for n in xrange(128):

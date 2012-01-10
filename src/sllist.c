@@ -58,6 +58,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
     if (next != NULL && next != Py_None)
         node->next = next;
 
+    Py_DECREF(node->list_weakref);
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
     return node;
@@ -67,8 +68,10 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
-    Py_DECREF(Py_None);
+    Py_DECREF(self->list_weakref);
     Py_DECREF(self->value);
+    Py_DECREF(Py_None);
+
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -113,6 +116,7 @@ static PyObject* sllistnode_new(PyTypeObject* type,
     self->list_weakref = Py_None;
 
     Py_INCREF(self->value);
+    Py_INCREF(self->list_weakref);
 
     return (PyObject*)self;
 }

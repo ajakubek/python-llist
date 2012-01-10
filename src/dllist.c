@@ -76,6 +76,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
         ((DLListNodeObject*)next)->prev = (PyObject*)node;
     }
 
+    Py_DECREF(node->list_weakref);
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
     return node;
@@ -106,6 +107,7 @@ static void dllistnode_delete(DLListNodeObject* node)
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
+    Py_DECREF(self->list_weakref);
     Py_DECREF(self->value);
     Py_DECREF(Py_None);
 
@@ -132,6 +134,7 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     self->list_weakref = Py_None;
 
     Py_INCREF(self->value);
+    Py_INCREF(self->list_weakref);
 
     return (PyObject*)self;
 }
