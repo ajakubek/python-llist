@@ -192,57 +192,57 @@ static PyObject* sllistnode_call(PyObject* self,
 
 
 static PyMemberDef SLListNodeMembers[] =
-    {
-        { "value", T_OBJECT_EX, offsetof(SLListNodeObject, value), 0,
-          "value" },
-        { "next", T_OBJECT_EX, offsetof(SLListNodeObject, next), READONLY,
-          "next node" },
-        { NULL },   /* sentinel */
-    };
+{
+    { "value", T_OBJECT_EX, offsetof(SLListNodeObject, value), 0,
+      "value" },
+    { "next", T_OBJECT_EX, offsetof(SLListNodeObject, next), READONLY,
+      "next node" },
+    { NULL },   /* sentinel */
+};
 
 
 static PyTypeObject SLListNodeType =
-    {
-        PyObject_HEAD_INIT(NULL)
-        0,                              /* ob_size           */
-        "llist.sllistnode",             /* tp_name           */
-        sizeof(SLListNodeObject),       /* tp_basicsize      */
-        0,                              /* tp_itemsize       */
-        (destructor)sllistnode_dealloc, /* tp_dealloc        */
-        0,                              /* tp_print          */
-        0,                              /* tp_getattr        */
-        0,                              /* tp_setattr        */
-        0,                              /* tp_compare        */
-        (reprfunc)sllistnode_repr,      /* tp_repr           */
-        0,                              /* tp_as_number      */
-        0,                              /* tp_as_sequence    */
-        0,                              /* tp_as_mapping     */
-        0,                              /* tp_hash           */
-        (ternaryfunc)sllistnode_call,   /* tp_call           */
-        (reprfunc)sllistnode_str,       /* tp_str            */
-        0,                              /* tp_getattro       */
-        0,                              /* tp_setattro       */
-        0,                              /* tp_as_buffer      */
-        Py_TPFLAGS_DEFAULT,             /* tp_flags          */
-        "Singly linked list node",      /* tp_doc            */
-        0,                              /* tp_traverse       */
-        0,                              /* tp_clear          */
-        0,                              /* tp_richcompare    */
-        0,                              /* tp_weaklistoffset */
-        0,                              /* tp_iter           */
-        0,                              /* tp_iternext       */
-        0,                              /* tp_methods        */
-        SLListNodeMembers,              /* tp_members        */
-        0,                              /* tp_getset         */
-        0,                              /* tp_base           */
-        0,                              /* tp_dict           */
-        0,                              /* tp_descr_get      */
-        0,                              /* tp_descr_set      */
-        0,                              /* tp_dictoffset     */
-        (initproc)sllistnode_init,      /* tp_init           */
-        0,                              /* tp_alloc          */
-        sllistnode_new,                 /* tp_new            */
-    };
+{
+    PyObject_HEAD_INIT(NULL)
+    0,                              /* ob_size           */
+    "llist.sllistnode",             /* tp_name           */
+    sizeof(SLListNodeObject),       /* tp_basicsize      */
+    0,                              /* tp_itemsize       */
+    (destructor)sllistnode_dealloc, /* tp_dealloc        */
+    0,                              /* tp_print          */
+    0,                              /* tp_getattr        */
+    0,                              /* tp_setattr        */
+    0,                              /* tp_compare        */
+    (reprfunc)sllistnode_repr,      /* tp_repr           */
+    0,                              /* tp_as_number      */
+    0,                              /* tp_as_sequence    */
+    0,                              /* tp_as_mapping     */
+    0,                              /* tp_hash           */
+    (ternaryfunc)sllistnode_call,   /* tp_call           */
+    (reprfunc)sllistnode_str,       /* tp_str            */
+    0,                              /* tp_getattro       */
+    0,                              /* tp_setattro       */
+    0,                              /* tp_as_buffer      */
+    Py_TPFLAGS_DEFAULT,             /* tp_flags          */
+    "Singly linked list node",      /* tp_doc            */
+    0,                              /* tp_traverse       */
+    0,                              /* tp_clear          */
+    0,                              /* tp_richcompare    */
+    0,                              /* tp_weaklistoffset */
+    0,                              /* tp_iter           */
+    0,                              /* tp_iternext       */
+    0,                              /* tp_methods        */
+    SLListNodeMembers,              /* tp_members        */
+    0,                              /* tp_getset         */
+    0,                              /* tp_base           */
+    0,                              /* tp_dict           */
+    0,                              /* tp_descr_get      */
+    0,                              /* tp_descr_set      */
+    0,                              /* tp_dictoffset     */
+    (initproc)sllistnode_init,      /* tp_init           */
+    0,                              /* tp_alloc          */
+    sllistnode_new,                 /* tp_new            */
+};
 
 
 
@@ -348,40 +348,40 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+        return 0;
+    }
+
+    for (i = 0; i < sequence_len; ++i)
+    {
+        PyObject* item;
+        PyObject* new_node;
+
+        item = PySequence_GetItem(sequence, i);
+        if (item == NULL)
         {
-            PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+            PyErr_SetString(PyExc_ValueError,
+                            "Failed to get element from sequence");
             return 0;
         }
 
-    for (i = 0; i < sequence_len; ++i)
-        {
-            PyObject* item;
-            PyObject* new_node;
-
-            item = PySequence_GetItem(sequence, i);
-            if (item == NULL)
-                {
-                    PyErr_SetString(PyExc_ValueError,
-                                    "Failed to get element from sequence");
-                    return 0;
-                }
-
-            new_node = (PyObject*)sllistnode_create(Py_None,
-                                                    item,
-                                                    (PyObject*)self);
+        new_node = (PyObject*)sllistnode_create(Py_None,
+                                                item,
+                                                (PyObject*)self);
 
 
-            if(self->first == Py_None)
-                self->first = new_node;
-            else
-                ((SLListNodeObject*)self->last)->next = new_node;
+        if(self->first == Py_None)
+            self->first = new_node;
+        else
+            ((SLListNodeObject*)self->last)->next = new_node;
 
-            self->last = new_node;
+        self->last = new_node;
 
-            ++self->size;
+        ++self->size;
 
-            Py_DECREF(item);
-        }
+        Py_DECREF(item);
+    }
 
     return 1;
 }
@@ -400,10 +400,10 @@ static int sllist_init(SLListObject* self, PyObject* args, PyObject* kwds)
 
     /* initialize list using passed sequence */
     if (!PySequence_Check(sequence))
-        {
-            PyErr_SetString(PyExc_TypeError, "Argument must be a sequence");
-            return -1;
-        }
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a sequence");
+        return -1;
+    }
 
     return sllist_extend_internal(self, sequence) ? 0 : -1;
 }
@@ -446,24 +446,29 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
 
     SLListNodeObject* node = (SLListNodeObject*)self->first;
 
-    if (!PyObject_TypeCheck(next, &SLListNodeType)) {
+    if (!PyObject_TypeCheck(next, &SLListNodeType))
+    {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
-    if (self->first == Py_None) {
+    if (self->first == Py_None)
+    {
         PyErr_SetString(PyExc_RuntimeError, "List is empty");
         return NULL;
     }
 
 
     /* TODO: Think this over once more */
-    if (self->first == (PyObject*)next) {
+    if (self->first == (PyObject*)next)
+    {
         return NULL;
     }
 
-    if(self->first != Py_None) {
-        while((PyObject*)node != Py_None && node != next){
+    if(self->first != Py_None)
+    {
+        while((PyObject*)node != Py_None && node != next)
+        {
             prev = node;
             node = (SLListNodeObject*)node->next;
         }
@@ -619,10 +624,13 @@ static PyObject* sllist_insertbefore(SLListObject* self, PyObject* arg)
     prev = sllist_get_prev(self, (SLListNodeObject*)after);
 
     /* putting new node in created gap, not first and exists */
-    if((PyObject*)prev != Py_None && prev != NULL) {
+    if((PyObject*)prev != Py_None && prev != NULL)
+    {
         ((SLListNodeObject*)prev)->next = (PyObject*)new_node;
         new_node->next = after;
-    } else {
+    }
+    else
+    {
         new_node->next = after;
         self->first = (PyObject*)new_node;
     }
@@ -675,36 +683,36 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
 
     sequence_len = PySequence_Length(sequence);
     if (sequence_len == -1)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+        return NULL;
+    }
+
+    for (i = 0; i < sequence_len; ++i)
+    {
+        PyObject* item;
+        PyObject* new_node;
+
+        item = PySequence_GetItem(sequence, i);
+        if (item == NULL)
         {
-            PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+            PyErr_SetString(PyExc_ValueError,
+                            "Failed to get element from sequence");
             return NULL;
         }
 
-    for (i = 0; i < sequence_len; ++i)
-        {
-            PyObject* item;
-            PyObject* new_node;
+        new_node = (PyObject*)sllistnode_create(self->first,
+                                                item,
+                                                (PyObject*)self);
 
-            item = PySequence_GetItem(sequence, i);
-            if (item == NULL)
-                {
-                    PyErr_SetString(PyExc_ValueError,
-                                    "Failed to get element from sequence");
-                    return NULL;
-                }
+        self->first = new_node;
+        if (self->last == Py_None)
+            self->last = new_node;
 
-            new_node = (PyObject*)sllistnode_create(self->first,
-                                                    item,
-                                                    (PyObject*)self);
+        ++self->size;
 
-            self->first = new_node;
-            if (self->last == Py_None)
-                self->last = new_node;
-
-            ++self->size;
-
-            Py_DECREF(item);
-        }
+        Py_DECREF(item);
+    }
 
     Py_RETURN_NONE;
 }
@@ -725,7 +733,8 @@ static SLListNodeObject* sllist_get_node_internal(SLListObject* self,
     SLListNodeObject* node;
     Py_ssize_t counter;
 
-    if (pos < 0 || pos >= self->size) {
+    if (pos < 0 || pos >= self->size)
+    {
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
@@ -745,7 +754,8 @@ static PyObject* sllist_node_at(PyObject* self, PyObject* indexObject)
     SLListNodeObject* node;
     Py_ssize_t index;
 
-    if (!PyInt_Check(indexObject)) {
+    if (!PyInt_Check(indexObject))
+    {
         PyErr_SetString(PyExc_TypeError, "Index must be an integer");
         return NULL;
     }
@@ -769,12 +779,14 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     PyObject* list_ref;
     PyObject* value;
 
-    if (!PyObject_TypeCheck(arg, &SLListNodeType)) {
+    if (!PyObject_TypeCheck(arg, &SLListNodeType))
+    {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
-    if (self->first == Py_None) {
+    if (self->first == Py_None)
+    {
         PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
@@ -803,7 +815,8 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
             self->last = Py_None;
     }
     /* we are sure that we have more than 1 node */
-    else {
+    else
+    {
         /* making gap */
         prev = sllist_get_prev(self, del_node);
         prev->next = del_node->next;
@@ -927,7 +940,8 @@ static PyObject* sllist_get_item(PyObject* self, Py_ssize_t index)
     SLListNodeObject* node;
 
     node = sllist_get_node_internal((SLListObject*)self, index);
-    if (node != NULL) {
+    if (node != NULL)
+    {
         PyObject* value = node->value;
 
         Py_XINCREF(value);
@@ -960,7 +974,8 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     /* Here is a tricky (and undocumented) part of sequence protocol.
      * Python will pass NULL as item value when item is deleted with:
      * del list[index] */
-    if (val == NULL) {
+    if (val == NULL)
+    {
         PyObject* result = sllist_remove(list, (PyObject*)node);
 
         Py_XDECREF(result);
@@ -991,7 +1006,8 @@ static PyObject* sllist_clear(SLListObject* self)
 {
     PyObject* iter_node_obj = self->first;
 
-    while (iter_node_obj != Py_None) {
+    while (iter_node_obj != Py_None)
+    {
         SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
 
         iter_node_obj = iter_node->next;
@@ -1013,10 +1029,10 @@ static PyObject* sllist_popleft(SLListObject* self)
     PyObject* value;
 
     if (self->first == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError, "List is empty");
-            return NULL;
-        }
+    {
+        PyErr_SetString(PyExc_ValueError, "List is empty");
+        return NULL;
+    }
 
     del_node = (SLListNodeObject*)self->first;
 
@@ -1045,10 +1061,10 @@ static PyObject* sllist_popright(SLListObject* self)
     PyObject* value;
 
     if (self->last == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError, "List is empty");
-            return NULL;
-        }
+    {
+        PyErr_SetString(PyExc_ValueError, "List is empty");
+        return NULL;
+    }
 
     del_node = (SLListNodeObject*)self->last;
     /* only one node in list */
@@ -1057,7 +1073,8 @@ static PyObject* sllist_popright(SLListObject* self)
         self->first = Py_None;
     }
     /* more than one node */
-    else {
+    else
+    {
         prev = sllist_get_prev(self, del_node);
         prev->next = Py_None;
         self->last = (PyObject*)prev;
@@ -1203,125 +1220,125 @@ static long sllist_hash(SLListObject* self)
 
 
 static PyMethodDef SLListMethods[] =
-    {
-        { "appendleft", (PyCFunction)sllist_appendleft, METH_O,
-          "Append element at the beginning of the list" },
+{
+    { "appendleft", (PyCFunction)sllist_appendleft, METH_O,
+      "Append element at the beginning of the list" },
 
-        { "appendright", (PyCFunction)sllist_appendright, METH_O,
-          "Append element at the end of the list" },
+    { "appendright", (PyCFunction)sllist_appendright, METH_O,
+      "Append element at the end of the list" },
 
-        { "append", (PyCFunction)sllist_appendright, METH_O,
-          "Append element at the end of the list" },
+    { "append", (PyCFunction)sllist_appendright, METH_O,
+      "Append element at the end of the list" },
 
-        { "clear", (PyCFunction)sllist_clear, METH_NOARGS,
-          "Remove all elements from the list" },
+    { "clear", (PyCFunction)sllist_clear, METH_NOARGS,
+      "Remove all elements from the list" },
 
-        { "extend", (PyCFunction)sllist_extendright, METH_O,
-          "Append elements from iterable at the right side of the list" },
+    { "extend", (PyCFunction)sllist_extendright, METH_O,
+      "Append elements from iterable at the right side of the list" },
 
-        { "extendleft", (PyCFunction)sllist_extendleft, METH_O,
-          "Append elements from iterable at the left side of the list" },
+    { "extendleft", (PyCFunction)sllist_extendleft, METH_O,
+      "Append elements from iterable at the left side of the list" },
 
-        { "extendright", (PyCFunction)sllist_extendright, METH_O,
-          "Append elements from iterable at the right side of the list" },
+    { "extendright", (PyCFunction)sllist_extendright, METH_O,
+      "Append elements from iterable at the right side of the list" },
 
-        { "insertafter", (PyCFunction)sllist_insertafter, METH_VARARGS,
-          "Inserts element after node" },
+    { "insertafter", (PyCFunction)sllist_insertafter, METH_VARARGS,
+      "Inserts element after node" },
 
-        { "insertbefore", (PyCFunction)sllist_insertbefore, METH_VARARGS,
-          "Inserts element before node" },
+    { "insertbefore", (PyCFunction)sllist_insertbefore, METH_VARARGS,
+      "Inserts element before node" },
 
-        { "nodeat", (PyCFunction)sllist_node_at, METH_O,
-          "Return node at index" },
+    { "nodeat", (PyCFunction)sllist_node_at, METH_O,
+      "Return node at index" },
 
-        { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
-          "Remove last element from the list and return it" },
+    { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
+      "Remove last element from the list and return it" },
 
-        { "popleft", (PyCFunction)sllist_popleft, METH_NOARGS,
-          "Remove first element from the list and return it" },
+    { "popleft", (PyCFunction)sllist_popleft, METH_NOARGS,
+      "Remove first element from the list and return it" },
 
-        { "popright", (PyCFunction)sllist_popright, METH_NOARGS,
-          "Remove last element from the list and return it" },
+    { "popright", (PyCFunction)sllist_popright, METH_NOARGS,
+      "Remove last element from the list and return it" },
 
-        { "remove", (PyCFunction)sllist_remove, METH_O,
-          "Remove element from the list" },
+    { "remove", (PyCFunction)sllist_remove, METH_O,
+      "Remove element from the list" },
 
-        { "rotate", (PyCFunction)sllist_rotate, METH_O,
-          "Rotate the list n steps to the right" },
+    { "rotate", (PyCFunction)sllist_rotate, METH_O,
+      "Rotate the list n steps to the right" },
 
-        { NULL },   /* sentinel */
-    };
+    { NULL },   /* sentinel */
+};
 
 
 static PyMemberDef SLListMembers[] =
-    {
-        { "first", T_OBJECT_EX, offsetof(SLListObject, first), READONLY,
-          "First node" },
-        { "last", T_OBJECT_EX, offsetof(SLListObject, last), READONLY,
-          "Next node" },
-        { "size", T_INT, offsetof(SLListObject, size), READONLY,
-          "size" },
+{
+    { "first", T_OBJECT_EX, offsetof(SLListObject, first), READONLY,
+      "First node" },
+    { "last", T_OBJECT_EX, offsetof(SLListObject, last), READONLY,
+      "Next node" },
+    { "size", T_INT, offsetof(SLListObject, size), READONLY,
+      "size" },
 
-        { NULL },   /* sentinel */
-    };
+    { NULL },   /* sentinel */
+};
 
 static PySequenceMethods SLListSequenceMethods =
-    {
-        sllist_len,                  /* sq_length         */
-        sllist_concat,               /* sq_concat         */
-        sllist_repeat,               /* sq_repeat         */
-        sllist_get_item,             /* sq_item           */
-        0,                           /* sq_slice;         */
-        sllist_set_item,             /* sq_ass_item       */
-        0,                           /* sq_ass_slice      */
-        0,                           /* sq_contains       */
-        sllist_inplace_concat,       /* sq_inplace_concat */
-        0,                           /* sq_inplace_repeat */
-    };
+{
+    sllist_len,                  /* sq_length         */
+    sllist_concat,               /* sq_concat         */
+    sllist_repeat,               /* sq_repeat         */
+    sllist_get_item,             /* sq_item           */
+    0,                           /* sq_slice;         */
+    sllist_set_item,             /* sq_ass_item       */
+    0,                           /* sq_ass_slice      */
+    0,                           /* sq_contains       */
+    sllist_inplace_concat,       /* sq_inplace_concat */
+    0,                           /* sq_inplace_repeat */
+};
 
 static PyTypeObject SLListType =
-    {
-        PyObject_HEAD_INIT(NULL)
-        0,                           /* ob_size           */
-        "llist.sllist",              /* tp_name           */
-        sizeof(SLListObject),        /* tp_basicsize      */
-        0,                           /* tp_itemsize       */
-        (destructor)sllist_dealloc,  /* tp_dealloc        */
-        0,                           /* tp_print          */
-        0,                           /* tp_getattr        */
-        0,                           /* tp_setattr        */
-        (cmpfunc)sllist_compare,     /* tp_compare        */
-        (reprfunc)sllist_repr,       /* tp_repr           */
-        0,                           /* tp_as_number      */
-        &SLListSequenceMethods,      /* tp_as_sequence    */
-        0,                           /* tp_as_mapping     */
-        (hashfunc)sllist_hash,       /* tp_hash           */
-        0,                           /* tp_call           */
-        (reprfunc)sllist_str,        /* tp_str            */
-        0,                           /* tp_getattro       */
-        0,                           /* tp_setattro       */
-        0,                           /* tp_as_buffer      */
-        Py_TPFLAGS_DEFAULT,          /* tp_flags          */
-        "Singly linked list",        /* tp_doc            */
-        0,                           /* tp_traverse       */
-        0,                           /* tp_clear          */
-        0,                           /* tp_richcompare    */
-        offsetof(SLListObject, weakref_list),
-                                     /* tp_weaklistoffset */
-        sllist_iter,                 /* tp_iter           */
-        0,                           /* tp_iternext       */
-        SLListMethods,               /* tp_methods        */
-        SLListMembers,               /* tp_members        */
-        0,                           /* tp_getset         */
-        0,                           /* tp_base           */
-        0,                           /* tp_dict           */
-        0,                           /* tp_descr_get      */
-        0,                           /* tp_descr_set      */
-        0,                           /* tp_dictoffset     */
-        (initproc)sllist_init,       /* tp_init           */
-        0,                           /* tp_alloc          */
-        sllist_new,                  /* tp_new            */
-    };
+{
+    PyObject_HEAD_INIT(NULL)
+    0,                           /* ob_size           */
+    "llist.sllist",              /* tp_name           */
+    sizeof(SLListObject),        /* tp_basicsize      */
+    0,                           /* tp_itemsize       */
+    (destructor)sllist_dealloc,  /* tp_dealloc        */
+    0,                           /* tp_print          */
+    0,                           /* tp_getattr        */
+    0,                           /* tp_setattr        */
+    (cmpfunc)sllist_compare,     /* tp_compare        */
+    (reprfunc)sllist_repr,       /* tp_repr           */
+    0,                           /* tp_as_number      */
+    &SLListSequenceMethods,      /* tp_as_sequence    */
+    0,                           /* tp_as_mapping     */
+    (hashfunc)sllist_hash,       /* tp_hash           */
+    0,                           /* tp_call           */
+    (reprfunc)sllist_str,        /* tp_str            */
+    0,                           /* tp_getattro       */
+    0,                           /* tp_setattro       */
+    0,                           /* tp_as_buffer      */
+    Py_TPFLAGS_DEFAULT,          /* tp_flags          */
+    "Singly linked list",        /* tp_doc            */
+    0,                           /* tp_traverse       */
+    0,                           /* tp_clear          */
+    0,                           /* tp_richcompare    */
+    offsetof(SLListObject, weakref_list),
+                                 /* tp_weaklistoffset */
+    sllist_iter,                 /* tp_iter           */
+    0,                           /* tp_iternext       */
+    SLListMethods,               /* tp_methods        */
+    SLListMembers,               /* tp_members        */
+    0,                           /* tp_getset         */
+    0,                           /* tp_base           */
+    0,                           /* tp_dict           */
+    0,                           /* tp_descr_get      */
+    0,                           /* tp_descr_set      */
+    0,                           /* tp_dictoffset     */
+    (initproc)sllist_init,       /* tp_init           */
+    0,                           /* tp_alloc          */
+    sllist_new,                  /* tp_new            */
+};
 
 
 typedef struct
