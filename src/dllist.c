@@ -354,7 +354,7 @@ static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
 
 /* Convenience function for extending (concatenating in-place)
  * the list with elements from a sequence. */
-static int dllist_extend(DLListObject* self, PyObject* sequence)
+static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
@@ -364,7 +364,7 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
         /* Special path for extending with a DLList.
          * It's not strictly required but it will maintain
          * the last accessed item. */
-        PyObject* iter_node_obj = ((DLListObject *)sequence)->first;
+        PyObject* iter_node_obj = ((DLListObject*)sequence)->first;
         PyObject* last_node_obj = self->last;
 
         while (iter_node_obj != Py_None)
@@ -379,8 +379,6 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
                 self->first = new_node;
             self->last = new_node;
 
-            ++self->size;
-
             if (iter_node_obj == last_node_obj)
             {
                 /* This is needed to terminate loop if self == sequence. */
@@ -389,6 +387,8 @@ static int dllist_extend(DLListObject* self, PyObject* sequence)
 
             iter_node_obj = iter_node->next;
         }
+
+        self->size += ((DLListObject*)sequence)->size;
 
         return 1;
     }
@@ -546,7 +546,7 @@ static int dllist_init(DLListObject* self, PyObject* args, PyObject* kwds)
         return -1;
     }
 
-    return dllist_extend(self, sequence) ? 0 : -1;
+    return dllist_extend_internal(self, sequence) ? 0 : -1;
 }
 
 static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
@@ -749,6 +749,96 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 
     Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
+}
+
+static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
+{
+    Py_ssize_t i;
+    Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &DLListType))
+    {
+        /* Special path for extending with a DLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((DLListObject*)sequence)->first;
+        PyObject* last_node_obj = ((DLListObject*)sequence)->last;
+
+        while (iter_node_obj != Py_None)
+        {
+            DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)dllistnode_create(
+                NULL, self->first, iter_node->value, (PyObject*)self);
+
+            self->first = new_node;
+            if (self->last == Py_None)
+                self->last = new_node;
+
+            if (iter_node_obj == last_node_obj)
+            {
+                /* This is needed to terminate loop if self == sequence. */
+                break;
+            }
+
+            iter_node_obj = iter_node->next;
+        }
+
+        self->size += ((DLListObject*)sequence)->size;
+
+        /* update index of last accessed item */
+        if (self->last_accessed_idx >= 0)
+            self->last_accessed_idx += ((DLListObject*)sequence)->size;
+
+        Py_RETURN_NONE;
+    }
+
+    sequence_len = PySequence_Length(sequence);
+    if (sequence_len == -1)
+    {
+        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+        return NULL;
+    }
+
+    for (i = 0; i < sequence_len; ++i)
+    {
+        PyObject* item;
+        PyObject* new_node;
+
+        item = PySequence_GetItem(sequence, i);
+        if (item == NULL)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "Failed to get element from sequence");
+            return NULL;
+        }
+
+        new_node = (PyObject*)dllistnode_create(
+            NULL, self->first, item, (PyObject*)self);
+
+        self->first = new_node;
+        if (self->last == Py_None)
+            self->last = new_node;
+
+        ++self->size;
+
+        /* update index of last accessed item */
+        if (self->last_accessed_idx >= 0)
+            ++self->last_accessed_idx;
+
+        Py_DECREF(item);
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject* dllist_extendright(DLListObject* self, PyObject* arg)
+{
+    if (!dllist_extend_internal(self, arg))
+        return NULL;
+
+    Py_RETURN_NONE;
 }
 
 static PyObject* dllist_clear(DLListObject* self)
@@ -999,8 +1089,8 @@ static PyObject* dllist_concat(PyObject* self, PyObject* other)
     new_list = (DLListObject*)PyObject_CallObject(
         (PyObject*)&DLListType, NULL);
 
-    if (!dllist_extend(new_list, self) ||
-        !dllist_extend(new_list, other))
+    if (!dllist_extend_internal(new_list, self) ||
+        !dllist_extend_internal(new_list, other))
     {
         Py_DECREF(new_list);
         return NULL;
@@ -1011,7 +1101,7 @@ static PyObject* dllist_concat(PyObject* self, PyObject* other)
 
 static PyObject* dllist_inplace_concat(PyObject* self, PyObject* other)
 {
-    if (!dllist_extend((DLListObject*)self, other))
+    if (!dllist_extend_internal((DLListObject*)self, other))
         return NULL;
 
     Py_INCREF(self);
@@ -1028,7 +1118,7 @@ static PyObject* dllist_repeat(PyObject* self, Py_ssize_t count)
 
     for (i = 0; i < count; ++i)
     {
-        if (!dllist_extend(new_list, self))
+        if (!dllist_extend_internal(new_list, self))
         {
             Py_DECREF(new_list);
             return NULL;
@@ -1120,6 +1210,12 @@ static PyMethodDef DLListMethods[] =
       "Append element at the end of the list" },
     { "clear", (PyCFunction)dllist_clear, METH_NOARGS,
       "Remove all elements from the list" },
+    { "extend", (PyCFunction)dllist_extendright, METH_O,
+      "Append elements from iterable at the right side of the list" },
+    { "extendleft", (PyCFunction)dllist_extendleft, METH_O,
+      "Append elements from iterable at the left side of the list" },
+    { "extendright", (PyCFunction)dllist_extendright, METH_O,
+      "Append elements from iterable at the right side of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,

@@ -77,6 +77,20 @@ Random access to elements using index is O(n).
 
       Remove all nodes from the list.
 
+   .. method:: extend(iterable)
+
+      Append elements from *iterable* to the right side of the list.
+
+   .. method:: extendleft(iterable)
+
+      Append elements from *iterable* to the left side of the list.
+      Note that elements will be appended in reversed order.
+
+   .. method:: extendright(iterable)
+
+      Append elements from *iterable* to the right side of the list
+      (synonymous with :meth:`extend`).
+
    .. method:: insert(x, [before])
 
       Add *x* to the right side of the list if *before* is not specified,
@@ -240,6 +254,14 @@ Random access to elements using index is O(n).
       >>> print lst
       dllist([0, 1, 2, 3, 4, 5])
 
+      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> print lst
+      dllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> print lst
+      dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = dllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
       >>> lst.insert(1.5, node)         # insert 1.5 before node
       <dllistnode(1.5)>
@@ -418,6 +440,26 @@ Random access to elements using index is O(n).
 
       Remove all nodes from the list.
 
+   .. method:: extend(iterable)
+
+      Append elements from *iterable* to the right side of the list.
+
+      This method has O(n) complexity (in the size of *iterable*).
+
+   .. method:: extendleft(iterable)
+
+      Append elements from *iterable* to the left side of the list.
+      Note that elements will be appended in reversed order.
+
+      This method has O(n) complexity (in the size of *iterable*).
+
+   .. method:: extendright(iterable)
+
+      Append elements from *iterable* to the right side of the list
+      (synonymous with :meth:`extend`).
+
+      This method has O(n) complexity (in the size of *iterable*).
+
    .. method:: insert_after(x, node)
 
       Inserts *x* after *node* and return inserted :class:`sllistnode`.
@@ -589,6 +631,14 @@ Random access to elements using index is O(n).
       >>> print lst
       sllist([0, 1, 2, 3, 4, 5])
 
+      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> print lst
+      sllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> print lst
+      sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = sllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
       >>> lst.insert_before(1.5, node)  # insert 1.5 before node
       <sllistnode(1.5)>

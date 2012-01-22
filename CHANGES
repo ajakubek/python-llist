@@ -6,8 +6,11 @@
   - fixed reference counting of list weakrefs
   - fixed segmentation fault when removing a node that does not belong
     to the list (issue #1)
+  - implemented extend(), extendleft() and extendright() methods in
+    dllist and sllist
 
 -----------------------------------------------------------------------
+
 * llist-0.2 (2011-12-30)
 
   - subscript operator `lst[x]` now directly returns values stored

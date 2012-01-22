@@ -62,7 +62,6 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
     node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
 
     return node;
-
 }
 
 
@@ -305,7 +304,7 @@ static PyObject* sllist_new(PyTypeObject* type,
     return (PyObject*)self;
 }
 
-static int sllist_extend(SLListObject* self, PyObject* sequence)
+static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
     Py_ssize_t sequence_len;
@@ -333,8 +332,6 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
                 self->first = new_node;
             self->last = new_node;
 
-            ++self->size;
-
             if (iter_node_obj == last_node_obj)
             {
                 /* This is needed to terminate loop if self == sequence. */
@@ -343,6 +340,8 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
 
             iter_node_obj = iter_node->next;
         }
+
+        self->size += ((SLListObject*)sequence)->size;
 
         return 1;
     }
@@ -373,13 +372,14 @@ static int sllist_extend(SLListObject* self, PyObject* sequence)
 
 
             if(self->first == Py_None)
-                self->first = (PyObject*)new_node;
+                self->first = new_node;
             else
-                ((SLListNodeObject*)self->last)->next = (PyObject*)new_node;
+                ((SLListNodeObject*)self->last)->next = new_node;
 
-            self->last = (PyObject*)new_node;
+            self->last = new_node;
 
             ++self->size;
+
             Py_DECREF(item);
         }
 
@@ -405,7 +405,7 @@ static int sllist_init(SLListObject* self, PyObject* args, PyObject* kwds)
             return -1;
         }
 
-    return sllist_extend(self, sequence) ? 0 : -1;
+    return sllist_extend_internal(self, sequence) ? 0 : -1;
 }
 
 
@@ -634,6 +634,91 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
 }
 
 
+static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
+{
+    Py_ssize_t i;
+    Py_ssize_t sequence_len;
+
+    if (PyObject_TypeCheck(sequence, &SLListType))
+    {
+        /* Special path for extending with a SLList.
+         * It's not strictly required but it will maintain
+         * the last accessed item. */
+        PyObject* iter_node_obj = ((SLListObject*)sequence)->first;
+        PyObject* last_node_obj = ((SLListObject*)sequence)->last;
+
+        while (iter_node_obj != Py_None)
+        {
+            SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+            PyObject* new_node;
+
+            new_node = (PyObject*)sllistnode_create(
+                self->first, iter_node->value, (PyObject*)self);
+
+            self->first = new_node;
+            if (self->last == Py_None)
+                self->last = new_node;
+
+            if (iter_node_obj == last_node_obj)
+            {
+                /* This is needed to terminate loop if self == sequence. */
+                break;
+            }
+
+            iter_node_obj = iter_node->next;
+        }
+
+        self->size += ((SLListObject*)sequence)->size;
+
+        Py_RETURN_NONE;
+    }
+
+    sequence_len = PySequence_Length(sequence);
+    if (sequence_len == -1)
+        {
+            PyErr_SetString(PyExc_ValueError, "Invalid sequence");
+            return NULL;
+        }
+
+    for (i = 0; i < sequence_len; ++i)
+        {
+            PyObject* item;
+            PyObject* new_node;
+
+            item = PySequence_GetItem(sequence, i);
+            if (item == NULL)
+                {
+                    PyErr_SetString(PyExc_ValueError,
+                                    "Failed to get element from sequence");
+                    return NULL;
+                }
+
+            new_node = (PyObject*)sllistnode_create(self->first,
+                                                    item,
+                                                    (PyObject*)self);
+
+            self->first = new_node;
+            if (self->last == Py_None)
+                self->last = new_node;
+
+            ++self->size;
+
+            Py_DECREF(item);
+        }
+
+    Py_RETURN_NONE;
+}
+
+
+static PyObject* sllist_extendright(SLListObject* self, PyObject* arg)
+{
+    if (!sllist_extend_internal(self, arg))
+        return NULL;
+
+    Py_RETURN_NONE;
+}
+
+
 static SLListNodeObject* sllist_get_node_internal(SLListObject* self,
                                                   Py_ssize_t pos)
 {
@@ -795,8 +880,8 @@ static PyObject* sllist_concat(PyObject* self, PyObject* other)
     new_list = (SLListObject*)PyObject_CallObject(
         (PyObject*)&SLListType, NULL);
 
-    if (!sllist_extend(new_list, self) ||
-        !sllist_extend(new_list, other))
+    if (!sllist_extend_internal(new_list, self) ||
+        !sllist_extend_internal(new_list, other))
     {
         Py_DECREF(new_list);
         return NULL;
@@ -808,7 +893,7 @@ static PyObject* sllist_concat(PyObject* self, PyObject* other)
 
 static PyObject* sllist_inplace_concat(PyObject* self, PyObject* other)
 {
-    if (!sllist_extend((SLListObject*)self, other))
+    if (!sllist_extend_internal((SLListObject*)self, other))
         return NULL;
 
     Py_INCREF(self);
@@ -826,7 +911,7 @@ static PyObject* sllist_repeat(PyObject* self, Py_ssize_t count)
 
     for (i = 0; i < count; ++i)
     {
-        if (!sllist_extend(new_list, self))
+        if (!sllist_extend_internal(new_list, self))
         {
             Py_DECREF(new_list);
             return NULL;
@@ -1130,6 +1215,15 @@ static PyMethodDef SLListMethods[] =
 
         { "clear", (PyCFunction)sllist_clear, METH_NOARGS,
           "Remove all elements from the list" },
+
+        { "extend", (PyCFunction)sllist_extendright, METH_O,
+          "Append elements from iterable at the right side of the list" },
+
+        { "extendleft", (PyCFunction)sllist_extendleft, METH_O,
+          "Append elements from iterable at the left side of the list" },
+
+        { "extendright", (PyCFunction)sllist_extendright, METH_O,
+          "Append elements from iterable at the right side of the list" },
 
         { "insert_after", (PyCFunction)sllist_insert_after, METH_VARARGS,
           "Inserts element after node" },
