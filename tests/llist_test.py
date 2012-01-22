@@ -163,12 +163,12 @@ class testsllist(unittest.TestCase):
 
     def test_insert_after(self):
         ll = sllist([1, 3, '123'])
-        ll.insert_after(100, ll.first)
+        ll.insertafter(100, ll.first)
         self.assertEqual([1, 100, 3, '123'], list(ll))
 
     def test_insert_before(self):
         ll = sllist([1, 3, '123'])
-        ll.insert_before(100, ll.first)
+        ll.insertbefore(100, ll.first)
         self.assertEqual([100, 1, 3, '123'], list(ll))
 
     def test_insert_value_after(self):
@@ -177,7 +177,7 @@ class testsllist(unittest.TestCase):
         prev = ll.nodeat(2)
         next = ll.nodeat(3)
         arg_node = sllistnode(10)
-        new_node = ll.insert_after(arg_node, ll.nodeat(2))
+        new_node = ll.insertafter(arg_node, ll.nodeat(2))
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, next)
@@ -189,7 +189,7 @@ class testsllist(unittest.TestCase):
         ref = sllist([0, 1, 2, 3, 10])
         prev = ll.nodeat(3)
         arg_node = sllistnode(10)
-        new_node = ll.insert_after(arg_node, ll.nodeat(-1))
+        new_node = ll.insertafter(arg_node, ll.nodeat(-1))
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, None)
@@ -203,7 +203,7 @@ class testsllist(unittest.TestCase):
         prev = ll.nodeat(1)
         next = ll.nodeat(2)
         arg_node = sllistnode(10)
-        new_node = ll.insert_before(arg_node, ll.nodeat(2))
+        new_node = ll.insertbefore(arg_node, ll.nodeat(2))
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, next)
@@ -215,7 +215,7 @@ class testsllist(unittest.TestCase):
         ref = sllist([10, 0, 1, 2, 3])
         next = ll.nodeat(0)
         arg_node = sllistnode(10)
-        new_node = ll.insert_before(arg_node, ll.nodeat(0))
+        new_node = ll.insertbefore(arg_node, ll.nodeat(0))
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, next)
@@ -224,85 +224,230 @@ class testsllist(unittest.TestCase):
 
     def test_insert_invalid_ref(self):
         ll = sllist([1, 2, 3, 4])
-        self.assertRaises(TypeError, ll.insert_after, 10, 1)
-        self.assertRaises(TypeError, ll.insert_after, 10, 'abc')
-        self.assertRaises(TypeError, ll.insert_after, 10, [])
-        self.assertRaises(ValueError, ll.insert_after, 10, sllistnode())
-        self.assertRaises(TypeError, ll.insert_before, 10, 1)
-        self.assertRaises(TypeError, ll.insert_before, 10, 'abc')
-        self.assertRaises(TypeError, ll.insert_before, 10, [])
-        self.assertRaises(ValueError, ll.insert_before, 10, sllistnode())
+        self.assertRaises(TypeError, ll.insertafter, 10, 1)
+        self.assertRaises(TypeError, ll.insertafter, 10, 'abc')
+        self.assertRaises(TypeError, ll.insertafter, 10, [])
+        self.assertRaises(ValueError, ll.insertafter, 10, sllistnode())
+        self.assertRaises(TypeError, ll.insertbefore, 10, 1)
+        self.assertRaises(TypeError, ll.insertbefore, 10, 'abc')
+        self.assertRaises(TypeError, ll.insertbefore, 10, [])
+        self.assertRaises(ValueError, ll.insertbefore, 10, sllistnode())
 
     def test_append(self):
         ll = sllist(xrange(4))
         ref = sllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
         arg_node = sllistnode(10)
         new_node = ll.append(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, None)
-        self.assertEqual(ll.nodeat(-2).next, new_node)
+        self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
 
     def test_appendleft(self):
         ll = sllist(xrange(4))
         ref = sllist([10, 0, 1, 2, 3])
+        next = ll.nodeat(0)
         arg_node = sllistnode(10)
         new_node = ll.appendleft(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
-        self.assertEqual(new_node.next, ll.nodeat(1))
+        self.assertEqual(new_node.next, next)
         self.assertEqual(ll.first, new_node)
         self.assertEqual(ll, ref)
 
     def test_appendright(self):
         ll = sllist(xrange(4))
         ref = sllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
         arg_node = sllistnode(10)
         new_node = ll.appendright(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.next, None)
-        self.assertEqual(ll.nodeat(-2).next, new_node)
+        self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
+
+    def test_extend(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = sllist(b_ref)
+        ab_ref = sllist(a_ref + b_ref)
+        a = sllist(a_ref)
+        a.extend(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extend(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extend(a)
+        self.assertEqual(a, sllist(a_ref + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extend_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = sllist(filled_ref)
+        empty = sllist()
+        empty.extend(empty)
+        self.assertEqual(empty, sllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = sllist()
+        empty.extend(filled)
+        self.assertEqual(empty, sllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = sllist()
+        filled.extend(empty)
+        self.assertEqual(filled, sllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_extendleft(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = sllist(b_ref)
+        ab_ref = sllist(list(reversed(b_ref)) + a_ref)
+        a = sllist(a_ref)
+        a.extendleft(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extendleft(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extendleft(a)
+        self.assertEqual(a, sllist(list(reversed(a_ref)) + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extendleft_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = sllist(filled_ref)
+        empty = sllist()
+        empty.extendleft(empty)
+        self.assertEqual(empty, sllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = sllist()
+        empty.extendleft(filled)
+        self.assertEqual(empty, sllist(list(reversed(filled_ref)) + []))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = sllist()
+        filled.extendleft(empty)
+        self.assertEqual(filled, sllist(list(reversed([])) + filled_ref))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_extendright(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = sllist(b_ref)
+        ab_ref = sllist(a_ref + b_ref)
+        a = sllist(a_ref)
+        a.extendright(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extendright(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = sllist(a_ref)
+        a.extendright(a)
+        self.assertEqual(a, sllist(a_ref + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extendright_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = sllist(filled_ref)
+        empty = sllist()
+        empty.extendright(empty)
+        self.assertEqual(empty, sllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = sllist()
+        empty.extendright(filled)
+        self.assertEqual(empty, sllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = sllist()
+        filled.extendright(empty)
+        self.assertEqual(filled, sllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_clear_empty(self):
+        empty_list = sllist()
+        empty_list.clear()
+        self.assertEqual(empty_list.first, None)
+        self.assertEqual(empty_list.last, None)
+        self.assertEqual(empty_list.size, 0)
+        self.assertEqual(list(empty_list), [])
+
+    def test_clear(self):
+        ll = sllist(xrange(0, 1024, 4))
+        del_node = ll.nodeat(4)
+        ll.clear()
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+        self.assertEqual(ll.size, 0)
+        self.assertEqual(list(ll), [])
+        self.assertEqual(del_node.next, None)
 
     def test_pop(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.pop()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.next, None)
 
     def test_popleft(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
+        self.assertEqual(del_node.next, None)
 
     def test_popright(self):
         ref = range(0, 1024, 4)
         ll = sllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.next, None)
 
     def test_pop_from_empty_list(self):
         ll = sllist()
         self.assertRaises(ValueError, ll.pop)
         self.assertRaises(ValueError, ll.popleft)
         self.assertRaises(ValueError, ll.popright)
+
+    def test_remove(self):
+        ref = range(0, 1024, 4)
+        ll = sllist(ref)
+        prev_node = ll.nodeat(3)
+        del_node = ll.nodeat(4)
+        next_node = ll.nodeat(5)
+        result = ll.remove(del_node)
+        ref_result = ref[4]
+        del ref[4]
+        self.assertEqual(list(ll), ref)
+        self.assertEqual(result, ref_result)
+        self.assertEqual(len(ll), len(ref))
+        self.assertEqual(ll.size, len(ref))
+        self.assertEqual(prev_node.next, next_node)
+        self.assertEqual(del_node.next, None)
 
     def test_remove_from_empty_list(self):
         ll = sllist()
@@ -311,6 +456,59 @@ class testsllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = sllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, sllistnode())
+
+    def test_remove_already_deleted_node(self):
+        ll = sllist([1, 2, 3, 4])
+        node = ll.nodeat(2)
+        ll.remove(node)
+        self.assertRaises(ValueError, ll.remove, node)
+
+    def test_rotate_left(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[split:] + ref[:split]
+            ll = sllist(ref)
+            new_first = ll.nodeat(split)
+            new_last = ll.nodeat(split - 1)
+            ll.rotate(-n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.last.next, None)
+
+    def test_rotate_right(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[-split:] + ref[:-split]
+            ll = sllist(ref)
+            new_first = ll.nodeat(-split)
+            last_idx = -split - 1
+            new_last = ll.nodeat(last_idx)
+            ll.rotate(n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.last.next, None)
+
+    def test_rotate_left_empty(self):
+        for n in xrange(4):
+            ll = sllist()
+            ll.rotate(-n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
+
+    def test_rotate_right_empty(self):
+        for n in xrange(4):
+            ll = sllist()
+            ll.rotate(n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
 
     def test_getitem(self):
         ref = range(0, 1024, 4)
@@ -621,77 +819,228 @@ class testdllist(unittest.TestCase):
     def test_append(self):
         ll = dllist(xrange(4))
         ref = dllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
         arg_node = dllistnode(10)
         new_node = ll.append(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10);
-        self.assertEqual(new_node.prev, ll.nodeat(-2))
+        self.assertEqual(new_node.prev, prev)
         self.assertEqual(new_node.next, None)
-        self.assertEqual(ll.nodeat(-2).next, new_node)
+        self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
 
     def test_appendleft(self):
         ll = dllist(xrange(4))
         ref = dllist([10, 0, 1, 2, 3])
+        next = ll.nodeat(0)
         arg_node = dllistnode(10)
         new_node = ll.appendleft(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10);
         self.assertEqual(new_node.prev, None)
-        self.assertEqual(new_node.next, ll.nodeat(1))
-        self.assertEqual(ll.nodeat(1).prev, new_node)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(next.prev, new_node)
         self.assertEqual(ll.first, new_node)
         self.assertEqual(ll, ref)
 
     def test_appendright(self):
         ll = dllist(xrange(4))
         ref = dllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
         arg_node = dllistnode(10)
         new_node = ll.appendright(arg_node)
         self.assertNotEqual(new_node, arg_node)
         self.assertEqual(new_node.value, 10);
-        self.assertEqual(new_node.prev, ll.nodeat(-2))
+        self.assertEqual(new_node.prev, prev)
         self.assertEqual(new_node.next, None)
-        self.assertEqual(ll.nodeat(-2).next, new_node)
+        self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
+
+    def test_extend(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = dllist(b_ref)
+        ab_ref = dllist(a_ref + b_ref)
+        a = dllist(a_ref)
+        a.extend(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extend(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extend(a)
+        self.assertEqual(a, dllist(a_ref + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extend_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = dllist(filled_ref)
+        empty = dllist()
+        empty.extend(empty)
+        self.assertEqual(empty, dllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = dllist()
+        empty.extend(filled)
+        self.assertEqual(empty, dllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = dllist()
+        filled.extend(empty)
+        self.assertEqual(filled, dllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_extendleft(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = dllist(b_ref)
+        ab_ref = dllist(list(reversed(b_ref)) + a_ref)
+        a = dllist(a_ref)
+        a.extendleft(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extendleft(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extendleft(a)
+        self.assertEqual(a, dllist(list(reversed(a_ref)) + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extendleft_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = dllist(filled_ref)
+        empty = dllist()
+        empty.extendleft(empty)
+        self.assertEqual(empty, dllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = dllist()
+        empty.extendleft(filled)
+        self.assertEqual(empty, dllist(list(reversed(filled_ref)) + []))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = dllist()
+        filled.extendleft(empty)
+        self.assertEqual(filled, dllist(list(reversed([])) + filled_ref))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_extendright(self):
+        a_ref = range(0, 1024, 4)
+        b_ref = range(8092, 8092 + 1024, 4)
+        b = dllist(b_ref)
+        ab_ref = dllist(a_ref + b_ref)
+        a = dllist(a_ref)
+        a.extendright(b)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extendright(b_ref)
+        self.assertEqual(a, ab_ref)
+        self.assertEqual(len(a), len(ab_ref))
+        a = dllist(a_ref)
+        a.extendright(a)
+        self.assertEqual(a, dllist(a_ref + a_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
+
+    def test_extendright_empty(self):
+        filled_ref = range(0, 1024, 4)
+        filled = dllist(filled_ref)
+        empty = dllist()
+        empty.extendright(empty)
+        self.assertEqual(empty, dllist([] + []))
+        self.assertEqual(len(empty), 0)
+        empty = dllist()
+        empty.extendright(filled)
+        self.assertEqual(empty, dllist([] + filled_ref))
+        self.assertEqual(len(empty), len(filled_ref))
+        empty = dllist()
+        filled.extendright(empty)
+        self.assertEqual(filled, dllist(filled_ref + []))
+        self.assertEqual(len(filled), len(filled_ref))
+
+    def test_clear_empty(self):
+        empty_list = dllist()
+        empty_list.clear()
+        self.assertEqual(empty_list.first, None)
+        self.assertEqual(empty_list.last, None)
+        self.assertEqual(empty_list.size, 0)
+        self.assertEqual(list(empty_list), [])
+
+    def test_clear(self):
+        ll = dllist(xrange(0, 1024, 4))
+        del_node = ll.nodeat(4)
+        ll.clear()
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+        self.assertEqual(ll.size, 0)
+        self.assertEqual(list(ll), [])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_pop(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.pop();
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_popleft(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_popright(self):
         ref = range(0, 1024, 4)
         ll = dllist(ref)
+        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_pop_from_empty_list(self):
         ll = dllist()
         self.assertRaises(ValueError, ll.pop)
         self.assertRaises(ValueError, ll.popleft)
         self.assertRaises(ValueError, ll.popright)
+
+    def test_remove(self):
+        ref = range(0, 1024, 4)
+        ll = dllist(ref)
+        prev_node = ll.nodeat(3)
+        del_node = ll.nodeat(4)
+        next_node = ll.nodeat(5)
+        result = ll.remove(del_node)
+        ref_result = ref[4]
+        del ref[4]
+        self.assertEqual(list(ll), ref)
+        self.assertEqual(result, ref_result)
+        self.assertEqual(len(ll), len(ref))
+        self.assertEqual(ll.size, len(ref))
+        self.assertEqual(prev_node.next, next_node)
+        self.assertEqual(next_node.prev, prev_node)
+        self.assertEqual(del_node.prev, None)
+        self.assertEqual(del_node.next, None)
 
     def test_remove_from_empty_list(self):
         ll = dllist()
@@ -700,6 +1049,75 @@ class testdllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = dllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, dllistnode())
+
+    def test_remove_already_deleted_node(self):
+        ll = dllist([1, 2, 3, 4])
+        node = ll.nodeat(2)
+        ll.remove(node)
+        self.assertRaises(ValueError, ll.remove, node)
+
+    def test_rotate_left(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[split:] + ref[:split]
+            ll = dllist(ref)
+            new_first = ll.nodeat(split)
+            new_last = ll.nodeat(split - 1)
+            # touch future middle element to initialize cache
+            cached_idx = (len(ll) / 2 + n) % len(ll)
+            ll[cached_idx]
+            ll.rotate(-n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.first.prev, None)
+            self.assertEqual(ll.first.next.prev, ll.first)
+            self.assertEqual(ll.last.next, None)
+            self.assertEqual(ll.last.prev.next, ll.last)
+            # check if cached index is updated correctly
+            self.assertEqual(ll[len(ll) / 2], ref_result[len(ref_result) / 2])
+
+    def test_rotate_right(self):
+        for n in xrange(128):
+            ref = range(32)
+            split = n % len(ref)
+            ref_result = ref[-split:] + ref[:-split]
+            ll = dllist(ref)
+            new_first = ll.nodeat(-split)
+            last_idx = -split - 1
+            new_last = ll.nodeat(last_idx)
+            # touch future middle element to initialize cache
+            cached_idx = len(ll) - (len(ll) / 2 + n) % len(ll) - 1
+            ll[cached_idx]
+            ll.rotate(n)
+            self.assertEqual(list(ll), ref_result)
+            self.assertEqual(ll.first, new_first)
+            self.assertEqual(ll.last, new_last)
+            self.assertEqual(ll.size, len(ref))
+            self.assertEqual(ll.first.prev, None)
+            self.assertEqual(ll.first.next.prev, ll.first)
+            self.assertEqual(ll.last.next, None)
+            self.assertEqual(ll.last.prev.next, ll.last)
+            # check if cached index is updated correctly
+            self.assertEqual(ll[len(ll) / 2], ref_result[len(ref_result) / 2])
+
+    def test_rotate_left_empty(self):
+        for n in xrange(4):
+            ll = dllist()
+            ll.rotate(-n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
+
+    def test_rotate_right_empty(self):
+        for n in xrange(4):
+            ll = dllist()
+            ll.rotate(n)
+            self.assertEqual(ll.first, None)
+            self.assertEqual(ll.last, None)
+            self.assertEqual(ll.size, 0)
 
     def test_getitem(self):
         ref = range(0, 1024, 4)
@@ -754,7 +1172,7 @@ class testdllist(unittest.TestCase):
         self.assertEqual(len(c), len(ab_ref))
         c = a + b_ref
         self.assertEqual(c, ab_ref)
-        self.assertEqual(len(c), len(ab_ref))
+        self.assertEqual(len(c), len(a_ref) * 2)
 
     def test_concat_empty(self):
         empty = dllist()
@@ -786,7 +1204,7 @@ class testdllist(unittest.TestCase):
         a = dllist(a_ref)
         a += a
         self.assertEqual(a, dllist(a_ref + a_ref))
-        self.assertEqual(len(a), len(ab_ref))
+        self.assertEqual(len(a), len(a_ref) * 2)
 
     def test_concat_inplace_empty(self):
         filled_ref = range(0, 1024, 4)

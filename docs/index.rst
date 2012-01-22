@@ -73,6 +73,24 @@ Random access to elements using index is O(n).
       Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
+   .. method:: clear()
+
+      Remove all nodes from the list.
+
+   .. method:: extend(iterable)
+
+      Append elements from *iterable* to the right side of the list.
+
+   .. method:: extendleft(iterable)
+
+      Append elements from *iterable* to the left side of the list.
+      Note that elements will be appended in reversed order.
+
+   .. method:: extendright(iterable)
+
+      Append elements from *iterable* to the right side of the list
+      (synonymous with :meth:`extend`).
+
    .. method:: insert(x, [before])
 
       Add *x* to the right side of the list if *before* is not specified,
@@ -129,6 +147,16 @@ Random access to elements using index is O(n).
 
       Raises :exc:`ValueError` if *self* is empty, or *node* does
       not belong to *self*.
+
+   .. method:: rotate(n)
+
+      Rotate the list *n* steps to the right. If *n* is negative, rotate
+      to the left. If *n* is 0, do nothing.
+
+      Raises :exc:`TypeError` if *n* is not an integer.
+
+      This method has O(n) time complexity (with regards to the size of
+      the list).
 
 
    In addition to these methods, :class:`dllist` supports iteration,
@@ -226,6 +254,14 @@ Random access to elements using index is O(n).
       >>> print lst
       dllist([0, 1, 2, 3, 4, 5])
 
+      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> print lst
+      dllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> print lst
+      dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = dllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
       >>> lst.insert(1.5, node)         # insert 1.5 before node
       <dllistnode(1.5)>
@@ -257,6 +293,18 @@ Random access to elements using index is O(n).
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
       ValueError: dllistnode belongs to another list
+      >>> lst.clear()
+      >>> print lst
+      dllist()
+
+      >>> lst = dllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(2)
+      >>> print lst
+      dllist([4, 5, 1, 2, 3])
+      >>> lst = dllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(-2)
+      >>> print lst
+      dllist([3, 4, 5, 1, 2])
 
       >>> cmp(dllist(), dllist([]))     # list comparison (lexicographical order)
       0
@@ -388,7 +436,31 @@ Random access to elements using index is O(n).
 
       This method has O(1) complexity.
 
-   .. method:: insert_after(x, node)
+   .. method:: clear()
+
+      Remove all nodes from the list.
+
+   .. method:: extend(iterable)
+
+      Append elements from *iterable* to the right side of the list.
+
+      This method has O(n) complexity (in the size of *iterable*).
+
+   .. method:: extendleft(iterable)
+
+      Append elements from *iterable* to the left side of the list.
+      Note that elements will be appended in reversed order.
+
+      This method has O(n) complexity (in the size of *iterable*).
+
+   .. method:: extendright(iterable)
+
+      Append elements from *iterable* to the right side of the list
+      (synonymous with :meth:`extend`).
+
+      This method has O(n) complexity (in the size of *iterable*).
+
+   .. method:: insertafter(x, node)
 
       Inserts *x* after *node* and return inserted :class:`sllistnode`.
 
@@ -401,7 +473,7 @@ Random access to elements using index is O(n).
 
       This method has O(1) complexity.
 
-   .. method:: insert_before(x, node)
+   .. method:: insertbefore(x, node)
 
       Inserts *x* before *node* and return inserted :class:`sllistnode`.
 
@@ -459,6 +531,16 @@ Random access to elements using index is O(n).
       not belong to *self*.
 
       This method has O(n) time complexity.
+
+   .. method:: rotate(n)
+
+      Rotate the list *n* steps to the right. If *n* is negative, rotate
+      to the left. If *n* is 0, do nothing.
+
+      Raises :exc:`TypeError` if *n* is not an integer.
+
+      This method has O(n) time complexity (with regards to the size of
+      the list).
 
 
    In addition to these methods, :class:`sllist` supports iteration,
@@ -549,12 +631,20 @@ Random access to elements using index is O(n).
       >>> print lst
       sllist([0, 1, 2, 3, 4, 5])
 
+      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> print lst
+      sllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> print lst
+      sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+      >>> lst = sllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
-      >>> lst.insert_before(1.5, node)  # insert 1.5 before node
+      >>> lst.insertbefore(1.5, node)  # insert 1.5 before node
       <sllistnode(1.5)>
       >>> print lst
       sllist([0, 1, 1.5, 2, 3, 4, 5])
-      >>> lst.insert_after(2.5, node)   # insert 2.5 after node
+      >>> lst.insertafter(2.5, node)   # insert 2.5 after node
       <sllistnode(2.5)>
       >>> print lst
       sllist([0, 1, 1.5, 2, 2.5, 3, 4, 5])
@@ -579,7 +669,19 @@ Random access to elements using index is O(n).
           compileflags, 1) in test.globs
         File "<doctest default[39]>", line 1, in <module>
           lst.remove(foreign_node)
-      ValueError: dllistnode belongs to another list
+      ValueError: sllistnode belongs to another list
+      >>> lst.clear()
+      >>> print lst
+      sllist()
+
+      >>> lst = sllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(2)
+      >>> print lst
+      sllist([4, 5, 1, 2, 3])
+      >>> lst = sllist([1, 2, 3, 4, 5])
+      >>> lst.rotate(-2)
+      >>> print lst
+      sllist([3, 4, 5, 1, 2])
 
       >>> cmp(sllist(), sllist([]))     # list comparison (lexicographical order)
       0
