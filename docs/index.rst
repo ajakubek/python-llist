@@ -460,7 +460,7 @@ Random access to elements using index is O(n).
 
       This method has O(n) complexity (in the size of *iterable*).
 
-   .. method:: insert_after(x, node)
+   .. method:: insertafter(x, node)
 
       Inserts *x* after *node* and return inserted :class:`sllistnode`.
 
@@ -473,7 +473,7 @@ Random access to elements using index is O(n).
 
       This method has O(1) complexity.
 
-   .. method:: insert_before(x, node)
+   .. method:: insertbefore(x, node)
 
       Inserts *x* before *node* and return inserted :class:`sllistnode`.
 
@@ -640,11 +640,11 @@ Random access to elements using index is O(n).
 
       >>> lst = sllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
-      >>> lst.insert_before(1.5, node)  # insert 1.5 before node
+      >>> lst.insertbefore(1.5, node)  # insert 1.5 before node
       <sllistnode(1.5)>
       >>> print lst
       sllist([0, 1, 1.5, 2, 3, 4, 5])
-      >>> lst.insert_after(2.5, node)   # insert 2.5 after node
+      >>> lst.insertafter(2.5, node)   # insert 2.5 after node
       <sllistnode(2.5)>
       >>> print lst
       sllist([0, 1, 1.5, 2, 2.5, 3, 4, 5])

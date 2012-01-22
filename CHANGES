@@ -8,6 +8,8 @@
     to the list (issue #1)
   - implemented extend(), extendleft() and extendright() methods in
     dllist and sllist
+  - changed insert_before() to insertbefore() and insert_after() to
+    insertafter()
 
 -----------------------------------------------------------------------
 

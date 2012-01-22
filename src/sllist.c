@@ -523,7 +523,7 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
     return (PyObject*)new_node;
 }
 
-static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
+static PyObject* sllist_insertafter(SLListObject* self, PyObject* arg)
 {
 
     PyObject* value = NULL;
@@ -531,7 +531,7 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     PyObject* list_ref;
     SLListNodeObject* new_node;
 
-    if (!PyArg_UnpackTuple(arg, "insert_after", 2, 2, &value, &before))
+    if (!PyArg_UnpackTuple(arg, "insertafter", 2, 2, &value, &before))
         return NULL;
 
     if (!PyObject_TypeCheck(before, &SLListNodeType))
@@ -575,7 +575,7 @@ static PyObject* sllist_insert_after(SLListObject* self, PyObject* arg)
     return (PyObject*)new_node;
 }
 
-static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
+static PyObject* sllist_insertbefore(SLListObject* self, PyObject* arg)
 {
 
     PyObject* value = NULL;
@@ -585,7 +585,7 @@ static PyObject* sllist_insert_before(SLListObject* self, PyObject* arg)
     SLListNodeObject* new_node;
     SLListNodeObject* prev;
 
-    if (!PyArg_UnpackTuple(arg, "insert_before", 2, 2, &value, &after))
+    if (!PyArg_UnpackTuple(arg, "insertbefore", 2, 2, &value, &after))
         return NULL;
 
     if (!PyObject_TypeCheck(after, &SLListNodeType))
@@ -1225,10 +1225,10 @@ static PyMethodDef SLListMethods[] =
         { "extendright", (PyCFunction)sllist_extendright, METH_O,
           "Append elements from iterable at the right side of the list" },
 
-        { "insert_after", (PyCFunction)sllist_insert_after, METH_VARARGS,
+        { "insertafter", (PyCFunction)sllist_insertafter, METH_VARARGS,
           "Inserts element after node" },
 
-        { "insert_before", (PyCFunction)sllist_insert_before, METH_VARARGS,
+        { "insertbefore", (PyCFunction)sllist_insertbefore, METH_VARARGS,
           "Inserts element before node" },
 
         { "nodeat", (PyCFunction)sllist_node_at, METH_O,
