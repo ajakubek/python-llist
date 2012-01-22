@@ -1,4 +1,4 @@
-* llist-0.3 (2012-02-22)
+* llist-0.3 (2012-01-22)
 
   - fixed neighbour references (prev and next) in dangling nodes
   - implemented clear() method in dllist and sllist
