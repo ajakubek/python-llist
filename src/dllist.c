@@ -1,13 +1,21 @@
+
 /* Copyright (c) 2011-2012 Adam Jakubek, Rafał Gałczyński
  * Released under the MIT license (see attached LICENSE file).
  */
 
 #include <Python.h>
 #include <structmember.h>
+#include "py23macros.h"
 
-staticforward PyTypeObject DLListType;
-staticforward PyTypeObject DLListNodeType;
-staticforward PyTypeObject DLListIteratorType;
+#ifndef PyVarObject_HEAD_INIT
+    #define PyVarObject_HEAD_INIT(type, size) \
+        PyObject_HEAD_INIT(type) size,
+#endif
+
+
+static PyTypeObject DLListType;
+static PyTypeObject DLListNodeType;
+static PyTypeObject DLListIteratorType;
 
 
 /* DLListNode */
@@ -105,13 +113,47 @@ static void dllistnode_delete(DLListNodeObject* node)
     Py_DECREF((PyObject*)node);
 }
 
+/* Convenience function for formatting list node to a string.
+ * Pass PyObject_Repr or PyObject_Str in the fmt_func argument. */
+static PyObject* dllistnode_to_string(DLListNodeObject* self,
+                                      reprfunc fmt_func,
+                                      const char* prefix,
+                                      const char* suffix)
+{
+    PyObject* str = NULL;
+    PyObject* tmp_str;
+
+    assert(fmt_func != NULL);
+
+    str = Py23String_FromString(prefix);
+    if (str == NULL)
+        goto str_alloc_error;
+
+    tmp_str = fmt_func(self->value);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    Py23String_ConcatAndDel(&str, tmp_str);
+
+    tmp_str = Py23String_FromString(suffix);
+    if (tmp_str == NULL)
+        goto str_alloc_error;
+    Py23String_ConcatAndDel(&str, tmp_str);
+
+    return str;
+
+str_alloc_error:
+    Py_XDECREF(str);
+    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+    return NULL;
+}
+
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
     Py_DECREF(self->list_weakref);
     Py_DECREF(self->value);
     Py_DECREF(Py_None);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 static PyObject* dllistnode_new(PyTypeObject* type,
@@ -169,56 +211,12 @@ static PyObject* dllistnode_call(DLListNodeObject* self,
 
 static PyObject* dllistnode_repr(DLListNodeObject* self)
 {
-    PyObject* str = NULL;
-    PyObject* tmp_str;
-
-    str = PyString_FromString("<dllistnode(");
-    if (str == NULL)
-        goto str_alloc_error;
-
-    tmp_str = PyObject_Repr(self->value);
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
-
-    tmp_str = PyString_FromString(")>");
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
-
-    return str;
-
-str_alloc_error:
-    Py_XDECREF(str);
-    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
-    return NULL;
+    return dllistnode_to_string(self, PyObject_Repr, "<dllistnode(", ")>");
 }
 
 static PyObject* dllistnode_str(DLListNodeObject* self)
 {
-    PyObject* str = NULL;
-    PyObject* tmp_str;
-
-    str = PyString_FromString("dllistnode(");
-    if (str == NULL)
-        goto str_alloc_error;
-
-    tmp_str = PyObject_Str(self->value);
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
-
-    tmp_str = PyString_FromString(")");
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
-
-    return str;
-
-str_alloc_error:
-    Py_XDECREF(str);
-    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
-    return NULL;
+    return dllistnode_to_string(self, PyObject_Str, "dllistnode(", ")");
 }
 
 static PyMemberDef DLListNodeMembers[] =
@@ -234,8 +232,7 @@ static PyMemberDef DLListNodeMembers[] =
 
 static PyTypeObject DLListNodeType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                              /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllistnode",             /* tp_name */
     sizeof(DLListNodeObject),       /* tp_basicsize */
     0,                              /* tp_itemsize */
@@ -442,29 +439,29 @@ static PyObject* dllist_to_string(DLListObject* self,
 
     if (self->first == Py_None)
     {
-        str = PyString_FromString("dllist()");
+        str = Py23String_FromString("dllist()");
         if (str == NULL)
             goto str_alloc_error;
         return str;
     }
 
-    str = PyString_FromString("dllist([");
+    str = Py23String_FromString("dllist([");
     if (str == NULL)
         goto str_alloc_error;
 
-    comma_str = PyString_FromString(", ");
+    comma_str = Py23String_FromString(", ");
     if (comma_str == NULL)
         goto str_alloc_error;
 
     while ((PyObject*)node != Py_None)
     {
         if (node != (DLListNodeObject*)self->first)
-            PyString_Concat(&str, comma_str);
+            Py23String_Concat(&str, comma_str);
 
         tmp_str = fmt_func(node->value);
         if (tmp_str == NULL)
             goto str_alloc_error;
-        PyString_ConcatAndDel(&str, tmp_str);
+        Py23String_ConcatAndDel(&str, tmp_str);
 
         node = (DLListNodeObject*)node->next;
     }
@@ -472,10 +469,10 @@ static PyObject* dllist_to_string(DLListObject* self,
     Py_DECREF(comma_str);
     comma_str = NULL;
 
-    tmp_str = PyString_FromString("])");
+    tmp_str = Py23String_FromString("])");
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
     return str;
 
@@ -502,7 +499,7 @@ static void dllist_dealloc(DLListObject* self)
 
     Py_DECREF(Py_None);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 static PyObject* dllist_new(PyTypeObject* type,
@@ -554,13 +551,13 @@ static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
     DLListNodeObject* node;
     Py_ssize_t index;
 
-    if (!PyInt_Check(indexObject))
+    if (!Py23Int_Check(indexObject))
     {
         PyErr_SetString(PyExc_TypeError, "Index must be an integer");
         return NULL;
     }
 
-    index = PyInt_AsSsize_t(indexObject);
+    index = Py23Int_AsSsize_t(indexObject);
 
     if (index < 0)
         index = ((DLListObject*)self)->size + index;
@@ -576,34 +573,6 @@ static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject)
     }
 
     return (PyObject*)node;
-}
-
-static int dllist_compare(DLListObject* self, DLListObject* other)
-{
-    DLListNodeObject* self_node = (DLListNodeObject*)self->first;
-    DLListNodeObject* other_node = (DLListNodeObject*)other->first;
-    int result = 0;
-
-    while (result == 0)
-    {
-        if ((PyObject*)self_node == Py_None ||
-            (PyObject*)other_node == Py_None)
-        {
-            if ((PyObject*)self_node == Py_None)
-                return ((PyObject*)other_node == Py_None) ? 0 : -1;
-            else
-                return ((PyObject*)other_node == Py_None) ? 1 : 0;
-        }
-
-        result = PyObject_Compare(self_node->value, other_node->value);
-        if (PyErr_Occurred())
-            return 0;
-
-        self_node = (DLListNodeObject*)self_node->next;
-        other_node = (DLListNodeObject*)other_node->next;
-    }
-
-    return result;
 }
 
 static PyObject* dllist_repr(DLListObject* self)
@@ -635,6 +604,96 @@ static long dllist_hash(DLListObject* self)
     }
 
     return hash;
+}
+
+static PyObject* dllist_richcompare(DLListObject* self,
+                                    DLListObject* other,
+                                    int op)
+{
+    DLListNodeObject* self_node;
+    DLListNodeObject* other_node;
+    int satisfied = 1;
+
+    if (!PyObject_TypeCheck(other, &DLListType))
+    {
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
+
+    if (self == other &&
+        (op == Py_EQ || op == Py_LE || op == Py_GE))
+        Py_RETURN_TRUE;
+
+    if (self->size != other->size)
+    {
+        if (op == Py_EQ)
+            Py_RETURN_FALSE;
+        else if (op == Py_NE)
+            Py_RETURN_TRUE;
+    }
+
+    /* Scan through sequences' items as long as they are equal. */
+    self_node = (DLListNodeObject*)self->first;
+    other_node = (DLListNodeObject*)other->first;
+
+    while ((PyObject*)self_node != Py_None &&
+            (PyObject*)other_node != Py_None)
+    {
+        satisfied = PyObject_RichCompareBool(
+            self_node->value, other_node->value, Py_EQ);
+
+        if (satisfied == 0)
+            break;
+
+        if (satisfied == -1)
+            return NULL;
+
+        self_node = (DLListNodeObject*)self_node->next;
+        other_node = (DLListNodeObject*)other_node->next;
+    }
+
+    /* Compare last item */
+    if (satisfied)
+    {
+        /* At least one of operands has been fully traversed.
+         * Either self_node or other_node is equal to Py_None. */
+        switch (op)
+        {
+        case Py_EQ:
+            satisfied = (self_node == other_node);
+            break;
+        case Py_NE:
+            satisfied = (self_node != other_node);
+            break;
+        case Py_LT:
+            satisfied = ((PyObject*)other_node != Py_None);
+            break;
+        case Py_GT:
+            satisfied = ((PyObject*)self_node != Py_None);
+            break;
+        case Py_LE:
+            satisfied = ((PyObject*)self_node == Py_None);
+            break;
+        case Py_GE:
+            satisfied = ((PyObject*)other_node == Py_None);
+            break;
+        default:
+            assert(0 && "Invalid rich compare operator");
+            PyErr_SetString(PyExc_ValueError, "Invalid rich compare operator");
+            return NULL;
+        }
+    }
+    else if (op != Py_EQ)
+    {
+        /* Both nodes are valid, but not equal */
+        satisfied = PyObject_RichCompareBool(
+            self_node->value, other_node->value, op);
+    }
+
+    if (satisfied)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
 }
 
 static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
@@ -1009,13 +1068,13 @@ static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
     if (self->size <= 1)
         Py_RETURN_NONE;
 
-    if (!PyInt_Check(nObject))
+    if (!Py23Int_Check(nObject))
     {
         PyErr_SetString(PyExc_TypeError, "n must be an integer");
         return NULL;
     }
 
-    n = PyInt_AsSsize_t(nObject);
+    n = Py23Int_AsSsize_t(nObject);
     n_mod = py_ssize_t_abs(n) % self->size;
 
     if (n_mod == 0)
@@ -1260,8 +1319,7 @@ static PySequenceMethods DLListSequenceMethods[] =
 
 static PyTypeObject DLListType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                          /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllist",             /* tp_name */
     sizeof(DLListObject),       /* tp_basicsize */
     0,                          /* tp_itemsize */
@@ -1269,7 +1327,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_print */
     0,                          /* tp_getattr */
     0,                          /* tp_setattr */
-    (cmpfunc)dllist_compare,    /* tp_compare */
+    0,                          /* tp_compare */
     (reprfunc)dllist_repr,      /* tp_repr */
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
@@ -1284,7 +1342,8 @@ static PyTypeObject DLListType =
     "Doubly linked list",       /* tp_doc */
     0,                          /* tp_traverse */
     0,                          /* tp_clear */
-    0,                          /* tp_richcompare */
+    (richcmpfunc)dllist_richcompare,
+                                /* tp_richcompare */
     offsetof(DLListObject, weakref_list),
                                 /* tp_weaklistoffset */
     dllist_iter,                /* tp_iter */
@@ -1317,7 +1376,7 @@ static void dllistiterator_dealloc(DLListIteratorObject* self)
     Py_XDECREF(self->current_node);
     Py_DECREF(self->list);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 static PyObject* dllistiterator_new(PyTypeObject* type,
@@ -1376,8 +1435,7 @@ static PyObject* dllistiterator_iternext(PyObject* self)
 
 static PyTypeObject DLListIteratorType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                                  /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllistiterator",             /* tp_name */
     sizeof(DLListIteratorObject),       /* tp_basicsize */
     0,                                  /* tp_itemsize */

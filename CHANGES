@@ -1,3 +1,9 @@
+* llist-0.4 (unreleased)
+
+  - Python 3.x support
+
+-----------------------------------------------------------------------
+
 * llist-0.3 (2012-01-22)
 
   - fixed neighbour references (prev and next) in dangling nodes
