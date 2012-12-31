@@ -1,13 +1,23 @@
-/* Copyright (c) 2011-2012 Adam Jakubek, Rafał Gałczyński
+/* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
  * Released under the MIT license (see attached LICENSE file).
  */
 
 #include <Python.h>
 #include <structmember.h>
+#include "py23macros.h"
 
-staticforward PyTypeObject SLListType;
-staticforward PyTypeObject SLListNodeType;
-staticforward PyTypeObject SLListIteratorType;
+#ifndef PyVarObject_HEAD_INIT
+    #define PyVarObject_HEAD_INIT(type, size) \
+        PyObject_HEAD_INIT(type) size,
+#endif
+
+
+static PyTypeObject SLListType;
+static PyTypeObject SLListNodeType;
+static PyTypeObject SLListIteratorType;
+
+
+/* SLListNode */
 
 typedef struct
 {
@@ -71,7 +81,7 @@ static void sllistnode_dealloc(SLListNodeObject* self)
     Py_DECREF(self->value);
     Py_DECREF(Py_None);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 static int sllistnode_init(SLListNodeObject* self,
@@ -127,19 +137,19 @@ static PyObject* sllistnode_repr(SLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("<sllistnode(");
+    str = Py23String_FromString("<sllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
     tmp_str = PyObject_Repr(self->value);
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
-    tmp_str = PyString_FromString(")>");
+    tmp_str = Py23String_FromString(")>");
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
     return str;
 
@@ -154,19 +164,19 @@ static PyObject* sllistnode_str(SLListNodeObject* self)
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = PyString_FromString("sllistnode(");
+    str = Py23String_FromString("sllistnode(");
     if (str == NULL)
         goto str_alloc_error;
 
     tmp_str = PyObject_Str(self->value);
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
-    tmp_str = PyString_FromString(")");
+    tmp_str = Py23String_FromString(")");
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
     return str;
 
@@ -203,8 +213,7 @@ static PyMemberDef SLListNodeMembers[] =
 
 static PyTypeObject SLListNodeType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                              /* ob_size           */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllistnode",             /* tp_name           */
     sizeof(SLListNodeObject),       /* tp_basicsize      */
     0,                              /* tp_itemsize       */
@@ -250,7 +259,6 @@ static PyTypeObject SLListNodeType =
 /*                                      SLLIST                                    */
 /* ****************************************************************************** */
 
-staticforward PyTypeObject SLListType;
 typedef struct
 {
     PyObject_HEAD
@@ -278,7 +286,7 @@ static void sllist_dealloc(SLListObject* self)
 
     Py_DECREF(Py_None);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 
@@ -409,32 +417,94 @@ static int sllist_init(SLListObject* self, PyObject* args, PyObject* kwds)
 }
 
 
-static int sllist_compare(SLListObject* self, SLListObject* other)
+static PyObject* sllist_richcompare(SLListObject* self,
+                                    SLListObject* other,
+                                    int op)
 {
-    SLListNodeObject* self_node = (SLListNodeObject*)self->first;
-    SLListNodeObject* other_node = (SLListNodeObject*)other->first;
-    int result = 0;
+    SLListNodeObject* self_node;
+    SLListNodeObject* other_node;
+    int satisfied = 1;
 
-    while (result == 0)
+    if (!PyObject_TypeCheck(other, &SLListType))
     {
-        if ((PyObject*)self_node == Py_None ||
-            (PyObject*)other_node == Py_None)
-        {
-            if ((PyObject*)self_node == Py_None)
-                return ((PyObject*)other_node == Py_None) ? 0 : -1;
-            else
-                return ((PyObject*)other_node == Py_None) ? 1 : 0;
-        }
+        Py_INCREF(Py_NotImplemented);
+        return Py_NotImplemented;
+    }
 
-        result = PyObject_Compare(self_node->value, other_node->value);
-        if (PyErr_Occurred())
-            return 0;
+    if (self == other &&
+        (op == Py_EQ || op == Py_LE || op == Py_GE))
+        Py_RETURN_TRUE;
+
+    if (self->size != other->size)
+    {
+        if (op == Py_EQ)
+            Py_RETURN_FALSE;
+        else if (op == Py_NE)
+            Py_RETURN_TRUE;
+    }
+
+    /* Scan through sequences' items as long as they are equal. */
+    self_node = (SLListNodeObject*)self->first;
+    other_node = (SLListNodeObject*)other->first;
+
+    while ((PyObject*)self_node != Py_None &&
+            (PyObject*)other_node != Py_None)
+    {
+        satisfied = PyObject_RichCompareBool(
+            self_node->value, other_node->value, Py_EQ);
+
+        if (satisfied == 0)
+            break;
+
+        if (satisfied == -1)
+            return NULL;
 
         self_node = (SLListNodeObject*)self_node->next;
         other_node = (SLListNodeObject*)other_node->next;
     }
 
-    return result;
+    /* Compare last item */
+    if (satisfied)
+    {
+        /* At least one of operands has been fully traversed.
+         * Either self_node or other_node is equal to Py_None. */
+        switch (op)
+        {
+        case Py_EQ:
+            satisfied = (self_node == other_node);
+            break;
+        case Py_NE:
+            satisfied = (self_node != other_node);
+            break;
+        case Py_LT:
+            satisfied = ((PyObject*)other_node != Py_None);
+            break;
+        case Py_GT:
+            satisfied = ((PyObject*)self_node != Py_None);
+            break;
+        case Py_LE:
+            satisfied = ((PyObject*)self_node == Py_None);
+            break;
+        case Py_GE:
+            satisfied = ((PyObject*)other_node == Py_None);
+            break;
+        default:
+            assert(0 && "Invalid rich compare operator");
+            PyErr_SetString(PyExc_ValueError, "Invalid rich compare operator");
+            return NULL;
+        }
+    }
+    else if (op != Py_EQ)
+    {
+        /* Both nodes are valid, but not equal */
+        satisfied = PyObject_RichCompareBool(
+            self_node->value, other_node->value, op);
+    }
+
+    if (satisfied)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
 }
 
 
@@ -754,13 +824,13 @@ static PyObject* sllist_node_at(PyObject* self, PyObject* indexObject)
     SLListNodeObject* node;
     Py_ssize_t index;
 
-    if (!PyInt_Check(indexObject))
+    if (!Py23Int_Check(indexObject))
     {
         PyErr_SetString(PyExc_TypeError, "Index must be an integer");
         return NULL;
     }
 
-    index = PyInt_AsSsize_t(indexObject);
+    index = Py23Int_AsSsize_t(indexObject);
 
     if (index < 0)
         index = ((SLListObject*)self)->size + index;
@@ -854,13 +924,13 @@ static PyObject* sllist_rotate(SLListObject* self, PyObject* nObject)
     if (self->size <= 1)
         Py_RETURN_NONE;
 
-    if (!PyInt_Check(nObject))
+    if (!Py23Int_Check(nObject))
     {
         PyErr_SetString(PyExc_TypeError, "n must be an integer");
         return NULL;
     }
 
-    n = PyInt_AsSsize_t(nObject);
+    n = Py23Int_AsSsize_t(nObject);
     n_mod = (n >= 0 ? n : -n) % self->size;
 
     if (n_mod == 0)
@@ -1134,29 +1204,29 @@ static PyObject* sllist_to_string(SLListObject* self,
 
     if (self->first == Py_None)
     {
-        str = PyString_FromString("sllist()");
+        str = Py23String_FromString("sllist()");
         if (str == NULL)
             goto str_alloc_error;
         return str;
     }
 
-    str = PyString_FromString("sllist([");
+    str = Py23String_FromString("sllist([");
     if (str == NULL)
         goto str_alloc_error;
 
-    comma_str = PyString_FromString(", ");
+    comma_str = Py23String_FromString(", ");
     if (comma_str == NULL)
         goto str_alloc_error;
 
     while ((PyObject*)node != Py_None)
     {
         if (node != (SLListNodeObject*)self->first)
-            PyString_Concat(&str, comma_str);
+            Py23String_Concat(&str, comma_str);
 
         tmp_str = fmt_func(node->value);
         if (tmp_str == NULL)
             goto str_alloc_error;
-        PyString_ConcatAndDel(&str, tmp_str);
+        Py23String_ConcatAndDel(&str, tmp_str);
 
         node = (SLListNodeObject*)node->next;
     }
@@ -1164,10 +1234,10 @@ static PyObject* sllist_to_string(SLListObject* self,
     Py_DECREF(comma_str);
     comma_str = NULL;
 
-    tmp_str = PyString_FromString("])");
+    tmp_str = Py23String_FromString("])");
     if (tmp_str == NULL)
         goto str_alloc_error;
-    PyString_ConcatAndDel(&str, tmp_str);
+    Py23String_ConcatAndDel(&str, tmp_str);
 
     return str;
 
@@ -1298,8 +1368,7 @@ static PySequenceMethods SLListSequenceMethods =
 
 static PyTypeObject SLListType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                           /* ob_size           */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllist",              /* tp_name           */
     sizeof(SLListObject),        /* tp_basicsize      */
     0,                           /* tp_itemsize       */
@@ -1307,7 +1376,7 @@ static PyTypeObject SLListType =
     0,                           /* tp_print          */
     0,                           /* tp_getattr        */
     0,                           /* tp_setattr        */
-    (cmpfunc)sllist_compare,     /* tp_compare        */
+    0,                           /* tp_compare        */
     (reprfunc)sllist_repr,       /* tp_repr           */
     0,                           /* tp_as_number      */
     &SLListSequenceMethods,      /* tp_as_sequence    */
@@ -1322,7 +1391,8 @@ static PyTypeObject SLListType =
     "Singly linked list",        /* tp_doc            */
     0,                           /* tp_traverse       */
     0,                           /* tp_clear          */
-    0,                           /* tp_richcompare    */
+    (richcmpfunc)sllist_richcompare,
+                                 /* tp_richcompare    */
     offsetof(SLListObject, weakref_list),
                                  /* tp_weaklistoffset */
     sllist_iter,                 /* tp_iter           */
@@ -1341,6 +1411,8 @@ static PyTypeObject SLListType =
 };
 
 
+/* SLListIterator */
+
 typedef struct
 {
     PyObject_HEAD
@@ -1353,7 +1425,7 @@ static void sllistiterator_dealloc(SLListIteratorObject* self)
     Py_XDECREF(self->current_node);
     Py_DECREF(self->list);
 
-    self->ob_type->tp_free((PyObject*)self);
+    PyObject_Del((PyObject*)self);
 }
 
 static PyObject* sllistiterator_new(PyTypeObject* type,
@@ -1415,8 +1487,7 @@ static PyObject* sllistiterator_iternext(PyObject* self)
 
 static PyTypeObject SLListIteratorType =
 {
-    PyObject_HEAD_INIT(NULL)
-    0,                                  /* ob_size           */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllistiterator",             /* tp_name           */
     sizeof(SLListIteratorObject),       /* tp_basicsize      */
     0,                                  /* tp_itemsize       */

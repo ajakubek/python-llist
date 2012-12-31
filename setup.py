@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-VERSION='0.3'
+VERSION='0.4'
 
 from distutils.core import setup, Extension
 
@@ -13,8 +13,8 @@ sources = ['src/llist.c',
 setup(name='llist',
       description='Linked list data structures for Python',
       long_description=open('README').read(),
-      author=u'Adam Jakubek, Rafał Gałczyński',
-      author_email=u'ajakubek@gmail.com, rafal.galczynski@gmail.com',
+      author='Adam Jakubek, Rafał Gałczyński',
+      author_email='ajakubek@gmail.com, rafal.galczynski@gmail.com',
       version=VERSION,
       url='https://github.com/ajakubek/python-llist',
       download_url='http://pypi.python.org/pypi/llist/%s' % VERSION,
@@ -30,6 +30,7 @@ setup(name='llist',
         'Operating System :: POSIX',
         'Programming Language :: C',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
