@@ -1,5 +1,4 @@
-
-/* Copyright (c) 2011-2012 Adam Jakubek, Rafał Gałczyński
+/* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
  * Released under the MIT license (see attached LICENSE file).
  */
 
