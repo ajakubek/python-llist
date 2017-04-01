@@ -1077,12 +1077,18 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
         self->last = (PyObject*)prev_node;
     }
 
+    if (self->last_accessed_node == (PyObject*)del_node)
+    {
+        /* invalidate last accessed item */
+        self->last_accessed_node = Py_None;
+        self->last_accessed_idx = -1;
+    }
+
 
     Py_INCREF(del_node->value);
     value = del_node->value;
 
-    del_node->next = Py_None;
-    Py_DECREF((PyObject*)del_node);
+    dllistnode_delete(del_node);
 
     return value;
 }
