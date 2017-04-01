@@ -1,4 +1,5 @@
 /* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
+ * Copyright (c) 2017 Timothy Savannah
  * Released under the MIT license (see attached LICENSE file).
  */
 
@@ -1161,6 +1162,92 @@ static PyObject* sllist_popright(SLListObject* self)
     return value;
 }
 
+static PyObject* sllist_pop(SLListObject* self, PyObject *arg)
+{
+    SLListNodeObject *del_node;
+    SLListNodeObject *prev_node;
+
+    PyObject *value;
+    PyObject *indexObject = NULL;
+
+    Py_ssize_t index;
+    Py_ssize_t i;
+
+
+    if (!PyArg_UnpackTuple(arg, "pop", 0, 1, &indexObject))
+    {
+        return NULL;
+    }
+
+    /* If we did not get passed the "index" arg, just return popright */
+    if ( indexObject == NULL )
+    {
+        return sllist_popright( self );
+    }
+
+    if (self->first == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError, "List is empty");
+        return NULL;
+    }
+    else
+    {
+        if (!Py23Int_Check(indexObject))
+        {
+            PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+            return NULL;
+        }
+
+        index = Py23Int_AsSsize_t(indexObject);
+    }
+
+
+    /* Negative index */
+    if (index < 0)
+        index = ((SLListObject*)self)->size + index;
+
+    /* Either a negative greater than index size, or a positive greater than size */
+    if ( index < 0 || index >= ((SLListObject*)self)->size )
+    {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        return NULL;
+    }
+
+    /* Start at first node, and walk to the one we will pop */
+    prev_node = Py_None;
+    del_node = (SLListNodeObject*)self->first;
+    for(i=0; i < index; i++) {
+        prev_node = del_node;
+        del_node = del_node->next;
+    }
+
+    if ( prev_node == Py_None )
+    {
+        /* First node */
+        self->first = del_node->next;
+    }
+    else
+    {
+        /* Any other node */
+        prev_node->next = del_node->next;
+    }
+
+    --self->size;
+    if ( index == self->size )
+    {
+        /* removeing last node, move last pointer */
+        self->last = prev_node;
+    }
+
+
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
+    del_node->next = Py_None;
+    Py_DECREF((PyObject*)del_node);
+
+    return value;
+}
 
 static PyObject* sllist_iter(PyObject* self)
 {
@@ -1321,8 +1408,8 @@ static PyMethodDef SLListMethods[] =
     { "nodeat", (PyCFunction)sllist_node_at, METH_O,
       "Return node at index" },
 
-    { "pop", (PyCFunction)sllist_popright, METH_NOARGS,
-      "Remove last element from the list and return it" },
+    { "pop", (PyCFunction)sllist_pop, METH_VARARGS,
+      "Remove a given element from the list and return it. Defaults to last" },
 
     { "popleft", (PyCFunction)sllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
