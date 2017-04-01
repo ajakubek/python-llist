@@ -1294,6 +1294,33 @@ class testdllist(unittest.TestCase):
         self.assertEqual(del_node.prev, None)
         self.assertEqual(del_node.next, None)
 
+        ref = py23_range(0, 1024, 4)
+        ll = dllist(ref)
+        
+        result = ll.pop(1)
+        self.assertEqual(result, ref[1])
+        result = ll.pop(1)
+        self.assertEqual(result, ref[2])
+        self.assertEqual(ll.size, len(ref)-2)
+
+        secondNode = ll.nodeat(1)
+
+        self.assertEquals(secondNode.prev, ll.first)
+        self.assertEquals(ll.first.prev, None)
+
+        ref = py23_range(0, 1024, 4)
+        ll = dllist(ref)
+        result = ll.pop(0)
+        self.assertEqual(result, ref[0])
+        
+        self.assertEqual(ll.first.value, ref[1])
+        for i in range(len(ll)):
+            ll.pop(0)
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+
+        
+
     def test_popleft(self):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)

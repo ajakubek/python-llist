@@ -995,6 +995,97 @@ static PyObject* dllist_popright(DLListObject* self)
     return value;
 }
 
+static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
+{
+    DLListNodeObject *del_node;
+    DLListNodeObject *prev_node;
+
+    PyObject *value;
+    PyObject *indexObject = NULL;
+
+    Py_ssize_t index;
+    Py_ssize_t i;
+
+
+    if (!PyArg_UnpackTuple(arg, "pop", 0, 1, &indexObject))
+    {
+        return NULL;
+    }
+
+    /* If we did not get passed the "index" arg, just return popright */
+    if ( indexObject == NULL )
+    {
+        return dllist_popright( self );
+    }
+
+    if (self->first == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError, "List is empty");
+        return NULL;
+    }
+    else
+    {
+        if (!Py23Int_Check(indexObject))
+        {
+            PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+            return NULL;
+        }
+
+        index = Py23Int_AsSsize_t(indexObject);
+    }
+
+
+    /* Negative index */
+    if (index < 0)
+        index = ((DLListObject*)self)->size + index;
+
+    /* Either a negative greater than index size, or a positive greater than size */
+    if ( index < 0 || index >= ((DLListObject*)self)->size )
+    {
+        PyErr_SetString(PyExc_IndexError, "Index out of range");
+        return NULL;
+    }
+
+    /* Start at first node, and walk to the one we will pop */
+    prev_node = (DLListObject*)Py_None;
+    del_node = (DLListNodeObject*)self->first;
+    for(i=0; i < index; i++) {
+        prev_node = del_node;
+        del_node = del_node->next;
+    }
+
+    if ( prev_node == Py_None )
+    {
+        /* First node */
+        self->first = del_node->next;
+    }
+    else
+    {
+        /* Any other node */
+        prev_node->next = del_node->next;
+    }
+    if(del_node->next != Py_None)
+    {
+        ((DLListNodeObject*)del_node->next)->prev = prev_node;
+    }
+
+    --self->size;
+    if ( index == self->size )
+    {
+        /* removeing last node, move last pointer */
+        self->last = prev_node;
+    }
+
+
+    Py_INCREF(del_node->value);
+    value = del_node->value;
+
+    del_node->next = Py_None;
+    Py_DECREF((PyObject*)del_node);
+
+    return value;
+}
+
 static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* del_node;
@@ -1280,8 +1371,8 @@ static PyMethodDef DLListMethods[] =
       "Return node at index" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
-    { "pop", (PyCFunction)dllist_popright, METH_NOARGS,
-      "Remove last element from the list and return it" },
+    { "pop", (PyCFunction)dllist_pop, METH_VARARGS,
+      "Remove an element by index from the list and return it, or last item if no index provided" },
     { "popright", (PyCFunction)dllist_popright, METH_NOARGS,
       "Remove last element from the list and return it" },
     { "remove", (PyCFunction)dllist_remove, METH_O,
