@@ -1214,14 +1214,14 @@ static PyObject* sllist_pop(SLListObject* self, PyObject *arg)
     }
 
     /* Start at first node, and walk to the one we will pop */
-    prev_node = Py_None;
+    prev_node = (SLListNodeObject*)Py_None;
     del_node = (SLListNodeObject*)self->first;
     for(i=0; i < index; i++) {
         prev_node = del_node;
-        del_node = del_node->next;
+        del_node = (SLListNodeObject*)del_node->next;
     }
 
-    if ( prev_node == Py_None )
+    if ( (PyObject*)prev_node == Py_None )
     {
         /* First node */
         self->first = del_node->next;
@@ -1236,7 +1236,7 @@ static PyObject* sllist_pop(SLListObject* self, PyObject *arg)
     if ( index == self->size )
     {
         /* removeing last node, move last pointer */
-        self->last = prev_node;
+        self->last = (PyObject*)prev_node;
     }
 
 
