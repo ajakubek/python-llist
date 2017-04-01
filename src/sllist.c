@@ -1409,7 +1409,7 @@ static PyMethodDef SLListMethods[] =
       "Return node at index" },
 
     { "pop", (PyCFunction)sllist_pop, METH_VARARGS,
-      "Remove a given element from the list and return it. Defaults to last" },
+      "Remove an element by index from the list and return it, or last item if no index provided" },
 
     { "popleft", (PyCFunction)sllist_popleft, METH_NOARGS,
       "Remove first element from the list and return it" },
