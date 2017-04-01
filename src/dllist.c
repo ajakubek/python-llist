@@ -1018,7 +1018,7 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
         return dllist_popright( self );
     }
 
-    if (self->first == Py_None)
+    if ( (PyObject*)self->first == Py_None)
     {
         PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
@@ -1047,33 +1047,33 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     }
 
     /* Start at first node, and walk to the one we will pop */
-    prev_node = (DLListObject*)Py_None;
+    prev_node = (DLListNodeObject*)Py_None;
     del_node = (DLListNodeObject*)self->first;
     for(i=0; i < index; i++) {
         prev_node = del_node;
-        del_node = del_node->next;
+        del_node = (DLListNodeObject*)del_node->next;
     }
 
-    if ( prev_node == Py_None )
+    if ( (PyObject*)prev_node == Py_None )
     {
         /* First node */
-        self->first = del_node->next;
+        self->first = (PyObject*)del_node->next;
     }
     else
     {
         /* Any other node */
         prev_node->next = del_node->next;
     }
-    if(del_node->next != Py_None)
+    if ( (PyObject*)del_node->next != Py_None )
     {
-        ((DLListNodeObject*)del_node->next)->prev = prev_node;
+        ((DLListNodeObject*)del_node->next)->prev = (PyObject*)prev_node;
     }
 
     --self->size;
     if ( index == self->size )
     {
         /* removeing last node, move last pointer */
-        self->last = prev_node;
+        self->last = (PyObject*)prev_node;
     }
 
 
