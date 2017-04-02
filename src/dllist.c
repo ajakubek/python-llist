@@ -14,6 +14,9 @@
 
 #include <stdarg.h>
 
+
+#define START_MIDDLE_AFTER 10
+
 #define DO_DEBUG
 
 
@@ -397,7 +400,7 @@ static inline void _middle_force_moving_left(DLListObject *self)
 
 static inline void _middle_check_recalc(DLListObject *self)
 {
-    if( self->size > 10 ) {
+    if( self->size > START_MIDDLE_AFTER ) {
         _middle_do_recalc(self);
     }
 }
@@ -813,7 +816,7 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 
     ++self->size;
 
-    if( self->size > 10 ) {
+    if( self->size > START_MIDDLE_AFTER ) {
         if( self->middle == Py_None )
         {
             _middle_do_recalc(self);
@@ -843,7 +846,7 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
         self->first = (PyObject*)new_node;
 
     ++self->size;
-    if( self->size > 10 ) {
+    if( self->size > START_MIDDLE_AFTER ) {
         if( self->middle == Py_None )
         {
             _middle_do_recalc(self);
@@ -922,7 +925,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     }
 
     ++self->size;
-    if( self->size > 10 ) {
+    if( self->size > START_MIDDLE_AFTER ) {
         /* TODO: Optimize by direction? */
         _middle_do_recalc(self);
     }
@@ -1003,7 +1006,7 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
 
         Py_DECREF(item);
     }
-    if( self->size > 10 && self->middle == Py_None )
+    if( self->size > START_MIDDLE_AFTER && self->middle == Py_None )
     {
         _middle_do_recalc(self);
     }
@@ -1058,7 +1061,7 @@ static PyObject* dllist_popleft(DLListObject* self)
         self->last = Py_None;
 
     --self->size;
-    if(self->size <= 10)
+    if(self->size <= START_MIDDLE_AFTER)
     {
         self->middle = Py_None;
         self->middle_idx = -1;
@@ -1095,7 +1098,7 @@ static PyObject* dllist_popright(DLListObject* self)
         self->first = Py_None;
 
     --self->size;
-    if(self->size <= 10)
+    if(self->size <= START_MIDDLE_AFTER)
     {
         self->middle = Py_None;
         self->middle_idx = -1;
@@ -1236,7 +1239,7 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 
 
     --self->size;
-    if ( self->size <= 10 )
+    if ( self->size <= START_MIDDLE_AFTER )
     {
         self->middle = Py_None;
         self->middle_idx = -1;
@@ -1297,7 +1300,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
         self->last = del_node->prev;
 
     --self->size;
-    if( self->size <= 10 )
+    if( self->size <= START_MIDDLE_AFTER )
     {
         self->middle = Py_None;
         self->middle_idx = -1;
@@ -1362,7 +1365,7 @@ static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
     self->first = (PyObject*)new_first;
     self->last = (PyObject*)new_last;
 
-    if( self->size > 10 )
+    if( self->size > START_MIDDLE_AFTER )
     {
         _middle_do_recalc(self);
     }
@@ -1547,8 +1550,6 @@ static PyMemberDef DLListMembers[] =
       "Next node" },
     { "middle", T_OBJECT_EX, offsetof(DLListObject, middle), READONLY,
       "Middle node" },
-    { "middle_idx", T_INT, offsetof(DLListObject, middle_idx), READONLY,
-      "Middle node index" },
     { "size", T_INT, offsetof(DLListObject, size), READONLY,
       "Number of elements in the list" },
     { NULL },   /* sentinel */
