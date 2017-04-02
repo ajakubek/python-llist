@@ -569,9 +569,24 @@ class testsllist(unittest.TestCase):
         
         self.assertEqual(ll.first.value, ref[1])
         for i in range(len(ll)):
-            ll.pop(0)
+            result = ll.pop(0)
+            self.assertEqual(result, ref[i+1])
+
         self.assertEqual(ll.first, None)
         self.assertEqual(ll.last, None)
+
+        ref = py23_range(0, 1024, 4)
+        ll = sllist(ref)
+        i = len(ll)-1
+        while i >= 0:
+            result = ll.pop(i)
+            self.assertEqual(result, ref[i])
+            i -= 1
+
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+
+        
 
         
 
@@ -1315,9 +1330,23 @@ class testdllist(unittest.TestCase):
         
         self.assertEqual(ll.first.value, ref[1])
         for i in range(len(ll)):
-            ll.pop(0)
+            result = ll.pop(0)
+            self.assertEqual(result, ref[i+1])
+
         self.assertEqual(ll.first, None)
         self.assertEqual(ll.last, None)
+
+        ref = py23_range(0, 1024, 4)
+        ll = dllist(ref)
+        i = len(ll) - 1
+        while i >= 0:
+            result = ll.pop(i)
+            self.assertEqual(result, ref[i])
+            i -= 1
+
+        self.assertEqual(ll.first, None)
+        self.assertEqual(ll.last, None)
+        
 
         
 
