@@ -1185,26 +1185,33 @@ static PyObject* sllist_pop(SLListObject* self, PyObject *arg)
         return sllist_popright( self );
     }
 
-    if (self->first == Py_None)
+    if (!Py23Int_Check(indexObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = Py23Int_AsSsize_t(indexObject);
+
+
+    /* Negative index */
+    if ( index < 0 )
+        index = ((SLListObject*)self)->size + index;
+
+    if ( index == 0 )
+    {
+        return sllist_popleft(self);
+    }
+    else if( index + 1 == ((SLListObject*)self)->size )
+    {
+        return sllist_popright(self);
+    }
+
+    if ( self->first == Py_None )
     {
         PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
-    else
-    {
-        if (!Py23Int_Check(indexObject))
-        {
-            PyErr_SetString(PyExc_TypeError, "Index must be an integer");
-            return NULL;
-        }
-
-        index = Py23Int_AsSsize_t(indexObject);
-    }
-
-
-    /* Negative index */
-    if (index < 0)
-        index = ((SLListObject*)self)->size + index;
 
     /* Either a negative greater than index size, or a positive greater than size */
     if ( index < 0 || index >= ((SLListObject*)self)->size )
@@ -1214,30 +1221,17 @@ static PyObject* sllist_pop(SLListObject* self, PyObject *arg)
     }
 
     /* Start at first node, and walk to the one we will pop */
-    prev_node = (SLListNodeObject*)Py_None;
-    del_node = (SLListNodeObject*)self->first;
-    for(i=0; i < index; i++) {
+    prev_node = (SLListNodeObject*)self->first;
+    del_node = (SLListNodeObject*)prev_node->next;
+    for(i=1; i < index; i++) {
         prev_node = del_node;
         del_node = (SLListNodeObject*)del_node->next;
     }
 
-    if ( (PyObject*)prev_node == Py_None )
-    {
-        /* First node */
-        self->first = del_node->next;
-    }
-    else
-    {
-        /* Any other node */
-        prev_node->next = del_node->next;
-    }
+    /* Unlink this node from the chain */
+    prev_node->next = del_node->next;
 
     --self->size;
-    if ( index == self->size )
-    {
-        /* removeing last node, move last pointer */
-        self->last = (PyObject*)prev_node;
-    }
 
 
     Py_INCREF(del_node->value);

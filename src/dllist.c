@@ -999,7 +999,7 @@ static PyObject* dllist_popright(DLListObject* self)
 static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 {
     DLListNodeObject *del_node;
-    DLListNodeObject *prev_node;
+    DLListNodeObject *cur_node;
 
     PyObject *value;
     PyObject *indexObject = NULL;
@@ -1019,26 +1019,33 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
         return dllist_popright( self );
     }
 
+    if (!Py23Int_Check(indexObject))
+    {
+        PyErr_SetString(PyExc_TypeError, "Index must be an integer");
+        return NULL;
+    }
+
+    index = Py23Int_AsSsize_t(indexObject);
+
+    /* Negative index */
+    if (index < 0)
+        index = ((DLListObject*)self)->size + index;
+
+    /* If index is 0, popleft */
+    if ( index == 0 )
+    {
+        return dllist_popleft( self );
+    }
+    else if ( index + 1 == ((DLListObject*)self)->size )
+    {
+        return dllist_popright(self);
+    }
+
     if ( (PyObject*)self->first == Py_None)
     {
         PyErr_SetString(PyExc_ValueError, "List is empty");
         return NULL;
     }
-    else
-    {
-        if (!Py23Int_Check(indexObject))
-        {
-            PyErr_SetString(PyExc_TypeError, "Index must be an integer");
-            return NULL;
-        }
-
-        index = Py23Int_AsSsize_t(indexObject);
-    }
-
-
-    /* Negative index */
-    if (index < 0)
-        index = ((DLListObject*)self)->size + index;
 
     /* Either a negative greater than index size, or a positive greater than size */
     if ( index < 0 || index >= ((DLListObject*)self)->size )
@@ -1047,35 +1054,35 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
         return NULL;
     }
 
-    /* Start at first node, and walk to the one we will pop */
-    prev_node = (DLListNodeObject*)Py_None;
-    del_node = (DLListNodeObject*)self->first;
-    for(i=0; i < index; i++) {
-        prev_node = del_node;
-        del_node = (DLListNodeObject*)del_node->next;
-    }
-
-    if ( (PyObject*)prev_node == Py_None )
+    if ( index <= ((DLListObject*)self)->size / 2 )
     {
-        /* First node */
-        self->first = (PyObject*)del_node->next;
+
+        /* Start at first node, and walk to the one we will pop */
+        cur_node = (DLListNodeObject*)self->first;
+        del_node = (DLListNodeObject*)cur_node->next;
+        for(i=1; i < index; i++) {
+            cur_node = del_node;
+            del_node = (DLListNodeObject*)del_node->next;
+        }
+
+        cur_node->next = del_node->next;
+
+        ((DLListNodeObject*)del_node->next)->prev = (PyObject*)cur_node;
     }
     else
     {
-        /* Any other node */
-        prev_node->next = del_node->next;
-    }
-    if ( (PyObject*)del_node->next != Py_None )
-    {
-        ((DLListNodeObject*)del_node->next)->prev = (PyObject*)prev_node;
+        /* Start at last node, and walk back to the one we will pop */
+        cur_node = (DLListNodeObject*)self->last;
+        del_node = (DLListNodeObject*)cur_node->prev;
+        for(i=((DLListObject*)self)->size - 2; i > index; i--) {
+            cur_node = del_node;
+            del_node = (DLListNodeObject*)del_node->prev;
+        }
+        ((DLListNodeObject *)cur_node->prev)->next = del_node->next;
     }
 
+
     --self->size;
-    if ( index == self->size )
-    {
-        /* removeing last node, move last pointer */
-        self->last = (PyObject*)prev_node;
-    }
 
     if (self->last_accessed_node == (PyObject*)del_node)
     {
