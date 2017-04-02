@@ -1116,7 +1116,6 @@ static PyObject* dllist_popright(DLListObject* self)
 static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 {
     DLListNodeObject *del_node;
-    DLListNodeObject *cur_node;
 
     PyObject *value;
     PyObject *indexObject = NULL;
@@ -1175,34 +1174,22 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     {
 
         /* Start at first node, and walk to the one we will pop */
-        cur_node = (DLListNodeObject*)self->first;
-        del_node = (DLListNodeObject*)cur_node->next;
+        del_node = (DLListNodeObject*) ((DLListNodeObject*) self->first)->next;
         for(i=1; i < index; i++) {
-            cur_node = del_node;
             del_node = (DLListNodeObject*)del_node->next;
         }
 
         _middle_moveing_right(self);
 
-        cur_node->next = del_node->next;
-
-        ((DLListNodeObject*)del_node->next)->prev = (PyObject*)cur_node;
-
     }
     else
     {
         /* Start at last node, and walk back to the one we will pop */
-        cur_node = (DLListNodeObject*)self->last;
-        del_node = (DLListNodeObject*)cur_node->prev;
+        del_node = (DLListNodeObject*) ((DLListNodeObject*) self->last)->prev;
         for(i=((DLListObject*)self)->size - 2; i > index; i--) {
-            cur_node = del_node;
             del_node = (DLListNodeObject*)del_node->prev;
         }
-        if(self->middle != Py_None)
-        { 
-            _middle_moveing_left(self);
-        }
-        ((DLListNodeObject *)cur_node->prev)->next = del_node->next;
+        _middle_moveing_left(self);
     }
 
 
