@@ -46,7 +46,6 @@ static PyTypeObject DLListType;
 static PyTypeObject DLListNodeType;
 static PyTypeObject DLListIteratorType;
 
-static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject);
 
 /* DLListNode */
 
@@ -58,6 +57,7 @@ typedef struct
     PyObject* next;
     PyObject* list_weakref;
 } DLListNodeObject;
+
 
 
 /* Convenience function for creating list nodes.
@@ -317,6 +317,10 @@ typedef struct
     PyObject* weakref_list;
 } DLListObject;
 
+static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject);
+static DLListNodeObject* dllist_get_node_internal(DLListObject* self, Py_ssize_t index);
+
+
 static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
 {
     return (x >= 0) ? x : -x;
@@ -343,8 +347,15 @@ static inline void _set_middle(DLListObject *self, PyObject *middle, Py_ssize_t 
 
 static inline void _middle_do_recalc(DLListObject *self)
 {
-    self->middle_idx = (long)self->size / 2;
-    self->middle = dllist_node_at(self, (PyObject*)(PyLong_FromLong(self->middle_idx)));
+    Py_ssize_t midIdx;
+
+    midIdx = self->size / 2;
+    /* Set middle_idx to -1 so we don't use it on the lookup */
+
+    self->middle_idx = -1;
+    self->middle = dllist_get_node_internal(self, midIdx);
+
+    self->middle_idx = midIdx;
 }
 
 static inline int _middle_should_move(ssize_t size, int afterSizeAdjust)
@@ -410,7 +421,7 @@ static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
                                                   Py_ssize_t index)
 {
     Py_ssize_t i;
-    Py_ssize_t middle = self->size / 2;
+    Py_ssize_t midpoint = self->size / 2;
     DLListNodeObject* node;
     Py_ssize_t start_pos;
     int reverse_dir;
@@ -420,19 +431,37 @@ static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
         PyErr_SetString(PyExc_IndexError, "Index out of range");
         return NULL;
     }
-
     /* pick the closest base node */
-    if (index <= middle)
+    if (index <= midpoint)
     {
-        node = (DLListNodeObject*)self->first;
-        start_pos = 0;
-        reverse_dir = 0;
+        if ( self->middle_idx != -1 && self->middle_idx - index < index )
+        {
+            node = (DLListNodeObject*)self->middle;
+            start_pos = self->middle_idx;
+            reverse_dir = 1;
+        }
+        else
+        {
+            node = (DLListNodeObject*)self->first;
+            start_pos = 0;
+            reverse_dir = 0;
+        }
     }
     else
     {
-        node = (DLListNodeObject*)self->last;
-        start_pos = self->size - 1;
-        reverse_dir = 1;
+        if ( self->middle_idx != -1 && index - self->middle_idx < self->size - index )
+        {
+            node = (DLListNodeObject*)self->middle;
+            start_pos = self->middle_idx;
+            reverse_dir = 0;
+            
+        }
+        else
+        {
+            node = (DLListNodeObject*)self->last;
+            start_pos = self->size - 1;
+            reverse_dir = 1;
+        }
     }
 
     assert((PyObject*)node != Py_None);
