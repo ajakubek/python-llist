@@ -8,7 +8,7 @@ from llist import dllist, sllist
 
 LIST_SIZE = 600
 
-NUM_POPS = 300
+NUM_POPS = 400
 
 NUM_ITERS = 100
 

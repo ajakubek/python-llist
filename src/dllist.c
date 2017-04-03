@@ -1370,10 +1370,7 @@ static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
     self->first = (PyObject*)new_first;
     self->last = (PyObject*)new_last;
 
-    if( self->size > START_MIDDLE_AFTER )
-    {
-        _middle_do_recalc(self);
-    }
+    _middle_check_recalc(self);
 
     Py_RETURN_NONE;
 }
