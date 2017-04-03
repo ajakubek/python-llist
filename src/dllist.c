@@ -1202,8 +1202,8 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     {
         if ( self->middle_idx != -1 && self->middle_idx - index < index )
         {
-            del_node = (DLListNodeObject*) self->middle;
-            for(i=0; i < self->middle_idx - index; i++) {
+            del_node = (DLListNodeObject*) ((DLListNodeObject*) self->middle)->prev;
+            for(i=1; i < self->middle_idx - index; i++) {
                 del_node = (DLListNodeObject*)del_node->prev;
             }
         }
@@ -1222,8 +1222,8 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     {
         if ( self->middle_idx != -1 && index - self->middle_idx < self->size - index )
         {
-            del_node = (DLListNodeObject*) self->middle;
-            for(i=0; i < index - self->middle_idx; i++) {
+            del_node = (DLListNodeObject*) ((DLListNodeObject*) self->middle)->next;
+            for(i=1; i < index - self->middle_idx; i++) {
                 del_node = (DLListNodeObject*)del_node->next;
             }
         }
@@ -1239,11 +1239,6 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 
 
     --self->size;
-    if ( self->size <= START_MIDDLE_AFTER )
-    {
-        self->middle = Py_None;
-        self->middle_idx = -1;
-    }
 
 
     Py_INCREF(del_node->value);
@@ -1251,14 +1246,18 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 
     dllistnode_delete(del_node);
 
-    if ( index == self->middle_idx )
+    if ( self->size <= START_MIDDLE_AFTER )
     {
-        _middle_check_recalc(self);
+        self->middle = Py_None;
+        self->middle_idx = -1;
+    }
+    else if ( index != self->middle_idx )
+    {
+        _middle_postappend_adjust(self, 0);
     }
     else
     {
-        if ( self->middle != Py_None )
-            _middle_postappend_adjust(self, 0);
+        _middle_check_recalc(self);
     }
 
     return value;
