@@ -739,8 +739,17 @@ static PyObject* dllist_str(DLListObject* self)
     return dllist_to_string(self, PyObject_Str);
 }
 
+/* NOTE - THIS FUNCTION DOES NOT WORK!!
+*
+*   dllist([1, 5, 9]) has the SAME hash as dllist([5, 1, 9])
+*     and thus it is NOT a hash function
+*/
 static long dllist_hash(DLListObject* self)
 {
+
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+
     long hash = 0;
     PyObject* iter_node_obj = self->first;
 
@@ -1587,7 +1596,7 @@ static PyTypeObject DLListType =
     0,                          /* tp_as_number */
     DLListSequenceMethods,      /* tp_as_sequence */
     0,                          /* tp_as_mapping */
-    (hashfunc)dllist_hash,      /* tp_hash */
+    0,      /* tp_hash */
     0,                          /* tp_call */
     (reprfunc)dllist_str,       /* tp_str */
     0,                          /* tp_getattro */
