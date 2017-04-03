@@ -1364,7 +1364,11 @@ class testdllist(unittest.TestCase):
 #            print ( "Popping %d out of %d indexes. Value: %s\n\tFirst=%s\n\tMiddle=%s\n\tLast=%s\n\tSize=%d\n" %(allIndexes[0], len(allIndexes), str(ll[allIndexes[0]]), ll.first, ll.middle, ll.last, ll.size))
             nextIndex = allIndexes.pop(0)
 
-            ll.pop(nextIndex)
+            listAccessValue = ll[nextIndex]
+
+            poppedValue = ll.pop(nextIndex)
+
+            self.assertEquals(listAccessValue, poppedValue)
 
             for i in range(len(allIndexes)):
                 if allIndexes[i] > nextIndex:
