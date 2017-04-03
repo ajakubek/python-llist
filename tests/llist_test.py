@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import gc
 import sys
+import random
 import unittest
 from llist import sllist
 from llist import sllistnode
@@ -1297,12 +1298,10 @@ class testdllist(unittest.TestCase):
         self.assertEqual(del_node.next, None)
 
     def test_pop(self):
-        print ( "4")
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
         del_node = ll.nodeat(-1)
         result = ll.pop();
-        print ( "5")
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
@@ -1314,7 +1313,6 @@ class testdllist(unittest.TestCase):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
         
-        print ( "6")
         #import pdb; pdb.set_trace()
         result = ll.pop(1)
         self.assertEqual(result, ref[1])
@@ -1327,14 +1325,12 @@ class testdllist(unittest.TestCase):
         self.assertEquals(secondNode.prev, ll.first)
         self.assertEquals(ll.first.prev, None)
 
-        print ( "7")
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
         result = ll.pop(0)
         self.assertEqual(result, ref[0])
         
         self.assertEqual(ll.first.value, ref[1])
-        print ( "8")
         for i in range(len(ll)):
             result = ll.pop(0)
             self.assertEqual(result, ref[i+1])
@@ -1345,7 +1341,6 @@ class testdllist(unittest.TestCase):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
         i = len(ll) - 1
-        print ( "9")
         while i >= 0:
             result = ll.pop(i)
             self.assertEqual(result, ref[i])
@@ -1357,7 +1352,6 @@ class testdllist(unittest.TestCase):
 
         ref = py23_range(0, 1024, 4)
 
-        import random
 
         lastIdx = list(ref).index(ref[-1])
 
@@ -1367,7 +1361,7 @@ class testdllist(unittest.TestCase):
         ll = dllist(ref)
         
         while allIndexes:
-            print ( "Popping %d out of %d indexes. Value: %s\n\tFirst=%s\n\tMiddle=%s\n\tLast=%s\n\tSize=%d\n" %(allIndexes[0], len(allIndexes), str(ll[allIndexes[0]]), ll.first, ll.middle, ll.last, ll.size))
+#            print ( "Popping %d out of %d indexes. Value: %s\n\tFirst=%s\n\tMiddle=%s\n\tLast=%s\n\tSize=%d\n" %(allIndexes[0], len(allIndexes), str(ll[allIndexes[0]]), ll.first, ll.middle, ll.last, ll.size))
             nextIndex = allIndexes.pop(0)
 
             ll.pop(nextIndex)
