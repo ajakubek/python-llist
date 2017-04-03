@@ -542,7 +542,6 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
             iter_node_obj = iter_node->next;
         }
 
-        return 1;
     }
     else
     {
