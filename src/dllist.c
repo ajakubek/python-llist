@@ -24,7 +24,7 @@
 static void debugmsg(char *format, ...)
 {
     va_list args;
-    FILE *f, *f2;
+    FILE *f;
 
     f = fopen("debug.txt", "a");
 
@@ -326,25 +326,16 @@ static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
     return (x >= 0) ? x : -x;
 }
 
-static PyObject *_get_midpoint(DLListObject* self)
-{
-    long midpoint;
-    PyObject *midInt;
-    PyObject *midSsize;
-    
-    midpoint = (long)self->size / 2;
 
-    midInt = PyLong_FromLong(midpoint);
+/****************
+**** Middle functions
+********************
+***/
 
-    return midInt;
-}
 
-static inline void _set_middle(DLListObject *self, PyObject *middle, Py_ssize_t middle_idx)
-{
-    self->middle = middle;
-    self->middle_idx = middle_idx;
-}
-
+/* _middle_do_recalc - 
+ *    Do a recalulation of middle 
+ */
 static inline void _middle_do_recalc(DLListObject *self)
 {
     Py_ssize_t midIdx;
@@ -353,32 +344,44 @@ static inline void _middle_do_recalc(DLListObject *self)
     /* Set middle_idx to -1 so we don't use it on the lookup */
 
     self->middle_idx = -1;
-    self->middle = dllist_get_node_internal(self, midIdx);
+    self->middle = (PyObject *) dllist_get_node_internal(self, midIdx);
 
     self->middle_idx = midIdx;
 }
 
-static inline int _middle_should_move(ssize_t size, int afterSizeAdjust)
+/* _middle_postappend_adjust -
+ *     Do an adjustment after a move
+ *
+ *    sizeAdjust:   If called before size is incremented/decremented, pass the difference here
+ */
+static inline void _middle_postappend_adjust(DLListObject *self, int sizeAdjust)
 {
-    if(afterSizeAdjust) {
-        return !!(size % 2 == 0);
-    }
-    else {
-        return !!(size % 2 != 0);
-    }
-}
+    Py_ssize_t midpoint;
 
+    midpoint = ( (self->size) + sizeAdjust) / 2;
 
-static inline void _middle_moving_right(DLListObject *self, int afterSizeAdjust) 
-{
-    if ( self->middle != Py_None) {
-        if(_middle_should_move(self->size, afterSizeAdjust))
+    if ( self->middle_idx < midpoint )
+    {
+        /* We move at least one, then see if we need to move more */
+        for( ; self->middle_idx < midpoint; self->middle_idx++ )
         {
-            _set_middle(self, ((DLListNodeObject*)self->middle)->next, self->middle_idx + 1);
+            self->middle = ((DLListNodeObject*)self->middle)->next;
         }
     }
+    else if ( self->middle_idx > midpoint )
+    {
+        for( ; self->middle_idx > midpoint ; self->middle_idx-- )
+        {
+            self->middle = ((DLListNodeObject*)self->middle)->prev;
+        }
+    }
+ 
 }
-
+    
+/**
+ *  _middle_popped_left_of_middle - When left-of-middle is popped,
+ *     call this to adjust the middle index
+ */
 static inline void _middle_popped_left_of_middle(DLListObject *self)
 {
     if ( self->middle != Py_None ) {
@@ -386,33 +389,33 @@ static inline void _middle_popped_left_of_middle(DLListObject *self)
     }
 }
 
-
-static inline void _middle_force_moving_right(DLListObject *self)
-{
-    _set_middle(self, ((DLListNodeObject*)self->middle)->next, self->middle_idx + 1);
-
-}
-
-static inline void _middle_moving_left(DLListObject *self, int afterSizeAdjust) 
-{
-
-    if ( self->middle != Py_None) {
-        if(_middle_should_move(self->size, afterSizeAdjust)) {
-            _set_middle(self, ((DLListNodeObject*)self->middle)->prev, self->middle_idx - 1);
-        }
-    }
-}
-
-static inline void _middle_force_moving_left(DLListObject *self)
-{
-    _set_middle(self, ((DLListNodeObject*)self->middle)->prev, self->middle_idx - 1);
-}
-    
-
+/**
+ * _middle_check_recalc -
+      Do a recalc if we are past START_MIDDLE_AFTER
+ */
 static inline void _middle_check_recalc(DLListObject *self)
 {
     if( self->size > START_MIDDLE_AFTER ) {
         _middle_do_recalc(self);
+    }
+}
+
+/**
+ *   _middle_check_adjust_or_recalc -
+         Check if we are past START_MIDDLE_AFTER, and if so, update middle or recalc
+ */
+static inline void _middle_check_adjust_or_recalc(DLListObject *self)
+{
+    if ( self->size > START_MIDDLE_AFTER )
+    {
+        if ( self->middle != Py_None)
+        {
+            _middle_postappend_adjust(self, 0);
+        }
+        else
+        {
+            _middle_do_recalc(self);
+        }
     }
 }
 
@@ -510,7 +513,6 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
             self->last = new_node;
 
             self->size += 1;
-            _middle_moving_right(self, 1);
 
             if (iter_node_obj == last_node_obj)
             {
@@ -520,45 +522,47 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
 
             iter_node_obj = iter_node->next;
         }
-        _middle_check_recalc(self);
 
         return 1;
     }
-
-    sequence_len = PySequence_Length(sequence);
-    if (sequence_len == -1)
+    else
     {
-        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
-        return 0;
-    }
-
-    for (i = 0; i < sequence_len; ++i)
-    {
-        PyObject* item;
-        PyObject* new_node;
-
-        item = PySequence_GetItem(sequence, i);
-        if (item == NULL)
+        sequence_len = PySequence_Length(sequence);
+        if (sequence_len == -1)
         {
-            PyErr_SetString(PyExc_ValueError,
-                "Failed to get element from sequence");
+            PyErr_SetString(PyExc_ValueError, "Invalid sequence");
             return 0;
         }
 
-        new_node = (PyObject*)dllistnode_create(
-            self->last, NULL, item, (PyObject*)self);
+        for (i = 0; i < sequence_len; ++i)
+        {
+            PyObject* item;
+            PyObject* new_node;
 
-        if (self->first == Py_None)
-            self->first = new_node;
-        self->last = new_node;
+            item = PySequence_GetItem(sequence, i);
+            if (item == NULL)
+            {
+                PyErr_SetString(PyExc_ValueError,
+                    "Failed to get element from sequence");
+                return 0;
+            }
 
-        ++self->size;
+            new_node = (PyObject*)dllistnode_create(
+                self->last, NULL, item, (PyObject*)self);
 
-        _middle_moving_right(self, 1);
+            if (self->first == Py_None)
+                self->first = new_node;
+            self->last = new_node;
 
-        Py_DECREF(item);
+            ++self->size;
+
+
+            Py_DECREF(item);
+        }
+
     }
-    _middle_check_recalc(self);
+
+    _middle_check_adjust_or_recalc(self);
 
     return 1;
 }
@@ -845,16 +849,7 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 
     ++self->size;
 
-    if( self->size > START_MIDDLE_AFTER ) {
-        if( self->middle == Py_None )
-        {
-            _middle_do_recalc(self);
-        }
-        else
-        {
-            _middle_moving_left(self, 1);
-        }
-    }
+    _middle_check_adjust_or_recalc(self);
 
     Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
@@ -875,17 +870,8 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
         self->first = (PyObject*)new_node;
 
     ++self->size;
-    if( self->size > START_MIDDLE_AFTER ) {
-        if( self->middle == Py_None )
-        {
-            _middle_do_recalc(self);
-        }
-        else
-        {
-            _middle_moving_right(self, 1);
-        }
-    }
 
+    _middle_check_adjust_or_recalc(self);
 
     Py_INCREF((PyObject*)new_node);
     return (PyObject*)new_node;
@@ -955,7 +941,10 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 
     ++self->size;
     if( self->size > START_MIDDLE_AFTER ) {
-        /* TODO: Optimize by direction? */
+        /* TODO: Optimize by direction?
+            We can after the "insert" function is changed to support integer index,
+            but not with element insert
+        */
         _middle_do_recalc(self);
     }
 
@@ -1000,45 +989,45 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
 
         self->size += ((DLListObject*)sequence)->size;
 
-        Py_RETURN_NONE;
     }
-
-    sequence_len = PySequence_Length(sequence);
-    if (sequence_len == -1)
+    else
     {
-        PyErr_SetString(PyExc_ValueError, "Invalid sequence");
-        return NULL;
-    }
 
-    for (i = 0; i < sequence_len; ++i)
-    {
-        PyObject* item;
-        PyObject* new_node;
-
-        item = PySequence_GetItem(sequence, i);
-        if (item == NULL)
+        sequence_len = PySequence_Length(sequence);
+        if (sequence_len == -1)
         {
-            PyErr_SetString(PyExc_ValueError,
-                "Failed to get element from sequence");
+            PyErr_SetString(PyExc_ValueError, "Invalid sequence");
             return NULL;
         }
 
-        new_node = (PyObject*)dllistnode_create(
-            NULL, self->first, item, (PyObject*)self);
+        for (i = 0; i < sequence_len; ++i)
+        {
+            PyObject* item;
+            PyObject* new_node;
 
-        self->first = new_node;
-        if (self->last == Py_None)
-            self->last = new_node;
+            item = PySequence_GetItem(sequence, i);
+            if (item == NULL)
+            {
+                PyErr_SetString(PyExc_ValueError,
+                    "Failed to get element from sequence");
+                return NULL;
+            }
 
-        ++self->size;
-        _middle_moving_left(self, 1);
+            new_node = (PyObject*)dllistnode_create(
+                NULL, self->first, item, (PyObject*)self);
 
-        Py_DECREF(item);
+            self->first = new_node;
+            if (self->last == Py_None)
+                self->last = new_node;
+
+            ++self->size;
+
+            Py_DECREF(item);
+        }
     }
-    if( self->size > START_MIDDLE_AFTER && self->middle == Py_None )
-    {
-        _middle_do_recalc(self);
-    }
+
+
+    _middle_check_adjust_or_recalc(self);
 
     Py_RETURN_NONE;
 }
@@ -1097,8 +1086,9 @@ static PyObject* dllist_popleft(DLListObject* self)
     }
     else
     {
-        _middle_popped_left_of_middle(self);
-        _middle_moving_right(self, 1);
+        self->middle_idx -= 1;
+
+        _middle_postappend_adjust(self, 0);
     }
 
     Py_INCREF(del_node->value);
@@ -1134,7 +1124,7 @@ static PyObject* dllist_popright(DLListObject* self)
     }
     else
     {
-        _middle_moving_left(self, 0);
+        _middle_postappend_adjust(self, 0);
     }
 
 
@@ -1150,14 +1140,12 @@ static PyObject* dllist_popright(DLListObject* self)
 static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 {
     DLListNodeObject *del_node;
-    FILE *f;
 
     PyObject *value;
     PyObject *indexObject = NULL;
 
     Py_ssize_t index;
     Py_ssize_t i;
-    Py_ssize_t before_size;
 
     if (!PyArg_UnpackTuple(arg, "pop", 0, 1, &indexObject))
     {
@@ -1209,16 +1197,6 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     if ( index == self->middle_idx )
     {
         del_node = (DLListNodeObject*)self->middle;
-/*        if ( _middle_should_move(self->size, 0) )
-        {
-            _middle_force_moving_right(self);
-        }
-        else
-        {
-            _middle_force_moving_left(self);
-            self->middle_idx -= 1;
-        }
-*/
     }
     else if ( index < ((DLListObject*)self)->size / 2 )
     {
@@ -1237,14 +1215,8 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
                 del_node = (DLListNodeObject*)del_node->next;
             }
         }
-        before_size = self->middle_idx;
-//        _middle_moving_left(self, 1);
         _middle_popped_left_of_middle(self);
-        _middle_moving_right(self, 0);
-
         
-        /* Todo: conditional these below */
-
     }
     else
     {
@@ -1263,7 +1235,6 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
                 del_node = (DLListNodeObject*)del_node->prev;
             }
         }
-        _middle_moving_left(self, 1);
     }
 
 
@@ -1283,6 +1254,11 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
     if ( index == self->middle_idx )
     {
         _middle_check_recalc(self);
+    }
+    else
+    {
+        if ( self->middle != Py_None )
+            _middle_postappend_adjust(self, 0);
     }
 
     return value;
@@ -1514,7 +1490,6 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
      * del list[index] */
     if (val == NULL)
     {
-        PyObject* prev = node->prev;
         PyObject* result;
 
         result = dllist_remove(list, (PyObject*)node);
@@ -1579,6 +1554,9 @@ static PyMemberDef DLListMembers[] =
       "Next node" },
     { "middle", T_OBJECT_EX, offsetof(DLListObject, middle), READONLY,
       "Middle node" },
+/*    { "middle_idx", T_INT, offsetof(DLListObject, middle_idx), READONLY,
+      "Middle node index" },
+*/
     { "size", T_INT, offsetof(DLListObject, size), READONLY,
       "Number of elements in the list" },
     { NULL },   /* sentinel */
