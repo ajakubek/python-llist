@@ -419,6 +419,25 @@ static inline void _middle_check_adjust_or_recalc(DLListObject *self)
     }
 }
 
+
+/**
+ *   _middle_check_on_shrink 
+         After shrinking the list, check if we are small enough that we should clear middle,
+           and do so if we are.
+
+         return - 1 if middle was cleared, otherwise 0
+*/
+static inline int _middle_check_on_shrink(DLListObject *self)
+{
+    if ( self->size <= START_MIDDLE_AFTER )
+    {
+        self->middle = Py_None;
+        self->middle_idx = -1;
+        return 1;
+    }
+    return 0;
+}
+
 /* Convenience function for locating list nodes using index. */
 static DLListNodeObject* dllist_get_node_internal(DLListObject* self,
                                                   Py_ssize_t index)
@@ -1079,15 +1098,9 @@ static PyObject* dllist_popleft(DLListObject* self)
         self->last = Py_None;
 
     --self->size;
-    if(self->size <= START_MIDDLE_AFTER)
-    {
-        self->middle = Py_None;
-        self->middle_idx = -1;
-    }
-    else
+    if ( ! _middle_check_on_shrink(self) )
     {
         self->middle_idx -= 1;
-
         _middle_postappend_adjust(self, 0);
     }
 
@@ -1117,12 +1130,7 @@ static PyObject* dllist_popright(DLListObject* self)
         self->first = Py_None;
 
     --self->size;
-    if(self->size <= START_MIDDLE_AFTER)
-    {
-        self->middle = Py_None;
-        self->middle_idx = -1;
-    }
-    else
+    if( ! _middle_check_on_shrink(self) )
     {
         _middle_postappend_adjust(self, 0);
     }
@@ -1246,18 +1254,16 @@ static PyObject* dllist_pop(DLListObject* self, PyObject *arg)
 
     dllistnode_delete(del_node);
 
-    if ( self->size <= START_MIDDLE_AFTER )
+    if ( ! _middle_check_on_shrink(self) )
     {
-        self->middle = Py_None;
-        self->middle_idx = -1;
-    }
-    else if ( index != self->middle_idx )
-    {
-        _middle_postappend_adjust(self, 0);
-    }
-    else
-    {
-        _middle_check_recalc(self);
+        if ( index != self->middle_idx )
+        {
+            _middle_postappend_adjust(self, 0);
+        }
+        else
+        {
+            _middle_check_recalc(self);
+        }
     }
 
     return value;
@@ -1304,12 +1310,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
         self->last = del_node->prev;
 
     --self->size;
-    if( self->size <= START_MIDDLE_AFTER )
-    {
-        self->middle = Py_None;
-        self->middle_idx = -1;
-    }
-    else 
+    if ( ! _middle_check_on_shrink(self) )
     {
         /* TODO: Optimize direction */
         _middle_do_recalc(self);
