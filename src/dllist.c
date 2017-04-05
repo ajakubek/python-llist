@@ -17,7 +17,7 @@
 
 #define START_MIDDLE_AFTER 10
 
-#define DO_DEBUG
+/* #define DO_DEBUG */
 
 
 #ifdef DO_DEBUG
@@ -35,10 +35,13 @@ static void debugmsg(char *format, ...)
     fclose(f);
 }
 #else
-static inline void debugmsg(char *format, ...)
+
+#define debugmsg(...)
+/*static inline void debugmsg(char *format, ...)
 {
 
 }
+*/
 #endif
     
 
