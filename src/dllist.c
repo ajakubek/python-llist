@@ -1616,7 +1616,7 @@ static PyMemberDef DLListMembers[] =
     { NULL },   /* sentinel */
 };
 
-static PySequenceMethods DLListSequenceMethods[] =
+static PySequenceMethods DLListSequenceMethods[] = {
 {
     dllist_len,                 /* sq_length */
     dllist_concat,              /* sq_concat */
@@ -1628,7 +1628,9 @@ static PySequenceMethods DLListSequenceMethods[] =
     0,                          /* sq_contains */
     dllist_inplace_concat,      /* sq_inplace_concat */
     0,                          /* sq_inplace_repeat */
-};
+}
+}
+;
 
 static PyTypeObject DLListType =
 {
