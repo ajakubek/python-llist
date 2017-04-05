@@ -1,3 +1,20 @@
+* llist-0.5
+
+  Work by Tim Savannah:
+
+    - Implement pop(idx) to pop any given index
+    - Implement "contains" sequence method, so the "in" operator doesn't run the whole list multiple times
+    - Implement "index" and "rindex" methods to return an index/rindex
+    - Remove "last_accessed_idx" and "last_accessed" node from dllist, replace with "middle" which is used when
+        the list size exceeds a certain value (defined as 10). This greatly improves random-access and random-pop performance
+        on dllist to be comprable or better to that of a base python list
+    - Remove the "hash" function, which did NOT generate unique hashes (very easy to construct two linked lists with same hash,
+        such as [1, 5, 7] and [5, 1, 7]   or [2, 1] and [3]
+    - Remove all compiler warnings
+    - Add some basic benchmarks
+    - Add some more tests
+    - Some minor cleanups
+
 * llist-0.4 (2013-01-01)
 
   - Python 3.x support
