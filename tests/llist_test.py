@@ -819,6 +819,17 @@ class testsllist(unittest.TestCase):
 
         self.assertEqual(gotException, True)
 
+    def test_contains(self):
+
+        lst = [1, 5, 7]
+
+        sl = sllist(lst)
+
+        self.assertEqual(5 in sl, True)
+        self.assertEqual(1 in sl, True)
+        self.assertEqual(7 in sl, True)
+        self.assertEqual(8 in sl, False)
+
 
     def test_repeat(self):
         ref = py23_range(0, 1024, 4)
@@ -1647,6 +1658,17 @@ class testdllist(unittest.TestCase):
             gotException = True
 
         self.assertEqual(gotException, True)
+
+    def test_contains(self):
+
+        lst = [1, 5, 7]
+
+        sl = dllist(lst)
+
+        self.assertEqual(5 in sl, True)
+        self.assertEqual(1 in sl, True)
+        self.assertEqual(7 in sl, True)
+        self.assertEqual(8 in sl, False)
 
 
     def test_repeat(self):
