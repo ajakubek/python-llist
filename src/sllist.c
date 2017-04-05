@@ -1329,6 +1329,53 @@ str_alloc_error:
     return NULL;
 }
 
+static PyObject* sllist_index(SLListObject *self, PyObject *value)
+{
+
+    SLListNodeObject *node;
+    Py_ssize_t idx;
+
+    node = (SLListNodeObject *) self->first;
+    idx = 0;
+
+    while ( (PyObject*)node != Py_None )
+    {
+        if( node->value == value )
+            return PyLong_FromSsize_t(idx);
+
+        node = (SLListNodeObject *)node->next;
+        idx += 1;
+    }
+    PyErr_Format(PyExc_ValueError, "No such value in list");
+    return NULL;
+}
+
+static PyObject* sllist_rindex(SLListObject *self, PyObject *value)
+{
+
+    SLListNodeObject *node;
+    Py_ssize_t idx;
+    Py_ssize_t matchedIdx;
+
+    node = (SLListNodeObject *) self->first;
+    idx = 0;
+    matchedIdx = -1;
+
+    while ( (PyObject*)node != Py_None )
+    {
+        if( node->value == value )
+            matchedIdx = idx;
+
+        node = (SLListNodeObject *)node->next;
+        idx += 1;
+    }
+
+    if ( matchedIdx != -1 )
+        return PyLong_FromSsize_t(matchedIdx);
+
+    PyErr_Format(PyExc_ValueError, "No such value in list");
+    return NULL;
+}
 
 static PyObject* sllist_repr(SLListObject* self)
 {
@@ -1406,6 +1453,12 @@ static PyMethodDef SLListMethods[] =
 
     { "nodeat", (PyCFunction)sllist_node_at, METH_O,
       "Return node at index" },
+
+    { "index", (PyCFunction)sllist_index, METH_O,
+      "Returns the first index of a value" },
+
+    { "rindex", (PyCFunction)sllist_rindex, METH_O,
+      "Returns the last index of a value" },
 
     { "pop", (PyCFunction)sllist_pop, METH_VARARGS,
       "Remove an element by index from the list and return it, or last item if no index provided" },
