@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import gc
 import time
 import random
 
@@ -10,7 +11,7 @@ LIST_SIZE = 600
 
 NUM_POPS = 400
 
-NUM_ITERS = 100
+NUM_ITERS = 200
 
 def doPops(lst, popIdxs):
 
@@ -54,17 +55,22 @@ if __name__ == '__main__':
     sllistTime = 0
     dllistTime = 0
 
+    gc.collect()
     for i in range(NUM_ITERS):
         lst1 = primeList[:]
         listTime += doTime ( lambda : doPops(lst1, randomPops) )
+        gc.collect()
 
     for i in range(NUM_ITERS):
         slst = sllist(primeList[:])
         sllistTime += doTime ( lambda : doPops(slst, randomPops) )
+        gc.collect()
 
     for i in range(NUM_ITERS):
         dlst = dllist(primeList[:])
         dllistTime += doTime ( lambda : doPops(dlst, randomPops) )
+        gc.collect()
+
  #   csllistTime = doTime ( lambda : doPops(cslst, randomPops) )
     csllistTime = 0.0
 
