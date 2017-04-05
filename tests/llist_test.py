@@ -801,6 +801,25 @@ class testsllist(unittest.TestCase):
         self.assertEqual(filled, sllist(filled_ref + []))
         self.assertEqual(len(filled), len(filled_ref))
 
+    def test_index(self):
+        lst = [1, 5, 10, 5, 9]
+
+        sl = sllist(lst)
+
+        self.assertEqual(sl.index(1), 0)
+        self.assertEqual(sl.index(5), 1)
+        self.assertEqual(sl.rindex(5), 3)
+        self.assertEqual(sl.rindex(9), 4)
+
+        gotException = False
+        try:
+            sl.index(2)
+        except ValueError:
+            gotException = True
+
+        self.assertEqual(gotException, True)
+
+
     def test_repeat(self):
         ref = py23_range(0, 1024, 4)
         ll = sllist(ref)
@@ -1610,6 +1629,25 @@ class testdllist(unittest.TestCase):
         filled += empty
         self.assertEqual(filled, dllist(filled_ref + []))
         self.assertEqual(len(filled), len(filled_ref))
+
+    def test_index(self):
+        lst = [1, 5, 10, 5, 9]
+
+        dl = dllist(lst)
+
+        self.assertEqual(dl.index(1), 0)
+        self.assertEqual(dl.index(5), 1)
+        self.assertEqual(dl.rindex(5), 3)
+        self.assertEqual(dl.rindex(9), 4)
+
+        gotException = False
+        try:
+            dl.index(2)
+        except ValueError:
+            gotException = True
+
+        self.assertEqual(gotException, True)
+
 
     def test_repeat(self):
         ref = py23_range(0, 1024, 4)

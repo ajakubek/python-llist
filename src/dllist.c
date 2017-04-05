@@ -1520,6 +1520,49 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
     return 0;
 }
 
+
+static PyObject* dllist_index(DLListObject *self, PyObject *value)
+{
+
+    DLListNodeObject *node;
+    Py_ssize_t idx;
+
+    node = (DLListNodeObject *) self->first;
+    idx = 0;
+
+    while ( (PyObject*)node != Py_None )
+    {
+        if( node->value == value )
+            return PyLong_FromSsize_t(idx);
+
+        node = (DLListNodeObject *)node->next;
+        idx += 1;
+    }
+    PyErr_Format(PyExc_ValueError, "No such value in list");
+    return NULL;
+}
+
+static PyObject* dllist_rindex(DLListObject *self, PyObject *value)
+{
+
+    DLListNodeObject *node;
+    Py_ssize_t idx;
+
+    node = (DLListNodeObject *) self->last;
+    idx = self->size - 1;
+
+    while ( (PyObject*)node != Py_None )
+    {
+        if( node->value == value )
+            return PyLong_FromSsize_t(idx);
+
+        node = (DLListNodeObject *)node->prev;
+        idx -= 1;
+    }
+    PyErr_Format(PyExc_ValueError, "No such value in list");
+    return NULL;
+}
+
 static PyMethodDef DLListMethods[] =
 {
     { "appendleft", (PyCFunction)dllist_appendleft, METH_O,
@@ -1538,6 +1581,10 @@ static PyMethodDef DLListMethods[] =
       "Append elements from iterable at the right side of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
+    { "index", (PyCFunction)dllist_index, METH_O,
+      "Returns the first index of a value" },
+    { "rindex", (PyCFunction)dllist_rindex, METH_O,
+      "Returns the last index of a value" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
       "Return node at index" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
