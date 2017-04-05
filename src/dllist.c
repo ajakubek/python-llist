@@ -744,6 +744,7 @@ static PyObject* dllist_str(DLListObject* self)
 *   dllist([1, 5, 9]) has the SAME hash as dllist([5, 1, 9])
 *     and thus it is NOT a hash function
 */
+#if 0
 static long dllist_hash(DLListObject* self)
 {
 
@@ -768,6 +769,7 @@ static long dllist_hash(DLListObject* self)
 
     return hash;
 }
+#endif
 
 static PyObject* dllist_richcompare(DLListObject* self,
                                     DLListObject* other,
