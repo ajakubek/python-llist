@@ -1347,7 +1347,7 @@ static Py_ssize_t sllist_len(PyObject* self)
     return ((SLListObject*)self)->size;
 }
 
-
+#if 0
 static long sllist_hash(SLListObject* self)
 {
     /* NOT A VALID HASH METHOD! [1, 5, 8] gives SAME hash as [1, 8, 5], for example, among many others */
@@ -1372,6 +1372,7 @@ static long sllist_hash(SLListObject* self)
 
     return hash;
 }
+#endif
 
 
 static PyMethodDef SLListMethods[] =
