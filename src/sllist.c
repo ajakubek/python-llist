@@ -1350,6 +1350,10 @@ static Py_ssize_t sllist_len(PyObject* self)
 
 static long sllist_hash(SLListObject* self)
 {
+    /* NOT A VALID HASH METHOD! [1, 5, 8] gives SAME hash as [1, 8, 5], for example, among many others */
+    Py_INCREF(Py_NotImplemented);
+    return Py_NotImplemented;
+
     long hash = 0;
     PyObject* iter_node_obj = self->first;
 
@@ -1462,7 +1466,7 @@ static PyTypeObject SLListType =
     0,                           /* tp_as_number      */
     &SLListSequenceMethods,      /* tp_as_sequence    */
     0,                           /* tp_as_mapping     */
-    (hashfunc)sllist_hash,       /* tp_hash           */
+    0,                           /* tp_hash           */
     0,                           /* tp_call           */
     (reprfunc)sllist_str,        /* tp_str            */
     0,                           /* tp_getattro       */
