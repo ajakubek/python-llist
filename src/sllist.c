@@ -6,7 +6,9 @@
 #include <Python.h>
 #include <structmember.h>
 #include "py23macros.h"
+#include "llist_types.h"
 #include "sllist_types.h"
+#include "dllist_types.h"
 
 #ifndef PyVarObject_HEAD_INIT
     #define PyVarObject_HEAD_INIT(type, size) \
@@ -296,17 +298,20 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, SLListType))
+    if (PyObject_TypeCheck(sequence, SLListType) || PyObject_TypeCheck(sequence, DLListType))
     {
-        /* Special path for extending with a SLList.
-         * It's not strictly required but it will maintain
-         * the last accessed item. */
-        PyObject* iter_node_obj = ((SLListObject *)sequence)->first;
-        PyObject* last_node_obj = self->last;
+        /* Special path for extending with a LList (double or single)
+         * It's not strictly required but greatly improves performance
+         */
+        PyObject* iter_node_obj = ((LListObject *)sequence)->first;
 
-        while (iter_node_obj != Py_None)
+        sequence_len = ((LListObject *)sequence)->size;
+
+        self->size += sequence_len;
+
+        while (sequence_len--)
         {
-            SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
             new_node = (PyObject*)sllistnode_create(
@@ -319,16 +324,8 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
                 self->first = new_node;
             self->last = new_node;
 
-            if (iter_node_obj == last_node_obj)
-            {
-                /* This is needed to terminate loop if self == sequence. */
-                break;
-            }
-
             iter_node_obj = iter_node->next;
         }
-
-        self->size += ((SLListObject*)sequence)->size;
 
         return 1;
     }
@@ -696,17 +693,18 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, SLListType))
+    if (PyObject_TypeCheck(sequence, SLListType) || PyObject_TypeCheck(sequence, DLListType))
     {
-        /* Special path for extending with a SLList.
-         * It's not strictly required but it will maintain
-         * the last accessed item. */
-        PyObject* iter_node_obj = ((SLListObject*)sequence)->first;
-        PyObject* last_node_obj = ((SLListObject*)sequence)->last;
+        /* Special path for extending with a LList. Better performance. */
+        PyObject* iter_node_obj = ((LListObject*)sequence)->first;
 
-        while (iter_node_obj != Py_None)
+        sequence_len = ((LListObject*)sequence)->size;
+
+        self->size += sequence_len;
+
+        while (sequence_len--)
         {
-            SLListNodeObject* iter_node = (SLListNodeObject*)iter_node_obj;
+            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
             new_node = (PyObject*)sllistnode_create(
@@ -716,16 +714,8 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
             if (self->last == Py_None)
                 self->last = new_node;
 
-            if (iter_node_obj == last_node_obj)
-            {
-                /* This is needed to terminate loop if self == sequence. */
-                break;
-            }
-
             iter_node_obj = iter_node->next;
         }
-
-        self->size += ((SLListObject*)sequence)->size;
 
         Py_RETURN_NONE;
     }

@@ -489,17 +489,20 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, DLListType))
+    if (PyObject_TypeCheck(sequence, DLListType) || PyObject_TypeCheck(sequence, SLListType))
     {
-        /* Special path for extending with a DLList.
-         * It's not strictly required but it will maintain
-         * the last accessed item. */
-        PyObject* iter_node_obj = ((DLListObject*)sequence)->first;
-        PyObject* last_node_obj = self->last;
+        /* Special path for extending with a LList (double or single)
+         * It's not strictly required but greatly improves performance
+         */
+        PyObject* iter_node_obj = ((LListObject*)sequence)->first;
 
-        while (iter_node_obj != Py_None)
+        sequence_len = ((LListObject*)sequence)->size;
+        
+        self->size += sequence_len;
+
+        while (sequence_len--)
         {
-            DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
             new_node = (PyObject*)dllistnode_create(
@@ -508,14 +511,6 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
             if (self->first == Py_None)
                 self->first = new_node;
             self->last = new_node;
-
-            self->size += 1;
-
-            if (iter_node_obj == last_node_obj)
-            {
-                /* This is needed to terminate loop if self == sequence. */
-                break;
-            }
 
             iter_node_obj = iter_node->next;
         }
@@ -965,17 +960,18 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, DLListType))
+    if (PyObject_TypeCheck(sequence, DLListType) || PyObject_TypeCheck(sequence, SLListType))
     {
-        /* Special path for extending with a DLList.
-         * It's not strictly required but it will maintain
-         * the last accessed item. */
-        PyObject* iter_node_obj = ((DLListObject*)sequence)->first;
-        PyObject* last_node_obj = ((DLListObject*)sequence)->last;
+        /* Special path for extending with a LList. Better performance. */
+        PyObject* iter_node_obj = ((LListObject*)sequence)->first;
 
-        while (iter_node_obj != Py_None)
+        sequence_len = ((LListObject*)sequence)->size;
+
+        self->size += sequence_len;
+
+        while (sequence_len--)
         {
-            DLListNodeObject* iter_node = (DLListNodeObject*)iter_node_obj;
+            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
             new_node = (PyObject*)dllistnode_create(
@@ -985,16 +981,9 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
             if (self->last == Py_None)
                 self->last = new_node;
 
-            if (iter_node_obj == last_node_obj)
-            {
-                /* This is needed to terminate loop if self == sequence. */
-                break;
-            }
-
             iter_node_obj = iter_node->next;
         }
 
-        self->size += ((DLListObject*)sequence)->size;
 
     }
     else
