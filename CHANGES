@@ -15,6 +15,12 @@
     - Add some more tests
     - Some minor cleanups
 
+    - Move types into headers, make generic LList node and list structures, which are common to both double and single linked lists.
+    - Allow a double-linked list to extend with a single-linked list, and a single-linked list to extend with a double (for much higher performance)
+
+    - Some general optimizations
+
+
 * llist-0.4 (2013-01-01)
 
   - Python 3.x support
