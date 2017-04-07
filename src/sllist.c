@@ -6,27 +6,13 @@
 #include <Python.h>
 #include <structmember.h>
 #include "py23macros.h"
+#include "sllist_types.h"
 
 #ifndef PyVarObject_HEAD_INIT
     #define PyVarObject_HEAD_INIT(type, size) \
         PyObject_HEAD_INIT(type) size,
 #endif
 
-
-static PyTypeObject SLListType;
-static PyTypeObject SLListNodeType;
-static PyTypeObject SLListIteratorType;
-
-
-/* SLListNode */
-
-typedef struct
-{
-    PyObject_HEAD
-    PyObject* value;
-    PyObject* next;
-    PyObject* list_weakref;
-} SLListNodeObject;
 
 
 static SLListNodeObject* sllistnode_create(PyObject* next,
@@ -60,7 +46,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
     }
 
     node = (SLListNodeObject*)PyObject_CallObject(
-        (PyObject*)&SLListNodeType, args);
+        (PyObject*)SLListNodeType, args);
 
     Py_XDECREF(args);
 
@@ -212,7 +198,7 @@ static PyMemberDef SLListNodeMembers[] =
 };
 
 
-static PyTypeObject SLListNodeType =
+PyTypeObject SLListNodeType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllistnode",             /* tp_name           */
@@ -252,6 +238,7 @@ static PyTypeObject SLListNodeType =
     (initproc)sllistnode_init,      /* tp_init           */
     0,                              /* tp_alloc          */
     sllistnode_new,                 /* tp_new            */
+}
 };
 
 
@@ -259,15 +246,6 @@ static PyTypeObject SLListNodeType =
 /* ****************************************************************************** */
 /*                                      SLLIST                                    */
 /* ****************************************************************************** */
-
-typedef struct
-{
-    PyObject_HEAD
-    PyObject* first;
-    PyObject* last;
-    Py_ssize_t size;
-    PyObject* weakref_list;
-} SLListObject;
 
 
 static void sllist_dealloc(SLListObject* self)
@@ -318,7 +296,7 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, &SLListType))
+    if (PyObject_TypeCheck(sequence, SLListType))
     {
         /* Special path for extending with a SLList.
          * It's not strictly required but it will maintain
@@ -426,7 +404,7 @@ static PyObject* sllist_richcompare(SLListObject* self,
     SLListNodeObject* other_node;
     int satisfied = 1;
 
-    if (!PyObject_TypeCheck(other, &SLListType))
+    if (!PyObject_TypeCheck(other, SLListType))
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -517,7 +495,7 @@ static SLListNodeObject* sllist_get_prev(SLListObject* self,
 
     SLListNodeObject* node = (SLListNodeObject*)self->first;
 
-    if (!PyObject_TypeCheck(next, &SLListNodeType))
+    if (!PyObject_TypeCheck(next, SLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
@@ -554,7 +532,7 @@ static PyObject* sllist_appendleft(SLListObject* self, PyObject* arg)
 {
     SLListNodeObject* new_node;
 
-    if (PyObject_TypeCheck(arg, &SLListNodeType))
+    if (PyObject_TypeCheck(arg, SLListNodeType))
         arg = ((SLListNodeObject*)arg)->value;
 
     new_node = sllistnode_create(self->first,
@@ -577,7 +555,7 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
 {
     SLListNodeObject* new_node;
 
-    if (PyObject_TypeCheck(arg, &SLListNodeType))
+    if (PyObject_TypeCheck(arg, SLListNodeType))
         arg = ((SLListNodeObject*)arg)->value;
 
     new_node = sllistnode_create(Py_None,
@@ -610,13 +588,13 @@ static PyObject* sllist_insertafter(SLListObject* self, PyObject* arg)
     if (!PyArg_UnpackTuple(arg, "insertafter", 2, 2, &value, &before))
         return NULL;
 
-    if (!PyObject_TypeCheck(before, &SLListNodeType))
+    if (!PyObject_TypeCheck(before, SLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
 
-    if (PyObject_TypeCheck(value, &SLListNodeType))
+    if (PyObject_TypeCheck(value, SLListNodeType))
         value = ((SLListNodeObject*)value)->value;
 
     if (((SLListNodeObject*)before)->list_weakref == Py_None)
@@ -664,12 +642,12 @@ static PyObject* sllist_insertbefore(SLListObject* self, PyObject* arg)
     if (!PyArg_UnpackTuple(arg, "insertbefore", 2, 2, &value, &after))
         return NULL;
 
-    if (!PyObject_TypeCheck(after, &SLListNodeType))
+    if (!PyObject_TypeCheck(after, SLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
     }
-    if (PyObject_TypeCheck(value, &SLListNodeType))
+    if (PyObject_TypeCheck(value, SLListNodeType))
         value = ((SLListNodeObject*)value)->value;
 
     if (after == Py_None)
@@ -718,7 +696,7 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, &SLListType))
+    if (PyObject_TypeCheck(sequence, SLListType))
     {
         /* Special path for extending with a SLList.
          * It's not strictly required but it will maintain
@@ -850,7 +828,7 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     PyObject* list_ref;
     PyObject* value;
 
-    if (!PyObject_TypeCheck(arg, &SLListNodeType))
+    if (!PyObject_TypeCheck(arg, SLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return NULL;
@@ -962,7 +940,7 @@ static PyObject* sllist_concat(PyObject* self, PyObject* other)
     SLListObject* new_list;
 
     new_list = (SLListObject*)PyObject_CallObject(
-        (PyObject*)&SLListType, NULL);
+        (PyObject*)SLListType, NULL);
 
     if (!sllist_extend_internal(new_list, self) ||
         !sllist_extend_internal(new_list, other))
@@ -991,7 +969,7 @@ static PyObject* sllist_repeat(PyObject* self, Py_ssize_t count)
     Py_ssize_t i;
 
     new_list = (SLListObject*)PyObject_CallObject(
-        (PyObject*)&SLListType, NULL);
+        (PyObject*)SLListType, NULL);
 
     for (i = 0; i < count; ++i)
     {
@@ -1056,7 +1034,7 @@ static int sllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 
     /* The rest of this function handles normal assignment:
      * list[index] = item */
-    if (!PyObject_TypeCheck(val, &SLListNodeType)) {
+    if (!PyObject_TypeCheck(val, SLListNodeType)) {
         PyErr_SetString(PyExc_TypeError, "Argument is not an sllistnode");
         return -1;
     }
@@ -1264,7 +1242,7 @@ static PyObject* sllist_iter(PyObject* self)
         return NULL;
     }
 
-    result = PyObject_CallObject((PyObject*)&SLListIteratorType, args);
+    result = PyObject_CallObject((PyObject*)SLListIteratorType, args);
 
     Py_DECREF(args);
 
@@ -1505,7 +1483,7 @@ static PySequenceMethods SLListSequenceMethods =
     0,                           /* sq_inplace_repeat */
 };
 
-static PyTypeObject SLListType =
+PyTypeObject SLListType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllist",              /* tp_name           */
@@ -1547,6 +1525,7 @@ static PyTypeObject SLListType =
     (initproc)sllist_init,       /* tp_init           */
     0,                           /* tp_alloc          */
     sllist_new,                  /* tp_new            */
+}
 };
 
 
@@ -1577,7 +1556,7 @@ static PyObject* sllistiterator_new(PyTypeObject* type,
     if (!PyArg_UnpackTuple(args, "__new__", 1, 1, &owner_list))
         return NULL;
 
-    if (!PyObject_TypeCheck(owner_list, &SLListType))
+    if (!PyObject_TypeCheck(owner_list, SLListType))
     {
         PyErr_SetString(PyExc_TypeError, "sllist argument expected");
         return NULL;
@@ -1624,7 +1603,7 @@ static PyObject* sllistiterator_iternext(PyObject* self)
 
 
 
-static PyTypeObject SLListIteratorType =
+PyTypeObject SLListIteratorType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.sllistiterator",             /* tp_name           */
@@ -1664,6 +1643,7 @@ static PyTypeObject SLListIteratorType =
     0,                                  /* tp_init           */
     0,                                  /* tp_alloc          */
     sllistiterator_new,                 /* tp_new            */
+}
 };
 
 
@@ -1671,19 +1651,19 @@ static PyTypeObject SLListIteratorType =
 int sllist_init_type(void)
 {
     return
-        ((PyType_Ready(&SLListType) == 0) &&
-         (PyType_Ready(&SLListNodeType) == 0) &&
-         (PyType_Ready(&SLListIteratorType) == 0))
+        ((PyType_Ready(SLListType) == 0) &&
+         (PyType_Ready(SLListNodeType) == 0) &&
+         (PyType_Ready(SLListIteratorType) == 0))
         ? 1 : 0;
 }
 
 void sllist_register(PyObject* module)
 {
-    Py_INCREF(&SLListType);
-    Py_INCREF(&SLListNodeType);
-    Py_INCREF(&SLListIteratorType);
+    Py_INCREF(SLListType);
+    Py_INCREF(SLListNodeType);
+    Py_INCREF(SLListIteratorType);
 
-    PyModule_AddObject(module, "sllist", (PyObject*)&SLListType);
-    PyModule_AddObject(module, "sllistnode", (PyObject*)&SLListNodeType);
-    PyModule_AddObject(module, "sllistiterator", (PyObject*)&SLListIteratorType);
+    PyModule_AddObject(module, "sllist", (PyObject*)SLListType);
+    PyModule_AddObject(module, "sllistnode", (PyObject*)SLListNodeType);
+    PyModule_AddObject(module, "sllistiterator", (PyObject*)SLListIteratorType);
 }

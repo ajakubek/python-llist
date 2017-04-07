@@ -6,6 +6,9 @@
 #include <Python.h>
 #include <structmember.h>
 #include "py23macros.h"
+#include "llist_types.h"
+#include "dllist_types.h"
+#include "sllist_types.h"
 
 #ifndef PyVarObject_HEAD_INIT
     #define PyVarObject_HEAD_INIT(type, size) \
@@ -45,24 +48,6 @@ static void debugmsg(char *format, ...)
 #endif
     
 
-static PyTypeObject DLListType;
-static PyTypeObject DLListNodeType;
-static PyTypeObject DLListIteratorType;
-
-
-/* DLListNode */
-
-typedef struct
-{
-    PyObject_HEAD
-    PyObject* value;
-    PyObject* prev;
-    PyObject* next;
-    PyObject* list_weakref;
-} DLListNodeObject;
-
-
-
 /* Convenience function for creating list nodes.
  * Automatically update pointers in neigbours.
  */
@@ -98,7 +83,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     }
 
     node = (DLListNodeObject*)PyObject_CallObject(
-        (PyObject*)&DLListNodeType, args);
+        (PyObject*)DLListNodeType, args);
 
     Py_XDECREF(args);
 
@@ -264,7 +249,7 @@ static PyMemberDef DLListNodeMembers[] =
     { NULL },   /* sentinel */
 };
 
-static PyTypeObject DLListNodeType =
+PyTypeObject DLListNodeType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllistnode",             /* tp_name */
@@ -304,21 +289,11 @@ static PyTypeObject DLListNodeType =
     (initproc)dllistnode_init,      /* tp_init */
     0,                              /* tp_alloc */
     dllistnode_new,                 /* tp_new */
+}
 };
 
 
 /* DLList */
-
-typedef struct
-{
-    PyObject_HEAD
-    PyObject* first;
-    PyObject* last;
-    PyObject* middle;
-    Py_ssize_t size;
-    Py_ssize_t middle_idx;
-    PyObject* weakref_list;
-} DLListObject;
 
 static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject);
 static DLListNodeObject* dllist_get_node_internal(DLListObject* self, Py_ssize_t index);
@@ -514,7 +489,7 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, &DLListType))
+    if (PyObject_TypeCheck(sequence, DLListType))
     {
         /* Special path for extending with a DLList.
          * It's not strictly required but it will maintain
@@ -782,7 +757,7 @@ static PyObject* dllist_richcompare(DLListObject* self,
     DLListNodeObject* other_node;
     int satisfied = 1;
 
-    if (!PyObject_TypeCheck(other, &DLListType))
+    if (!PyObject_TypeCheck(other, DLListType))
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -868,7 +843,7 @@ static PyObject* dllist_appendleft(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
 
-    if (PyObject_TypeCheck(arg, &DLListNodeType))
+    if (PyObject_TypeCheck(arg, DLListNodeType))
         arg = ((DLListNodeObject*)arg)->value;
 
     new_node = dllistnode_create(NULL, self->first, arg, (PyObject*)self);
@@ -891,7 +866,7 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 {
     DLListNodeObject* new_node;
 
-    if (PyObject_TypeCheck(arg, &DLListNodeType))
+    if (PyObject_TypeCheck(arg, DLListNodeType))
         arg = ((DLListNodeObject*)arg)->value;
 
     new_node = dllistnode_create(self->last, NULL, arg, (PyObject*)self);
@@ -918,7 +893,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     if (!PyArg_UnpackTuple(args, "insert", 1, 2, &val, &ref_node))
         return NULL;
 
-    if (PyObject_TypeCheck(val, &DLListNodeType))
+    if (PyObject_TypeCheck(val, DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
 
     if (ref_node == NULL || ref_node == Py_None)
@@ -936,7 +911,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
         PyObject* list_ref;
 
         /* insert item before ref_node */
-        if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
+        if (!PyObject_TypeCheck(ref_node, DLListNodeType))
         {
             PyErr_SetString(PyExc_TypeError,
                 "ref_node argument must be a dllistnode");
@@ -990,7 +965,7 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
     Py_ssize_t i;
     Py_ssize_t sequence_len;
 
-    if (PyObject_TypeCheck(sequence, &DLListType))
+    if (PyObject_TypeCheck(sequence, DLListType))
     {
         /* Special path for extending with a DLList.
          * It's not strictly required but it will maintain
@@ -1288,7 +1263,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     PyObject* list_ref;
     PyObject* value;
 
-    if (!PyObject_TypeCheck(arg, &DLListNodeType))
+    if (!PyObject_TypeCheck(arg, DLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError, "Argument must be a dllistnode");
         return NULL;
@@ -1409,7 +1384,7 @@ static PyObject* dllist_iter(PyObject* self)
         return NULL;
     }
 
-    result = PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+    result = PyObject_CallObject((PyObject*)DLListIteratorType, args);
 
     Py_DECREF(args);
 
@@ -1427,7 +1402,7 @@ static PyObject* dllist_concat(PyObject* self, PyObject* other)
     DLListObject* new_list;
 
     new_list = (DLListObject*)PyObject_CallObject(
-        (PyObject*)&DLListType, NULL);
+        (PyObject*)DLListType, NULL);
 
     if (!dllist_extend_internal(new_list, self) ||
         !dllist_extend_internal(new_list, other))
@@ -1454,7 +1429,7 @@ static PyObject* dllist_repeat(PyObject* self, Py_ssize_t count)
     Py_ssize_t i;
 
     new_list = (DLListObject*)PyObject_CallObject(
-        (PyObject*)&DLListType, NULL);
+        (PyObject*)DLListType, NULL);
 
     for (i = 0; i < count; ++i)
     {
@@ -1511,7 +1486,7 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 
     /* The rest of this function handles normal assignment:
      * list[index] = item */
-    if (PyObject_TypeCheck(val, &DLListNodeType))
+    if (PyObject_TypeCheck(val, DLListNodeType))
         val = ((DLListNodeObject*)val)->value;
 
     oldval = node->value;
@@ -1635,7 +1610,7 @@ static PySequenceMethods DLListSequenceMethods[] = {
 }
 ;
 
-static PyTypeObject DLListType =
+PyTypeObject DLListType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllist",             /* tp_name */
@@ -1677,6 +1652,7 @@ static PyTypeObject DLListType =
     (initproc)dllist_init,      /* tp_init */
     0,                          /* tp_alloc */
     dllist_new,                 /* tp_new */
+}
 };
 
 
@@ -1707,7 +1683,7 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
     if (!PyArg_UnpackTuple(args, "__new__", 1, 1, &owner_list))
         return NULL;
 
-    if (!PyObject_TypeCheck(owner_list, &DLListType))
+    if (!PyObject_TypeCheck(owner_list, DLListType))
     {
         PyErr_SetString(PyExc_TypeError, "dllist argument expected");
         return NULL;
@@ -1751,7 +1727,7 @@ static PyObject* dllistiterator_iternext(PyObject* self)
     return value;
 }
 
-static PyTypeObject DLListIteratorType =
+PyTypeObject DLListIteratorType[] = {
 {
     PyVarObject_HEAD_INIT(NULL, 0)
     "llist.dllistiterator",             /* tp_name */
@@ -1791,25 +1767,26 @@ static PyTypeObject DLListIteratorType =
     0,                                  /* tp_init */
     0,                                  /* tp_alloc */
     dllistiterator_new,                 /* tp_new */
+}
 };
 
 
 int dllist_init_type(void)
 {
     return
-        ((PyType_Ready(&DLListType) == 0) &&
-         (PyType_Ready(&DLListNodeType) == 0) &&
-         (PyType_Ready(&DLListIteratorType) == 0))
+        ((PyType_Ready(DLListType) == 0) &&
+         (PyType_Ready(DLListNodeType) == 0) &&
+         (PyType_Ready(DLListIteratorType) == 0))
         ? 1 : 0;
 }
 
 void dllist_register(PyObject* module)
 {
-    Py_INCREF(&DLListType);
-    Py_INCREF(&DLListNodeType);
-    Py_INCREF(&DLListIteratorType);
+    Py_INCREF(DLListType);
+    Py_INCREF(DLListNodeType);
+    Py_INCREF(DLListIteratorType);
 
-    PyModule_AddObject(module, "dllist", (PyObject*)&DLListType);
-    PyModule_AddObject(module, "dllistnode", (PyObject*)&DLListNodeType);
-    PyModule_AddObject(module, "dllistiterator", (PyObject*)&DLListIteratorType);
+    PyModule_AddObject(module, "dllist", (PyObject*)DLListType);
+    PyModule_AddObject(module, "dllistnode", (PyObject*)DLListNodeType);
+    PyModule_AddObject(module, "dllistiterator", (PyObject*)DLListIteratorType);
 }
