@@ -1670,6 +1670,53 @@ class testdllist(unittest.TestCase):
         self.assertEqual(7 in sl, True)
         self.assertEqual(8 in sl, False)
 
+    def test_slice(self):
+
+        lst = list(range(100))
+        dlst = dllist(lst)
+
+        self.assertEqual(lst[0:20], list(dlst[0:20]))
+        self.assertEqual(lst[40:60], list(dlst[40:60]))
+        self.assertEqual(lst[60:40], list(dlst[60:40]))
+        self.assertEqual(lst[:-1], list(dlst[:-1]))
+        self.assertEqual(lst[-20:], list(dlst[-20:]))
+        self.assertEqual(lst[-20:-5], list(dlst[-20:-5]))
+        self.assertEqual(lst[-5:-20], list(dlst[-5:-20]))
+        self.assertEqual(lst[-70:50], list(dlst[-70:50]))
+        self.assertEqual(lst[5:500], list(dlst[5:500]))
+        self.assertEqual(lst[:], list(dlst[:]))
+
+        slst = list(range(8))
+        sdlst = dllist(slst)
+
+        self.assertEqual(slst[2:5], list(sdlst[2:5]))
+        self.assertEqual(slst[-3:-1], list(sdlst[-3:-1]))
+
+        for i in range(100):
+            for j in range(100):
+                self.assertEqual(lst[i:j], list(dlst[i:j]))
+
+        # Test if version of python (2.7+ , 3.? + ) supports step in slices
+        try:
+            lst[0:10:2]
+        except:
+            # If not supported, test is over
+            return
+
+        self.assertEqual(lst[0:20:2], list(dlst[0:20:2]))
+        self.assertEqual(lst[0:21:2], list(dlst[0:21:2]))
+        self.assertEqual(lst[50:80:6], list(dlst[50:80:6]))
+
+        for i in range(100):
+            for j in range(100):
+                for s in range(1, 100, 1):
+                    try:
+                        self.assertEqual(lst[i:j:s], list(dlst[i:j:s]))
+                    except AssertionError as ae:
+                        sys.stderr.write("Failed on [ %d : %d : %d ]\n" %(i, j, s))
+                        raise ae
+
+
 
     def test_repeat(self):
         ref = py23_range(0, 1024, 4)
