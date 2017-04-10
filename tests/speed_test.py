@@ -25,12 +25,8 @@ def pop(c):
 
 
 def popleft(c):
-    if isinstance(c, deque):
-        for i in range(num):
-            c.popleft()
-    else:
-        for i in range(num):
-            c.pop()
+    for i in range(num):
+        c.popleft()
 
 
 def remove(c):
@@ -47,8 +43,8 @@ for container in [deque, dllist, sllist]:
         start = time.time()
         operation(c)
         elapsed = time.time() - start
-        print "Completed %s/%s in \t\t%.8f seconds:\t %.1f ops/sec" % (
+        print ( "Completed %s/%s in \t\t%.8f seconds:\t %.1f ops/sec" % (
             container.__name__,
             operation.__name__,
             elapsed,
-            num / elapsed)
+            num / elapsed) )
