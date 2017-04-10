@@ -1500,7 +1500,7 @@ static int dllist_contains(PyObject *self, PyObject *value)
 
     node = (DLListNodeObject *) ((DLListObject*)self)->first;
 
-    while ( node != Py_None )
+    while ( (PyObject *)node != Py_None )
     {
         if( node->value == value )
             return 1;

@@ -1303,7 +1303,7 @@ static int sllist_contains(PyObject *self, PyObject *value)
 
     node = (SLListNodeObject *) ((SLListObject*)self)->first;
 
-    while ( node != Py_None )
+    while ( (PyObject *)node != Py_None )
     {
         if( node->value == value )
             return 1;
