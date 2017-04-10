@@ -511,15 +511,24 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
             LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
-            new_node = (PyObject*)dllistnode_create(
-                self->last, NULL, iter_node->value, (PyObject*)self);
-
-            if (self->first == Py_None)
+            new_node = (PyObject *)dllistnode_make(self, iter_node->value);
+            if ( unlikely( self->first == Py_None) )
+            {
                 self->first = new_node;
-            self->last = new_node;
+                self->last = new_node;
+                ((DLListNodeObject *)new_node)->prev = Py_None;
+            }
+            else
+            {
+                ((DLListNodeObject *)self->last)->next = new_node;
+                ((DLListNodeObject *)new_node)->prev = self->last;
+                self->last = new_node;
+            }
 
             iter_node_obj = iter_node->next;
         }
+        if( likely( self->last != Py_None) )
+            ((DLListNodeObject *)self->last)->next = Py_None;
 
     }
     else
@@ -531,31 +540,39 @@ static int dllist_extend_internal(DLListObject* self, PyObject* sequence)
             return 0;
         }
 
-        for (i = 0; i < sequence_len; ++i)
+        self->size += sequence_len;
+        for(i=0; i < sequence_len; i++)
         {
             PyObject* item;
             PyObject* new_node;
 
             item = PySequence_GetItem(sequence, i);
-            if (item == NULL)
+            if ( unlikely(item == NULL) )
             {
                 PyErr_SetString(PyExc_ValueError,
                     "Failed to get element from sequence");
                 return 0;
             }
 
-            new_node = (PyObject*)dllistnode_create(
-                self->last, NULL, item, (PyObject*)self);
-
-            if (self->first == Py_None)
+            new_node = (PyObject *)dllistnode_make(self, item);
+            if ( unlikely(self->first == Py_None) )
+            {
                 self->first = new_node;
-            self->last = new_node;
-
-            ++self->size;
+                self->last = new_node;
+                ((DLListNodeObject *)new_node)->prev = Py_None;
+            }
+            else
+            {
+                ((DLListNodeObject *)self->last)->next = new_node;
+                ((DLListNodeObject *)new_node)->prev = self->last;
+                self->last = new_node;
+            }
 
 
             Py_DECREF(item);
         }
+        if(self->last != Py_None)
+            ((DLListNodeObject *)self->last)->next = Py_None;
 
     }
 
@@ -980,15 +997,24 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
             LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
             PyObject* new_node;
 
-            new_node = (PyObject*)dllistnode_create(
-                NULL, self->first, iter_node->value, (PyObject*)self);
-
-            self->first = new_node;
-            if (self->last == Py_None)
+            new_node = (PyObject *)dllistnode_make(self, iter_node->value);
+            if ( unlikely(self->first == Py_None) )
+            {
+                self->first = new_node;
                 self->last = new_node;
+                ((DLListNodeObject *)new_node)->next = Py_None;
+            }
+            else
+            {
+                ((DLListNodeObject *)self->first)->prev = new_node;
+                ((DLListNodeObject *)new_node)->next = self->first;
+                self->first = new_node;
+            }
 
             iter_node_obj = iter_node->next;
         }
+        if ( likely(self->first != Py_None) )
+            ((DLListNodeObject*)self->first)->prev = Py_None;
 
 
     }
@@ -1002,30 +1028,39 @@ static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
             return NULL;
         }
 
+        self->size += sequence_len;
+
         for (i = 0; i < sequence_len; ++i)
         {
             PyObject* item;
             PyObject* new_node;
 
             item = PySequence_GetItem(sequence, i);
-            if (item == NULL)
+            if ( unlikely(item == NULL) )
             {
                 PyErr_SetString(PyExc_ValueError,
                     "Failed to get element from sequence");
                 return NULL;
             }
 
-            new_node = (PyObject*)dllistnode_create(
-                NULL, self->first, item, (PyObject*)self);
-
-            self->first = new_node;
-            if (self->last == Py_None)
+            new_node = (PyObject *)dllistnode_make(self, item);
+            if ( unlikely(self->first == Py_None) )
+            {
+                self->first = new_node;
                 self->last = new_node;
-
-            ++self->size;
+                ((DLListNodeObject *)new_node)->next = Py_None;
+            }
+            else
+            {
+                ((DLListNodeObject *)self->first)->prev = new_node;
+                ((DLListNodeObject *)new_node)->next = self->first;
+                self->first = new_node;
+            }
 
             Py_DECREF(item);
         }
+        if ( likely(self->first != Py_None) )
+            ((DLListNodeObject*)self->first)->prev = Py_None;
     }
 
 
