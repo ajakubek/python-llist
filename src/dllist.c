@@ -1494,6 +1494,25 @@ static int dllist_set_item(PyObject* self, Py_ssize_t index, PyObject* val)
 }
 
 
+static int dllist_contains(PyObject *self, PyObject *value)
+{
+    DLListNodeObject *node;
+
+    node = (DLListNodeObject *) ((DLListObject*)self)->first;
+
+    while ( node != Py_None )
+    {
+        if( node->value == value )
+            return 1;
+
+        node = (DLListNodeObject *)node->next;
+    }
+
+    return 0;
+}
+
+
+
 static PyObject* dllist_index(DLListObject *self, PyObject *value)
 {
 
@@ -1860,7 +1879,7 @@ static PySequenceMethods DLListSequenceMethods[] = {
     dllist_simpleslice,         /* sq_slice */
     dllist_set_item,            /* sq_ass_item */
     0,                          /* sq_ass_slice */
-    0,                          /* sq_contains */
+    dllist_contains,            /* sq_contains */
     dllist_inplace_concat,      /* sq_inplace_concat */
     0,                          /* sq_inplace_repeat */
 }

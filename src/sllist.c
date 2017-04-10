@@ -1297,6 +1297,24 @@ str_alloc_error:
     return NULL;
 }
 
+static int sllist_contains(PyObject *self, PyObject *value)
+{
+    SLListNodeObject *node;
+
+    node = (SLListNodeObject *) ((SLListObject*)self)->first;
+
+    while ( node != Py_None )
+    {
+        if( node->value == value )
+            return 1;
+
+        node = (SLListNodeObject *)node->next;
+    }
+
+    return 0;
+}
+
+
 static PyObject* sllist_index(SLListObject *self, PyObject *value)
 {
 
@@ -1612,7 +1630,7 @@ static PySequenceMethods SLListSequenceMethods =
     sllist_simpleslice,          /* sq_slice;         */
     sllist_set_item,             /* sq_ass_item       */
     0,                           /* sq_ass_slice      */
-    0,                           /* sq_contains       */
+    sllist_contains,             /* sq_contains       */
     sllist_inplace_concat,       /* sq_inplace_concat */
     0,                           /* sq_inplace_repeat */
 };
