@@ -18,6 +18,9 @@
     - Move types into headers, make generic LList node and list structures, which are common to both double and single linked lists.
     - Allow a double-linked list to extend with a single-linked list, and a single-linked list to extend with a double (for much higher performance)
 
+    - Implement mappings on sllist and dllist
+    - Implement slicing (including with step) on both sllist and dllist
+
     - Some general optimizations
 
 
