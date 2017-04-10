@@ -1390,7 +1390,7 @@ static long sllist_hash(SLListObject* self)
 #endif
 
 /*
- *  sllistnode_make - A slightly cheaper version that doesn't set next or prev
+ *  sllistnode_make - A slightly cheaper version that doesn't set next
  */
 static inline SLListNodeObject *sllistnode_make(SLListObject *sllist, PyObject *value)
 {
@@ -1499,10 +1499,11 @@ static PyObject *sllist_simpleslice(SLListObject *self, Py_ssize_t idx_start, Py
 
 static PyObject *sllist_subscript(SLListObject *self, PyObject *item)
 {
-    Py_ssize_t i;
     
     if ( PyIndex_Check(item) )
     {
+        Py_ssize_t i;
+
         i = PyNumber_AsSsize_t(item, PyExc_IndexError);
 
         if ( i == -1 && PyErr_Occurred() )
@@ -1516,8 +1517,6 @@ static PyObject *sllist_subscript(SLListObject *self, PyObject *item)
     
     if ( PySlice_Check(item) )
     {
-
-
         Py_ssize_t start, stop, step, sliceLength;
 
         if ( PySlice_GetIndicesEx( (PyObject *)item, self->size, &start, &stop, &step, &sliceLength ) )

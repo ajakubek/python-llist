@@ -1615,7 +1615,7 @@ static PyObject *dllist_slice(DLListObject *self, Py_ssize_t start_idx, Py_ssize
             {
                 pre_walk_direction = 1;
             }
-            remaining = diff_mid_left;
+
             cur = (DLListNodeObject *)self->middle;
         }
         else if( remaining == diff_mid_right )
@@ -1641,7 +1641,7 @@ static PyObject *dllist_slice(DLListObject *self, Py_ssize_t start_idx, Py_ssize
             {
                 pre_walk_direction = -1;
                 remaining += calc_end_difference_step(start_idx, end_idx, step);
-                //remaining += 1;
+
             }
 
             cur = (DLListNodeObject *)self->middle;
@@ -1762,10 +1762,11 @@ static PyObject *dllist_simpleslice(DLListObject *self, Py_ssize_t idx_start, Py
 
 static PyObject *dllist_subscript(DLListObject *self, PyObject *item)
 {
-    Py_ssize_t i;
     
     if ( PyIndex_Check(item) )
     {
+        Py_ssize_t i;
+
         i = PyNumber_AsSsize_t(item, PyExc_IndexError);
 
         if ( i == -1 && PyErr_Occurred() )
@@ -1779,8 +1780,6 @@ static PyObject *dllist_subscript(DLListObject *self, PyObject *item)
     
     if ( PySlice_Check(item) )
     {
-
-
         Py_ssize_t start, stop, step, sliceLength;
 
         if ( PySlice_GetIndicesEx( (PyObject *)item, self->size, &start, &stop, &step, &sliceLength ) )
