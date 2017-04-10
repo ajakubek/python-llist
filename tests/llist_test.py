@@ -588,6 +588,57 @@ class testsllist(unittest.TestCase):
         self.assertEqual(ll.last, None)
 
         
+    def test_slice(self):
+
+        lst = list(range(100))
+        slst = sllist(lst)
+
+        self.assertEqual(lst[0:20], list(slst[0:20]))
+        self.assertEqual(lst[40:60], list(slst[40:60]))
+        self.assertEqual(lst[60:40], list(slst[60:40]))
+        self.assertEqual(lst[:-1], list(slst[:-1]))
+        self.assertEqual(lst[-20:], list(slst[-20:]))
+        self.assertEqual(lst[-20:-5], list(slst[-20:-5]))
+        self.assertEqual(lst[-5:-20], list(slst[-5:-20]))
+        self.assertEqual(lst[-70:50], list(slst[-70:50]))
+        self.assertEqual(lst[5:500], list(slst[5:500]))
+        self.assertEqual(lst[:], list(slst[:]))
+
+        smlst = list(range(8))
+        smslst = sllist(smlst)
+
+        self.assertEqual(smlst[2:5], list(smslst[2:5]))
+        self.assertEqual(smlst[-3:-1], list(smslst[-3:-1]))
+
+        for i in range(100):
+            for j in range(100):
+                try:
+                    self.assertEqual(lst[i:j], list(slst[i:j]))
+                except AssertionError as ae:
+                    import pdb; pdb.set_trace()
+                    sys.stderr.write("Failed on [ %d : %d ]\n" %(i, j))
+                    raise ae
+
+        # Test if version of python (2.7+ , 3.? + ) supports step in slices
+        try:
+            lst[0:10:2]
+        except:
+            # If not supported, test is over
+            return
+
+        self.assertEqual(lst[0:20:2], list(slst[0:20:2]))
+        self.assertEqual(lst[0:21:2], list(slst[0:21:2]))
+        self.assertEqual(lst[50:80:6], list(slst[50:80:6]))
+
+        for i in range(30):
+            for j in range(30):
+                for s in range(1, 30, 1):
+                    try:
+                        self.assertEqual(lst[i:j:s], list(slst[i:j:s]))
+                    except AssertionError as ae:
+                        sys.stderr.write("Failed on [ %d : %d : %d ]\n" %(i, j, s))
+                        raise ae
+
 
         
 
@@ -1686,11 +1737,11 @@ class testdllist(unittest.TestCase):
         self.assertEqual(lst[5:500], list(dlst[5:500]))
         self.assertEqual(lst[:], list(dlst[:]))
 
-        slst = list(range(8))
-        sdlst = dllist(slst)
+        smlst = list(range(8))
+        smdlst = dllist(smlst)
 
-        self.assertEqual(slst[2:5], list(sdlst[2:5]))
-        self.assertEqual(slst[-3:-1], list(sdlst[-3:-1]))
+        self.assertEqual(smlst[2:5], list(smdlst[2:5]))
+        self.assertEqual(smlst[-3:-1], list(smdlst[-3:-1]))
 
         for i in range(100):
             for j in range(100):

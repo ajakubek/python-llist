@@ -15,6 +15,17 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
+#ifdef __GNUC__
+
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+#else
+
+#define likely(x)   (x)
+#define unlikely(x) (x)
+
+#endif
 
 
 static SLListNodeObject* sllistnode_create(PyObject* next,
@@ -1389,6 +1400,198 @@ static long sllist_hash(SLListObject* self)
 }
 #endif
 
+static inline int _normalize_indexes(Py_ssize_t size, Py_ssize_t *idx_start, Py_ssize_t *idx_end)
+{
+
+    if ( unlikely(*idx_start < 0 ))
+    {
+        *idx_start = size - *idx_start;
+        if ( unlikely(*idx_start < 0 ))
+            return 0;
+    }
+    if ( unlikely(*idx_end < 0 ))
+    {
+        *idx_end = size - *idx_end;
+        if ( unlikely(*idx_end < 0 ))
+            return 0;
+    }
+
+    if( unlikely(*idx_end >= size ))
+        *idx_end = size - 1;
+
+    if ( unlikely(*idx_start >= size || *idx_start >= *idx_end))
+        return 0;
+
+    if( unlikely(*idx_start >= *idx_end ))
+        return 0;
+
+    return 1;
+}
+/*
+ *  sllistnode_make - A slightly cheaper version that doesn't set next or prev
+ */
+static inline SLListNodeObject *sllistnode_make(SLListObject *sllist, PyObject *value)
+{
+    SLListNodeObject *ret;
+
+    ret = (SLListNodeObject*)SLListNodeType->tp_alloc(SLListNodeType, 0);
+    if (ret == NULL)
+        return NULL;
+
+    /* A single reference to Py_None is held for the whole
+     * lifetime of a node. */
+    Py_INCREF(Py_None);
+
+    ret->value = value;
+
+    Py_INCREF(ret->value);
+
+    ret->list_weakref = PyWeakref_NewRef((PyObject *)sllist, NULL);
+    Py_INCREF(ret->list_weakref);
+
+    return ret;
+}
+
+
+
+#define calc_end_difference_step(_start, _end, _step) (((_end - _start - 1) % _step) + 1)
+
+/*
+ *   sllist_slice - Slice function assuming normalized indexes. 
+ *
+ *     For potentially non-normalized, use sllist_simpleslice
+ *       or call _normalize_indexes
+ *
+ *    self - SLList to slice from
+ *    start_idx    - Start of slicing (normalized)
+ *    end_idx      - End of slicing (normalized)
+ *    step         - Slice step
+ *    sliceLength  - Length of resulting slice. Pass -1 to calculate.
+ */
+static PyObject *sllist_slice(SLListObject *self, Py_ssize_t start_idx, Py_ssize_t end_idx, Py_ssize_t step, Py_ssize_t sliceLength)
+{
+    SLListObject *ret;
+    SLListNodeObject *cur;
+    SLListNodeObject *new_node;
+    Py_ssize_t i;
+
+    Py_ssize_t stepI;
+
+    ret = (SLListObject *)sllist_new(SLListType, Py_None, Py_None);
+
+    if ( sliceLength == -1 )
+    {
+        sliceLength = end_idx - start_idx; /* Reusing end_idx as max */
+        if(step > 1 )
+        {
+            sliceLength = sliceLength / step + ( end_idx % step ? 1 : 0 );
+        }
+    }
+
+
+    if ( step > 1 )
+    {
+        Py_ssize_t tmp_slice_resize;
+        tmp_slice_resize = start_idx + (step * sliceLength);
+        if ( tmp_slice_resize < end_idx )
+            end_idx = tmp_slice_resize;
+    }
+
+
+
+    if ( sliceLength == 0 )
+        return (PyObject *)ret;
+
+
+    cur = (SLListNodeObject *)self->first;
+    for(i=0; i < start_idx; i++)
+        cur = (SLListNodeObject*)cur->next;
+    
+    new_node = sllistnode_make(self, cur->value);
+    new_node->next = Py_None;
+
+    ret->first = ret->last = (PyObject *)new_node;
+    ret->size = 1;
+
+
+    SLListNodeObject *prev;
+    prev = new_node;
+
+
+    while ( ret->size < sliceLength )
+    {
+        stepI = step;
+        while(stepI--)
+            cur = (SLListNodeObject*)cur->next;
+
+        new_node = sllistnode_make(self, cur->value);
+
+        prev->next = (PyObject *)new_node;
+        prev = new_node;
+
+        ret->last = (PyObject *)new_node;
+
+        ret->size += 1;
+
+        
+    }
+    ((SLListNodeObject*)ret->last)->next = Py_None;
+
+    return (PyObject*) ret;
+
+}
+
+/*
+ *   sllist_simpleslice - Simple (PySequence) slices. Can take non-normalized indexes (like negatives)
+ */
+static PyObject *sllist_simpleslice(SLListObject *self, Py_ssize_t idx_start, Py_ssize_t idx_end)
+{
+    if( !_normalize_indexes(self->size, &idx_start, &idx_end) )
+    {
+        SLListObject *ret = (SLListObject *)sllist_new(SLListType, NULL, NULL);
+        return (PyObject *)ret;
+    }
+
+    return sllist_slice(self, idx_start, idx_end, 1, -1);
+}
+
+static PyObject *sllist_subscript(SLListObject *self, PyObject *item)
+{
+    Py_ssize_t i;
+    
+    if ( PyIndex_Check(item) )
+    {
+        i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+
+        if ( i == -1 && PyErr_Occurred() )
+            return NULL;
+
+        if ( i < 0 )
+            i += self->size;
+
+        return sllist_get_item((PyObject *)self, i);
+    }
+    
+    if ( PySlice_Check(item) )
+    {
+
+
+        Py_ssize_t start, stop, step, sliceLength;
+
+        if ( PySlice_GetIndicesEx( (PyObject *)item, self->size, &start, &stop, &step, &sliceLength ) )
+            return NULL; /* Error */
+
+        return sllist_slice(self, start, stop, step, sliceLength);
+    }
+    else
+    {
+        
+        PyErr_Format(PyExc_TypeError, "Indicies must be integers, not %s", item->ob_type->tp_name);
+        return NULL;
+    }
+
+}
+
 
 static PyMethodDef SLListMethods[] =
 {
@@ -1465,13 +1668,22 @@ static PySequenceMethods SLListSequenceMethods =
     sllist_concat,               /* sq_concat         */
     sllist_repeat,               /* sq_repeat         */
     sllist_get_item,             /* sq_item           */
-    0,                           /* sq_slice;         */
+    sllist_simpleslice,          /* sq_slice;         */
     sllist_set_item,             /* sq_ass_item       */
     0,                           /* sq_ass_slice      */
     0,                           /* sq_contains       */
     sllist_inplace_concat,       /* sq_inplace_concat */
     0,                           /* sq_inplace_repeat */
 };
+
+static PyMappingMethods SLListMappingMethods[] = {
+{
+    sllist_len,                /* mp_length */
+    (binaryfunc)sllist_subscript,          /* mp_subscript */
+    0,                         /* mp_ass_subscript */
+}
+};
+
 
 PyTypeObject SLListType[] = {
 {
@@ -1487,7 +1699,7 @@ PyTypeObject SLListType[] = {
     (reprfunc)sllist_repr,       /* tp_repr           */
     0,                           /* tp_as_number      */
     &SLListSequenceMethods,      /* tp_as_sequence    */
-    0,                           /* tp_as_mapping     */
+    SLListMappingMethods,        /* tp_as_mapping     */
     0,                           /* tp_hash           */
     0,                           /* tp_call           */
     (reprfunc)sllist_str,        /* tp_str            */
