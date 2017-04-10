@@ -6,6 +6,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include "py23macros.h"
+#include "llist.h"
 #include "llist_types.h"
 #include "dllist_types.h"
 #include "sllist_types.h"
@@ -18,18 +19,6 @@
 #include <limits.h>
 
 #include <stdarg.h>
-
-#ifdef __GNUC__
-
-#define likely(x)   __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-
-#else
-
-#define likely(x)   (x)
-#define unlikely(x) (x)
-
-#endif
 
 #define START_MIDDLE_AFTER 10
 
@@ -239,24 +228,7 @@ static int dllistnode_init(DLListNodeObject* self,
  */
 static inline DLListNodeObject *dllistnode_make(DLListObject *dllist, PyObject *value)
 {
-    DLListNodeObject *ret;
-
-    ret = (DLListNodeObject*)DLListNodeType->tp_alloc(DLListNodeType, 0);
-    if (ret == NULL)
-        return NULL;
-
-    /* A single reference to Py_None is held for the whole
-     * lifetime of a node. */
-    Py_INCREF(Py_None);
-
-    ret->value = value;
-
-    Py_INCREF(ret->value);
-
-    ret->list_weakref = PyWeakref_NewRef((PyObject *)dllist, NULL);
-    Py_INCREF(ret->list_weakref);
-
-    return ret;
+    return (DLListNodeObject *)llistnode_make(DLListNodeType, (PyObject *)dllist, value);
 }
 
 
@@ -337,12 +309,6 @@ PyTypeObject DLListNodeType[] = {
 
 static PyObject* dllist_node_at(PyObject* self, PyObject* indexObject);
 static DLListNodeObject* dllist_get_node_internal(DLListObject* self, Py_ssize_t index);
-
-
-static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
-{
-    return (x >= 0) ? x : -x;
-}
 
 
 /****************
@@ -1570,45 +1536,6 @@ static PyObject* dllist_rindex(DLListObject *self, PyObject *value)
     return NULL;
 }
 
-static inline int _normalize_indexes(Py_ssize_t size, Py_ssize_t *idx_start, Py_ssize_t *idx_end)
-{
-
-    if ( unlikely(*idx_start < 0 ))
-    {
-        *idx_start = size - *idx_start;
-        if ( unlikely(*idx_start < 0 ))
-            return 0;
-    }
-    if ( unlikely(*idx_end < 0 ))
-    {
-        *idx_end = size - *idx_end;
-        if ( unlikely(*idx_end < 0 ))
-            return 0;
-    }
-
-    if( unlikely(*idx_end >= size ))
-        *idx_end = size - 1;
-
-    if ( unlikely(*idx_start >= size || *idx_start >= *idx_end))
-        return 0;
-
-    if( unlikely(*idx_start >= *idx_end ))
-        return 0;
-
-    return 1;
-}
-
-
-static inline Py_ssize_t py_ssize_min(Py_ssize_t a, Py_ssize_t b)
-{
-    if ( a < b )
-        return a;
-    return b;
-}
-
-
-#define calc_end_difference_step(_start, _end, _step) (((_end - _start - 1) % _step) + 1)
-
 /*
  *   dllist_slice - Slice function assuming normalized indexes. 
  *
@@ -1869,8 +1796,6 @@ static PyObject *dllist_subscript(DLListObject *self, PyObject *item)
     }
 
 }
-
-
 
 
 

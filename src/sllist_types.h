@@ -18,9 +18,9 @@ extern PyTypeObject SLListIteratorType[];
 typedef struct
 {
     PyObject_HEAD
+    PyObject *list_weakref;
     PyObject *value;
     PyObject *next;
-    PyObject *list_weakref;
 } SLListNodeObject;
 
 typedef struct

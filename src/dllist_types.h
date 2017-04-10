@@ -15,10 +15,10 @@ extern PyTypeObject DLListIteratorType[];
 typedef struct
 {
     PyObject_HEAD
+    PyObject *list_weakref;
     PyObject *value;
     PyObject *next;
     PyObject *prev;
-    PyObject *list_weakref;
 } DLListNodeObject;
 
 typedef struct

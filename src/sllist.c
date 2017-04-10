@@ -6,6 +6,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include "py23macros.h"
+#include "llist.h"
 #include "llist_types.h"
 #include "sllist_types.h"
 #include "dllist_types.h"
@@ -13,18 +14,6 @@
 #ifndef PyVarObject_HEAD_INIT
     #define PyVarObject_HEAD_INIT(type, size) \
         PyObject_HEAD_INIT(type) size,
-#endif
-
-#ifdef __GNUC__
-
-#define likely(x)   __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-
-#else
-
-#define likely(x)   (x)
-#define unlikely(x) (x)
-
 #endif
 
 
@@ -1400,61 +1389,14 @@ static long sllist_hash(SLListObject* self)
 }
 #endif
 
-static inline int _normalize_indexes(Py_ssize_t size, Py_ssize_t *idx_start, Py_ssize_t *idx_end)
-{
-
-    if ( unlikely(*idx_start < 0 ))
-    {
-        *idx_start = size - *idx_start;
-        if ( unlikely(*idx_start < 0 ))
-            return 0;
-    }
-    if ( unlikely(*idx_end < 0 ))
-    {
-        *idx_end = size - *idx_end;
-        if ( unlikely(*idx_end < 0 ))
-            return 0;
-    }
-
-    if( unlikely(*idx_end >= size ))
-        *idx_end = size - 1;
-
-    if ( unlikely(*idx_start >= size || *idx_start >= *idx_end))
-        return 0;
-
-    if( unlikely(*idx_start >= *idx_end ))
-        return 0;
-
-    return 1;
-}
 /*
  *  sllistnode_make - A slightly cheaper version that doesn't set next or prev
  */
 static inline SLListNodeObject *sllistnode_make(SLListObject *sllist, PyObject *value)
 {
-    SLListNodeObject *ret;
-
-    ret = (SLListNodeObject*)SLListNodeType->tp_alloc(SLListNodeType, 0);
-    if (ret == NULL)
-        return NULL;
-
-    /* A single reference to Py_None is held for the whole
-     * lifetime of a node. */
-    Py_INCREF(Py_None);
-
-    ret->value = value;
-
-    Py_INCREF(ret->value);
-
-    ret->list_weakref = PyWeakref_NewRef((PyObject *)sllist, NULL);
-    Py_INCREF(ret->list_weakref);
-
-    return ret;
+    return (SLListNodeObject *)llistnode_make(SLListNodeType, (PyObject *)sllist, value);
 }
 
-
-
-#define calc_end_difference_step(_start, _end, _step) (((_end - _start - 1) % _step) + 1)
 
 /*
  *   sllist_slice - Slice function assuming normalized indexes. 
