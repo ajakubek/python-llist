@@ -315,25 +315,33 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
         PyObject* iter_node_obj = ((LListObject *)sequence)->first;
 
         sequence_len = ((LListObject *)sequence)->size;
+        if ( unlikely(sequence_len == 0) )
+            return 1;
+
+        LListNodeObject *iter_node;
+        PyObject *new_node;
 
         self->size += sequence_len;
-
-        while (sequence_len--)
+        if(self->size == sequence_len)
         {
-            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
-            PyObject* new_node;
+            iter_node = (LListNodeObject*)iter_node_obj;
 
             new_node = (PyObject *)sllistnode_make(self, iter_node->value);
-            if ( unlikely( self->first == Py_None) )
-            {
-                self->first = new_node;
-                self->last = new_node;
-            }
-            else
-            {
-                ((SLListNodeObject *)self->last)->next = new_node;
-                self->last = new_node;
-            }
+            self->first = new_node;
+            self->last = new_node;
+
+            iter_node_obj = iter_node->next;
+            sequence_len -= 1;
+        }
+        while (sequence_len-- > 0)
+        {
+            iter_node = (LListNodeObject*)iter_node_obj;
+
+            new_node = (PyObject *)sllistnode_make(self, iter_node->value);
+
+            ((SLListNodeObject *)self->last)->next = new_node;
+            self->last = new_node;
+
 
             iter_node_obj = iter_node->next;
         }
@@ -350,10 +358,36 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
             PyErr_SetString(PyExc_ValueError, "Invalid sequence");
             return 0;
         }
+        if ( unlikely(sequence_len == 0) )
+            return 1;
+
+        PyObject *item;
+        PyObject *new_node;
 
         self->size += sequence_len;
+        i = 0;
 
-        for (i = 0; i < sequence_len; ++i)
+        if ( self->size == sequence_len )
+        {
+
+            item = PySequence_GetItem(sequence, 0);
+            if ( unlikely(item == NULL) )
+            {
+                PyErr_SetString(PyExc_ValueError,
+                                "Failed to get element from sequence");
+                return 0;
+            }
+
+            new_node = (PyObject *)sllistnode_make(self, item);
+
+            self->first = new_node;
+            self->last = new_node;
+
+            Py_DECREF(item);
+            i += 1;
+        }
+
+        for (; i < sequence_len; ++i)
         {
             PyObject* item;
             PyObject* new_node;
@@ -367,16 +401,10 @@ static int sllist_extend_internal(SLListObject* self, PyObject* sequence)
             }
 
             new_node = (PyObject *)sllistnode_make(self, item);
-            if ( unlikely( self->first == Py_None) )
-            {
-                self->first = new_node;
-                self->last = new_node;
-            }
-            else
-            {
-                ((SLListNodeObject *)self->last)->next = new_node;
-                self->last = new_node;
-            }
+
+            ((SLListNodeObject *)self->last)->next = new_node;
+            self->last = new_node;
+
 
             Py_DECREF(item);
         }
@@ -717,25 +745,35 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
 
         sequence_len = ((LListObject*)sequence)->size;
 
-        self->size += sequence_len;
+        if ( unlikely( sequence_len == 0 ) )
+            Py_RETURN_NONE;
 
-        while (sequence_len--)
+        LListNodeObject *iter_node;
+        PyObject *new_node;
+
+        self->size += sequence_len;
+        if ( self->size == sequence_len )
         {
-            LListNodeObject* iter_node = (LListNodeObject*)iter_node_obj;
-            PyObject* new_node;
+            iter_node = (LListNodeObject*)iter_node_obj;
 
             new_node = (PyObject *)sllistnode_make(self, iter_node->value);
-            if ( unlikely(self->first == Py_None) )
-            {
-                self->first = new_node;
-                self->last = new_node;
-                ((SLListNodeObject *)new_node)->next = Py_None;
-            }
-            else
-            {
-                ((SLListNodeObject *)new_node)->next = self->first;
-                self->first = new_node;
-            }
+
+            self->first = new_node;
+            self->last = new_node;
+            ((SLListNodeObject *)new_node)->next = Py_None;
+
+            iter_node_obj = iter_node->next;
+            sequence_len -= 1;
+        }
+
+        while (sequence_len-- > 0)
+        {
+            iter_node = (LListNodeObject*)iter_node_obj;
+
+            new_node = (PyObject *)sllistnode_make(self, iter_node->value);
+
+            ((SLListNodeObject *)new_node)->next = self->first;
+            self->first = new_node;
 
             iter_node_obj = iter_node->next;
         }
@@ -749,14 +787,36 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
             PyErr_SetString(PyExc_ValueError, "Invalid sequence");
             return NULL;
         }
+        if ( unlikely( sequence_len == 0 ) )
+            Py_RETURN_NONE;
+
+        PyObject *item;
+        PyObject *new_node;
+        i = 0;
 
         self->size += sequence_len;
-
-        for (i = 0; i < sequence_len; ++i)
+        if ( self->size == sequence_len )
         {
-            PyObject* item;
-            PyObject* new_node;
+            item = PySequence_GetItem(sequence, 0);
+            if ( unlikely(item == NULL) )
+            {
+                PyErr_SetString(PyExc_ValueError,
+                                "Failed to get element from sequence");
+                return NULL;
+            }
 
+            new_node = (PyObject *)sllistnode_make(self, item);
+
+            self->first = new_node;
+            self->last = new_node;
+            ((SLListNodeObject *)new_node)->next = Py_None;
+
+            Py_DECREF(item);
+            i += 1;
+        }
+
+        for (; i < sequence_len; ++i)
+        {
             item = PySequence_GetItem(sequence, i);
             if ( unlikely(item == NULL) )
             {
@@ -766,17 +826,10 @@ static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
             }
 
             new_node = (PyObject *)sllistnode_make(self, item);
-            if ( unlikely(self->first == Py_None) )
-            {
-                self->first = new_node;
-                self->last = new_node;
-                ((SLListNodeObject *)new_node)->next = Py_None;
-            }
-            else
-            {
-                ((SLListNodeObject *)new_node)->next = self->first;
-                self->first = new_node;
-            }
+
+            ((SLListNodeObject *)new_node)->next = self->first;
+            self->first = new_node;
+
 
             Py_DECREF(item);
         }
