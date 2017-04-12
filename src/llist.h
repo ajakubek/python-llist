@@ -30,6 +30,42 @@ extern PyObject *mod_version_tuple;
 
 #endif
 
+/* #define DO_DEBUG */
+
+
+#ifdef DO_DEBUG
+static void debugmsg(char *format, ...)
+{
+    va_list args;
+    FILE *f;
+
+    f = fopen("debug.txt", "a");
+
+    va_start(args, format);
+    vfprintf(f, format, args);
+    va_end(args);
+
+    fclose(f);
+}
+#else
+
+#define debugmsg(...)
+/*static inline void debugmsg(char *format, ...)
+{
+
+}
+*/
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+
+#define GET_INDICES_TYPE PyObject
+
+#else
+
+#define GET_INDICES_TYPE PySliceObject
+
+#endif
 
 static inline Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
 {
@@ -64,14 +100,15 @@ static inline int _normalize_indexes(Py_ssize_t size, Py_ssize_t *idx_start, Py_
             return 0;
     }
 
-    if( unlikely(*idx_end >= size ))
-        *idx_end = size - 1;
+    if ( unlikely(*idx_end >= size ))
+        *idx_end = size;
 
     if ( unlikely(*idx_start >= size || *idx_start >= *idx_end))
         return 0;
 
-    if( unlikely(*idx_start >= *idx_end ))
+    if ( unlikely(*idx_start >= *idx_end ))
         return 0;
+
 
     return 1;
 }

@@ -1610,7 +1610,7 @@ static PyObject *sllist_subscript(SLListObject *self, PyObject *item)
     {
         Py_ssize_t start, stop, step, sliceLength;
 
-        if ( PySlice_GetIndicesEx( (PyObject *)item, self->size, &start, &stop, &step, &sliceLength ) )
+        if ( PySlice_GetIndicesEx( (GET_INDICES_TYPE *)item, self->size, &start, &stop, &step, &sliceLength ) )
             return NULL; /* Error */
 
         return sllist_slice(self, start, stop, step, sliceLength);
@@ -1618,7 +1618,7 @@ static PyObject *sllist_subscript(SLListObject *self, PyObject *item)
     else
     {
         
-        PyErr_Format(PyExc_TypeError, "Indicies must be integers, not %s", item->ob_type->tp_name);
+        PyErr_Format(PyExc_TypeError, "Indices must be integers, not %s", item->ob_type->tp_name);
         return NULL;
     }
 
@@ -1700,7 +1700,7 @@ static PySequenceMethods SLListSequenceMethods =
     sllist_concat,               /* sq_concat         */
     sllist_repeat,               /* sq_repeat         */
     sllist_get_item,             /* sq_item           */
-    sllist_simpleslice,          /* sq_slice;         */
+    (ssizessizeargfunc) sllist_simpleslice,  /* sq_slice;         */
     sllist_set_item,             /* sq_ass_item       */
     0,                           /* sq_ass_slice      */
     sllist_contains,             /* sq_contains       */

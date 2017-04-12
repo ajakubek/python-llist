@@ -22,32 +22,6 @@
 
 #define START_MIDDLE_AFTER 10
 
-/* #define DO_DEBUG */
-
-
-#ifdef DO_DEBUG
-static void debugmsg(char *format, ...)
-{
-    va_list args;
-    FILE *f;
-
-    f = fopen("debug.txt", "a");
-
-    va_start(args, format);
-    vfprintf(f, format, args);
-    va_end(args);
-
-    fclose(f);
-}
-#else
-
-#define debugmsg(...)
-/*static inline void debugmsg(char *format, ...)
-{
-
-}
-*/
-#endif
 
 
 
@@ -1862,6 +1836,7 @@ static PyObject *dllist_slice(DLListObject *self, Py_ssize_t start_idx, Py_ssize
  */
 static PyObject *dllist_simpleslice(DLListObject *self, Py_ssize_t idx_start, Py_ssize_t idx_end)
 {
+    debugmsg("Calling simpleslice: %p %ld %ld\n", self, idx_start, idx_end);
     if( !_normalize_indexes(self->size, &idx_start, &idx_end) )
     {
         DLListObject *ret = (DLListObject *)dllist_new(DLListType, NULL, NULL);
@@ -1893,7 +1868,7 @@ static PyObject *dllist_subscript(DLListObject *self, PyObject *item)
     {
         Py_ssize_t start, stop, step, sliceLength;
 
-        if ( PySlice_GetIndicesEx( (PyObject *)item, self->size, &start, &stop, &step, &sliceLength ) )
+        if ( PySlice_GetIndicesEx( (GET_INDICES_TYPE *)item, self->size, &start, &stop, &step, &sliceLength ) )
             return NULL; /* Error */
 
         return dllist_slice(self, start, stop, step, sliceLength);
@@ -1901,7 +1876,7 @@ static PyObject *dllist_subscript(DLListObject *self, PyObject *item)
     else
     {
         
-        PyErr_Format(PyExc_TypeError, "Indicies must be integers, not %s", item->ob_type->tp_name);
+        PyErr_Format(PyExc_TypeError, "Indices must be integers, not %s", item->ob_type->tp_name);
         return NULL;
     }
 
@@ -1968,7 +1943,7 @@ static PySequenceMethods DLListSequenceMethods[] = {
     dllist_concat,              /* sq_concat */
     dllist_repeat,              /* sq_repeat */
     dllist_get_item,            /* sq_item */
-    dllist_simpleslice,         /* sq_slice */
+    (ssizessizeargfunc)dllist_simpleslice,  /* sq_slice */
     dllist_set_item,            /* sq_ass_item */
     0,                          /* sq_ass_slice */
     dllist_contains,            /* sq_contains */
