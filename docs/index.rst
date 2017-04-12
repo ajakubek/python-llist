@@ -9,6 +9,7 @@
 .. module:: llist
    :synopsis: Linked list datatypes for Python
 
+.. moduleauthor:: Timothy Savannah <kata198@gmail.com>
 .. moduleauthor:: Adam Jakubek <ajakubek@gmail.com>
 .. moduleauthor:: Rafał Gałczyński <rafal.galczynski@gmail.com>
 
