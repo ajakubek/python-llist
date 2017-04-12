@@ -12,7 +12,7 @@ sources = ['src/cllist.c',
 
 setup(name='llist',
       description='Linked list data structures for Python',
-      long_description=open('README').read(),
+      long_description=open('README.rst').read(),
       author='Timothy Savannah, Adam Jakubek, Rafał Gałczyński',
       author_email='kata198@gmail.com, ajakubek@gmail.com, rafal.galczynski@gmail.com',
       maintainer_email='kata198@gmail.com',
