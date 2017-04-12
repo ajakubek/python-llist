@@ -1,0 +1,341 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module cllist</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>cllist</strong></big></big> (version 1.0.0)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/media/projects/python-llist/myenv2/lib/python2.7/site-packages/cllist.so">/home/media/projects/python-llist/myenv2/lib/python2.7/site-packages/cllist.so</a></font></td></tr></table>
+    <p><tt>C-extension&nbsp;providing&nbsp;single&nbsp;and&nbsp;double&nbsp;linked&nbsp;lists.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial">llist.dllist
+</font></dt><dt><font face="helvetica, arial">llist.dllistiterator
+</font></dt><dt><font face="helvetica, arial">llist.dllistnode
+</font></dt><dt><font face="helvetica, arial">llist.sllist
+</font></dt><dt><font face="helvetica, arial">llist.sllistiterator
+</font></dt><dt><font face="helvetica, arial">llist.sllistnode
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="dllist">class <strong>dllist</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Doubly&nbsp;linked&nbsp;list<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="dllist-__add__"><strong>__add__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__add__">__add__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__contains__"><strong>__contains__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__contains__">__contains__</a>(y)&nbsp;&lt;==&gt;&nbsp;y&nbsp;in&nbsp;x</tt></dd></dl>
+
+<dl><dt><a name="dllist-__delitem__"><strong>__delitem__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__delitem__">__delitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;del&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="dllist-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="dllist-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="dllist-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__iadd__"><strong>__iadd__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__iadd__">__iadd__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+=y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<dl><dt><a name="dllist-__iter__"><strong>__iter__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__iter__">__iter__</a>()&nbsp;&lt;==&gt;&nbsp;iter(x)</tt></dd></dl>
+
+<dl><dt><a name="dllist-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__len__"><strong>__len__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__len__">__len__</a>()&nbsp;&lt;==&gt;&nbsp;len(x)</tt></dd></dl>
+
+<dl><dt><a name="dllist-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__mul__"><strong>__mul__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__mul__">__mul__</a>(n)&nbsp;&lt;==&gt;&nbsp;x*n</tt></dd></dl>
+
+<dl><dt><a name="dllist-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="dllist-__rmul__"><strong>__rmul__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__rmul__">__rmul__</a>(n)&nbsp;&lt;==&gt;&nbsp;n*x</tt></dd></dl>
+
+<dl><dt><a name="dllist-__setitem__"><strong>__setitem__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__setitem__">__setitem__</a>(i,&nbsp;y)&nbsp;&lt;==&gt;&nbsp;x[i]=y</tt></dd></dl>
+
+<dl><dt><a name="dllist-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#dllist-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="dllist-append"><strong>append</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-appendleft"><strong>appendleft</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-appendright"><strong>appendright</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-clear"><strong>clear</strong></a>(...)</dt><dd><tt>Remove&nbsp;all&nbsp;elements&nbsp;from&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-extend"><strong>extend</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;right&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-extendleft"><strong>extendleft</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;left&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-extendright"><strong>extendright</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;right&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-index"><strong>index</strong></a>(...)</dt><dd><tt>Returns&nbsp;the&nbsp;first&nbsp;index&nbsp;of&nbsp;a&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="dllist-insert"><strong>insert</strong></a>(...)</dt><dd><tt>Inserts&nbsp;element&nbsp;before&nbsp;node</tt></dd></dl>
+
+<dl><dt><a name="dllist-nodeat"><strong>nodeat</strong></a>(...)</dt><dd><tt>Return&nbsp;node&nbsp;at&nbsp;index</tt></dd></dl>
+
+<dl><dt><a name="dllist-pop"><strong>pop</strong></a>(...)</dt><dd><tt>Remove&nbsp;an&nbsp;element&nbsp;by&nbsp;index&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it,&nbsp;or&nbsp;last&nbsp;item&nbsp;if&nbsp;no&nbsp;index&nbsp;provided</tt></dd></dl>
+
+<dl><dt><a name="dllist-popleft"><strong>popleft</strong></a>(...)</dt><dd><tt>Remove&nbsp;first&nbsp;element&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it</tt></dd></dl>
+
+<dl><dt><a name="dllist-popright"><strong>popright</strong></a>(...)</dt><dd><tt>Remove&nbsp;last&nbsp;element&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it</tt></dd></dl>
+
+<dl><dt><a name="dllist-remove"><strong>remove</strong></a>(...)</dt><dd><tt>Remove&nbsp;element&nbsp;from&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="dllist-rindex"><strong>rindex</strong></a>(...)</dt><dd><tt>Returns&nbsp;the&nbsp;last&nbsp;index&nbsp;of&nbsp;a&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="dllist-rotate"><strong>rotate</strong></a>(...)</dt><dd><tt>Rotate&nbsp;the&nbsp;list&nbsp;n&nbsp;steps&nbsp;to&nbsp;the&nbsp;right</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>first</strong></dt>
+<dd><tt>First&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>last</strong></dt>
+<dd><tt>Next&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>middle</strong></dt>
+<dd><tt>Middle&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>size</strong></dt>
+<dd><tt>Number&nbsp;of&nbsp;elements&nbsp;in&nbsp;the&nbsp;list</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#dllist-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="dllistiterator">class <strong>dllistiterator</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Doubly&nbsp;linked&nbsp;list&nbsp;iterator<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="dllistiterator-next"><strong>next</strong></a>(...)</dt><dd><tt>x.<a href="#dllistiterator-next">next</a>()&nbsp;-&gt;&nbsp;the&nbsp;next&nbsp;value,&nbsp;or&nbsp;raise&nbsp;StopIteration</tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#dllistiterator-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="dllistnode">class <strong>dllistnode</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Doubly&nbsp;linked&nbsp;list&nbsp;node<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="dllistnode-__call__"><strong>__call__</strong></a>(...)</dt><dd><tt>x.<a href="#dllistnode-__call__">__call__</a>(...)&nbsp;&lt;==&gt;&nbsp;x(...)</tt></dd></dl>
+
+<dl><dt><a name="dllistnode-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#dllistnode-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<dl><dt><a name="dllistnode-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#dllistnode-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="dllistnode-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#dllistnode-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>next</strong></dt>
+<dd><tt>Next&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>prev</strong></dt>
+<dd><tt>Previous&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>value</strong></dt>
+<dd><tt>Value&nbsp;stored&nbsp;in&nbsp;node</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#dllistnode-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="sllist">class <strong>sllist</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Singly&nbsp;linked&nbsp;list<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="sllist-__add__"><strong>__add__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__add__">__add__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__contains__"><strong>__contains__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__contains__">__contains__</a>(y)&nbsp;&lt;==&gt;&nbsp;y&nbsp;in&nbsp;x</tt></dd></dl>
+
+<dl><dt><a name="sllist-__delitem__"><strong>__delitem__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__delitem__">__delitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;del&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="sllist-__eq__"><strong>__eq__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__eq__">__eq__</a>(y)&nbsp;&lt;==&gt;&nbsp;x==y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__ge__"><strong>__ge__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__ge__">__ge__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;=y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="sllist-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="sllist-__gt__"><strong>__gt__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__gt__">__gt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&gt;y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__iadd__"><strong>__iadd__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__iadd__">__iadd__</a>(y)&nbsp;&lt;==&gt;&nbsp;x+=y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<dl><dt><a name="sllist-__iter__"><strong>__iter__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__iter__">__iter__</a>()&nbsp;&lt;==&gt;&nbsp;iter(x)</tt></dd></dl>
+
+<dl><dt><a name="sllist-__le__"><strong>__le__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__le__">__le__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;=y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__len__"><strong>__len__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__len__">__len__</a>()&nbsp;&lt;==&gt;&nbsp;len(x)</tt></dd></dl>
+
+<dl><dt><a name="sllist-__lt__"><strong>__lt__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__lt__">__lt__</a>(y)&nbsp;&lt;==&gt;&nbsp;x&lt;y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__mul__"><strong>__mul__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__mul__">__mul__</a>(n)&nbsp;&lt;==&gt;&nbsp;x*n</tt></dd></dl>
+
+<dl><dt><a name="sllist-__ne__"><strong>__ne__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__ne__">__ne__</a>(y)&nbsp;&lt;==&gt;&nbsp;x!=y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="sllist-__rmul__"><strong>__rmul__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__rmul__">__rmul__</a>(n)&nbsp;&lt;==&gt;&nbsp;n*x</tt></dd></dl>
+
+<dl><dt><a name="sllist-__setitem__"><strong>__setitem__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__setitem__">__setitem__</a>(i,&nbsp;y)&nbsp;&lt;==&gt;&nbsp;x[i]=y</tt></dd></dl>
+
+<dl><dt><a name="sllist-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#sllist-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="sllist-append"><strong>append</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-appendleft"><strong>appendleft</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;beginning&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-appendright"><strong>appendright</strong></a>(...)</dt><dd><tt>Append&nbsp;element&nbsp;at&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-clear"><strong>clear</strong></a>(...)</dt><dd><tt>Remove&nbsp;all&nbsp;elements&nbsp;from&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-extend"><strong>extend</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;right&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-extendleft"><strong>extendleft</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;left&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-extendright"><strong>extendright</strong></a>(...)</dt><dd><tt>Append&nbsp;elements&nbsp;from&nbsp;iterable&nbsp;at&nbsp;the&nbsp;right&nbsp;side&nbsp;of&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-index"><strong>index</strong></a>(...)</dt><dd><tt>Returns&nbsp;the&nbsp;first&nbsp;index&nbsp;of&nbsp;a&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="sllist-insertafter"><strong>insertafter</strong></a>(...)</dt><dd><tt>Inserts&nbsp;element&nbsp;after&nbsp;node</tt></dd></dl>
+
+<dl><dt><a name="sllist-insertbefore"><strong>insertbefore</strong></a>(...)</dt><dd><tt>Inserts&nbsp;element&nbsp;before&nbsp;node</tt></dd></dl>
+
+<dl><dt><a name="sllist-nodeat"><strong>nodeat</strong></a>(...)</dt><dd><tt>Return&nbsp;node&nbsp;at&nbsp;index</tt></dd></dl>
+
+<dl><dt><a name="sllist-pop"><strong>pop</strong></a>(...)</dt><dd><tt>Remove&nbsp;an&nbsp;element&nbsp;by&nbsp;index&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it,&nbsp;or&nbsp;last&nbsp;item&nbsp;if&nbsp;no&nbsp;index&nbsp;provided</tt></dd></dl>
+
+<dl><dt><a name="sllist-popleft"><strong>popleft</strong></a>(...)</dt><dd><tt>Remove&nbsp;first&nbsp;element&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it</tt></dd></dl>
+
+<dl><dt><a name="sllist-popright"><strong>popright</strong></a>(...)</dt><dd><tt>Remove&nbsp;last&nbsp;element&nbsp;from&nbsp;the&nbsp;list&nbsp;and&nbsp;return&nbsp;it</tt></dd></dl>
+
+<dl><dt><a name="sllist-remove"><strong>remove</strong></a>(...)</dt><dd><tt>Remove&nbsp;element&nbsp;from&nbsp;the&nbsp;list</tt></dd></dl>
+
+<dl><dt><a name="sllist-rindex"><strong>rindex</strong></a>(...)</dt><dd><tt>Returns&nbsp;the&nbsp;last&nbsp;index&nbsp;of&nbsp;a&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="sllist-rotate"><strong>rotate</strong></a>(...)</dt><dd><tt>Rotate&nbsp;the&nbsp;list&nbsp;n&nbsp;steps&nbsp;to&nbsp;the&nbsp;right</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>first</strong></dt>
+<dd><tt>First&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>last</strong></dt>
+<dd><tt>Next&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>size</strong></dt>
+<dd><tt>size</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#sllist-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="sllistiterator">class <strong>sllistiterator</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Singly&nbsp;linked&nbsp;list&nbsp;iterator<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="sllistiterator-next"><strong>next</strong></a>(...)</dt><dd><tt>x.<a href="#sllistiterator-next">next</a>()&nbsp;-&gt;&nbsp;the&nbsp;next&nbsp;value,&nbsp;or&nbsp;raise&nbsp;StopIteration</tt></dd></dl>
+
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#sllistiterator-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="sllistnode">class <strong>sllistnode</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Singly&nbsp;linked&nbsp;list&nbsp;node<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="sllistnode-__call__"><strong>__call__</strong></a>(...)</dt><dd><tt>x.<a href="#sllistnode-__call__">__call__</a>(...)&nbsp;&lt;==&gt;&nbsp;x(...)</tt></dd></dl>
+
+<dl><dt><a name="sllistnode-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#sllistnode-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;help(type(x))&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<dl><dt><a name="sllistnode-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#sllistnode-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="sllistnode-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#sllistnode-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>next</strong></dt>
+<dd><tt>next&nbsp;node</tt></dd>
+</dl>
+<dl><dt><strong>value</strong></dt>
+<dd><tt>value</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#sllistnode-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__version__</strong> = '1.0.0'<br>
+<strong>__version_tuple__</strong> = (1L, 0L, 0L)</td></tr></table>
+</body></html>
