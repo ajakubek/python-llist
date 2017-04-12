@@ -5,7 +5,7 @@ import gc
 import time
 import random
 
-from llist import dllist, sllist
+from cllist import dllist, sllist
 
 LIST1_SIZE = 600
 

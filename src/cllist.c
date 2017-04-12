@@ -1,4 +1,5 @@
 /* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
+ * Copyright (c) 2017 Timothy Savannah
  * Released under the MIT license (see attached LICENSE file).
  */
 
@@ -7,7 +8,7 @@
 #include "sllist.h"
 #include "dllist.h"
 
-static PyMethodDef llist_methods[] =
+static PyMethodDef cllist_methods[] =
 {
     { NULL }    /* sentinel */
 };
@@ -16,14 +17,16 @@ static PyMethodDef llist_methods[] =
 #define PyMODINIT_FUNC void
 #endif
 
+#define docstr ("C-extension providing single and double linked lists.")
+
 #if PY_MAJOR_VERSION >= 3
 
-static struct PyModuleDef llist_moduledef = {
+static struct PyModuleDef cllist_moduledef = {
     PyModuleDef_HEAD_INIT,
-    "llist",                            /* m_name */
-    "Singly and doubly linked lists.",  /* m_doc */
+    "cllist",                           /* m_name */
+    docstr,                             /* m_doc */
     -1,                                 /* m_size */
-    llist_methods,                      /* m_methods */
+    cllist_methods,                     /* m_methods */
     NULL,                               /* m_reload */
     NULL,                               /* m_traverse */
     NULL,                               /* m_clear */
@@ -31,7 +34,7 @@ static struct PyModuleDef llist_moduledef = {
 };
 
 PyMODINIT_FUNC
-PyInit_llist(void)
+PyInit_cllist(void)
 {
     PyObject* m;
 
@@ -40,7 +43,7 @@ PyInit_llist(void)
     if (!dllist_init_type())
         return NULL;
 
-    m = PyModule_Create(&llist_moduledef);
+    m = PyModule_Create(&cllist_moduledef);
 
     sllist_register(m);
     dllist_register(m);
@@ -51,7 +54,7 @@ PyInit_llist(void)
 #else
 
 PyMODINIT_FUNC
-initllist(void)
+initcllist(void)
 {
     PyObject* m;
 
@@ -60,8 +63,8 @@ initllist(void)
     if (!dllist_init_type())
         return;
 
-    m = Py_InitModule3("llist", llist_methods,
-                       "Singly and doubly linked lists.");
+    m = Py_InitModule3("cllist", cllist_methods,
+                       docstr);
 
     sllist_register(m);
     dllist_register(m);

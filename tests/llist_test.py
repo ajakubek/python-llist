@@ -4,10 +4,10 @@ import gc
 import sys
 import random
 import unittest
-from llist import sllist
-from llist import sllistnode
-from llist import dllist
-from llist import dllistnode
+from cllist import sllist
+from cllist import sllistnode
+from cllist import dllist
+from cllist import dllistnode
 
 gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
 

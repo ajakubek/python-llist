@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from collections import deque
-from llist import sllist, dllist
+from cllist import sllist, dllist
 import time
 # import gc
 # gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS)
