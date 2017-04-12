@@ -23,6 +23,8 @@
     - Implement mappings on sllist and dllist
     - Implement slicing (including with step) on both sllist and dllist
 
+    - Add __version__ and __version_tuple__
+
     - Some general optimizations
 
 

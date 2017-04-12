@@ -6,6 +6,17 @@
 #ifndef LLIST_H
 #define LLIST_H
 
+#include <Python.h>
+
+
+#define LLIST_VERSION_MAJOR 1
+#define LLIST_VERSION_MINOR 0
+#define LLIST_VERSION_PATCH 0
+#define LLIST_VERSION_STR   ("1.0.0")
+
+extern PyObject *mod_version;
+extern PyObject *mod_version_tuple;
+
 
 #ifdef __GNUC__
 
@@ -64,6 +75,7 @@ static inline int _normalize_indexes(Py_ssize_t size, Py_ssize_t *idx_start, Py_
 
     return 1;
 }
+
 
 
 #endif
