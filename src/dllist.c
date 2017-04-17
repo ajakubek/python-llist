@@ -4,6 +4,7 @@
 
 #include <Python.h>
 #include <structmember.h>
+#include "config.h"
 #include "py23macros.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -1475,7 +1476,7 @@ static PyTypeObject DLListIteratorType =
 };
 
 
-int dllist_init_type(void)
+LLIST_INTERNAL int dllist_init_type(void)
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
@@ -1484,7 +1485,7 @@ int dllist_init_type(void)
         ? 1 : 0;
 }
 
-void dllist_register(PyObject* module)
+LLIST_INTERNAL void dllist_register(PyObject* module)
 {
     Py_INCREF(&DLListType);
     Py_INCREF(&DLListNodeType);

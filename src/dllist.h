@@ -5,7 +5,9 @@
 #ifndef DLLIST_H
 #define DLLIST_H
 
-int  dllist_init_type(void);
-void dllist_register(PyObject* module);
+#include "config.h"
+
+LLIST_INTERNAL int  dllist_init_type(void);
+LLIST_INTERNAL void dllist_register(PyObject* module);
 
 #endif /* DLLIST_H */

@@ -4,6 +4,7 @@
 
 #include <Python.h>
 #include <structmember.h>
+#include "config.h"
 #include "py23macros.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -1528,8 +1529,7 @@ static PyTypeObject SLListIteratorType =
 };
 
 
-
-int sllist_init_type(void)
+LLIST_INTERNAL int sllist_init_type(void)
 {
     return
         ((PyType_Ready(&SLListType) == 0) &&
@@ -1538,7 +1538,7 @@ int sllist_init_type(void)
         ? 1 : 0;
 }
 
-void sllist_register(PyObject* module)
+LLIST_INTERNAL void sllist_register(PyObject* module)
 {
     Py_INCREF(&SLListType);
     Py_INCREF(&SLListNodeType);

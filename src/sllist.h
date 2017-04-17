@@ -5,7 +5,9 @@
 #ifndef SLLIST_H
 #define SLLIST_H
 
-int  sllist_init_type(void);
-void sllist_register(PyObject* module);
+#include "config.h"
+
+LLIST_INTERNAL int  sllist_init_type(void);
+LLIST_INTERNAL void sllist_register(PyObject* module);
 
 #endif /* SLLIST_H */
