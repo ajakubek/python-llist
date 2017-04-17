@@ -8,6 +8,7 @@ from distutils.core import setup, Extension
 sources=[ 'src/llist.c',
           'src/dllist.c',
           'src/sllist.c',
+          'src/utils.c',
           ]
 
 setup(name='llist',

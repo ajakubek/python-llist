@@ -808,6 +808,7 @@ class testsllist(unittest.TestCase):
         self.assertEqual(hash(sllist(py23_range(0, 1024, 4))),
             hash(sllist(py23_range(0, 1024, 4))))
         self.assertEqual(hash(sllist([0, 2])), hash(sllist([0.0, 2.0])))
+        self.assertNotEqual(hash(sllist([1, 2])), hash(sllist([2, 1])))
 
 
 class testdllist(unittest.TestCase):
@@ -1548,6 +1549,7 @@ class testdllist(unittest.TestCase):
         self.assertEqual(hash(dllist(py23_range(0, 1024, 4))),
             hash(dllist(py23_range(0, 1024, 4))))
         self.assertEqual(hash(dllist([0, 2])), hash(dllist([0.0, 2.0])))
+        self.assertNotEqual(hash(sllist([1, 2])), hash(sllist([2, 1])))
 
 
 def suite():

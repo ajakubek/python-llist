@@ -1282,7 +1282,7 @@ static long sllist_hash(SLListObject* self)
         if (obj_hash == -1)
             return -1;
 
-        hash ^= obj_hash;
+        hash = hash_combine(hash, obj_hash);
         iter_node_obj = iter_node->next;
     }
 
