@@ -226,6 +226,8 @@ static PyMemberDef DLListNodeMembers[] =
       "Previous node" },
     { "next", T_OBJECT_EX, offsetof(DLListNodeObject, next), READONLY,
       "Next node" },
+    { "owner", T_OBJECT_EX, offsetof(DLListNodeObject, list_weakref), READONLY,
+      "List that this node belongs to" },
     { NULL },   /* sentinel */
 };
 
