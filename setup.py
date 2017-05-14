@@ -13,7 +13,7 @@ sources=[ 'src/llist.c',
 
 setup(name='llist',
       description='Linked list data structures for Python',
-      long_description=open('README').read(),
+      long_description=open('README.md').read(),
       author='Adam Jakubek, Rafał Gałczyński',
       author_email='ajakubek@gmail.com, rafal.galczynski@gmail.com',
       version=VERSION,
