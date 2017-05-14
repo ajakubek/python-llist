@@ -1,9 +1,10 @@
-/* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
+/* Copyright (c) 2011-2017 Adam Jakubek, Rafał Gałczyński
  * Released under the MIT license (see attached LICENSE file).
  */
 
 #include <Python.h>
 #include <structmember.h>
+#include "config.h"
 #include "py23macros.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -598,7 +599,7 @@ static long dllist_hash(DLListObject* self)
         if (obj_hash == -1)
             return -1;
 
-        hash ^= obj_hash;
+        hash = hash_combine(hash, obj_hash);
         iter_node_obj = iter_node->next;
     }
 
@@ -1475,7 +1476,7 @@ static PyTypeObject DLListIteratorType =
 };
 
 
-int dllist_init_type(void)
+LLIST_INTERNAL int dllist_init_type(void)
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
@@ -1484,7 +1485,7 @@ int dllist_init_type(void)
         ? 1 : 0;
 }
 
-void dllist_register(PyObject* module)
+LLIST_INTERNAL void dllist_register(PyObject* module)
 {
     Py_INCREF(&DLListType);
     Py_INCREF(&DLListNodeType);

@@ -41,8 +41,13 @@ def remove(c):
             pass
 
 
+def index_iter(c):
+    for i in range(len(c)):
+        c[i]
+
+
 for container in [deque, dllist, sllist]:
-    for operation in [append, appendleft, pop, popleft, remove]:
+    for operation in [append, appendleft, pop, popleft, remove, index_iter]:
         c = container(range(num))
         start = time.time()
         operation(c)

@@ -1,3 +1,11 @@
+* llist-0.5 (unreleased)
+
+  - changed visibility of internal module functions to hidden
+  - hash() function now returns different results for lists containing
+    permuted elements
+
+-----------------------------------------------------------------------
+
 * llist-0.4 (2013-01-01)
 
   - Python 3.x support

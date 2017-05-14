@@ -1,9 +1,10 @@
-/* Copyright (c) 2011-2013 Adam Jakubek, Rafał Gałczyński
+/* Copyright (c) 2011-2017 Adam Jakubek, Rafał Gałczyński
  * Released under the MIT license (see attached LICENSE file).
  */
 
 #include <Python.h>
 #include <structmember.h>
+#include "config.h"
 #include "py23macros.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -1281,7 +1282,7 @@ static long sllist_hash(SLListObject* self)
         if (obj_hash == -1)
             return -1;
 
-        hash ^= obj_hash;
+        hash = hash_combine(hash, obj_hash);
         iter_node_obj = iter_node->next;
     }
 
@@ -1528,8 +1529,7 @@ static PyTypeObject SLListIteratorType =
 };
 
 
-
-int sllist_init_type(void)
+LLIST_INTERNAL int sllist_init_type(void)
 {
     return
         ((PyType_Ready(&SLListType) == 0) &&
@@ -1538,7 +1538,7 @@ int sllist_init_type(void)
         ? 1 : 0;
 }
 
-void sllist_register(PyObject* module)
+LLIST_INTERNAL void sllist_register(PyObject* module)
 {
     Py_INCREF(&SLListType);
     Py_INCREF(&SLListNodeType);
