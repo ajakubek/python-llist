@@ -6,6 +6,7 @@
 #include <structmember.h>
 #include "config.h"
 #include "py23macros.h"
+#include "utils.h"
 
 #ifndef PyVarObject_HEAD_INIT
     #define PyVarObject_HEAD_INIT(type, size) \
