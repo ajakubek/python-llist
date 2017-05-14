@@ -3,6 +3,7 @@
 import gc
 import sys
 import unittest
+import weakref
 from llist import sllist
 from llist import sllistnode
 from llist import dllist
@@ -803,6 +804,14 @@ class testsllist(unittest.TestCase):
         ll = sllistnode()
         self.assertRaises(expected_error, setattr, ll, 'next', None)
 
+    def test_node_owner(self):
+        ll = sllist([1234])
+        owner_ref = ll.first.owner
+        self.assertIsInstance(owner_ref, weakref.ref)
+        self.assertIs(owner_ref(), ll)
+        del ll
+        self.assertIsNone(owner_ref())
+
     def test_list_hash(self):
         self.assertEqual(hash(sllist()), hash(sllist()))
         self.assertEqual(hash(sllist(py23_range(0, 1024, 4))),
@@ -1543,6 +1552,14 @@ class testdllist(unittest.TestCase):
         ll = dllistnode()
         self.assertRaises(expected_error, setattr, ll, 'prev', None)
         self.assertRaises(expected_error, setattr, ll, 'next', None)
+
+    def test_node_owner(self):
+        ll = dllist([1234])
+        owner_ref = ll.first.owner
+        self.assertIsInstance(owner_ref, weakref.ref)
+        self.assertIs(owner_ref(), ll)
+        del ll
+        self.assertIsNone(owner_ref())
 
     def test_list_hash(self):
         self.assertEqual(hash(dllist()), hash(dllist()))

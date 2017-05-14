@@ -3,6 +3,7 @@
   - changed visibility of internal module functions to hidden
   - hash() function now returns different results for lists containing
     permuted elements
+  - added owner attribute to nodes (contribution from Anand Aiyer)
 
 -----------------------------------------------------------------------
 

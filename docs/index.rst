@@ -333,6 +333,15 @@ Random access to elements using index is O(n).
       >>> print(ext_lst)
       dllist([1, 2, 3, 4, 1, 2, 3, 4])
 
+      >>> lst = dllist([0])
+      >>> node = lst.first
+      >>> weak_ref = node.owner         # get reference to the list which owns the node
+      >>> print(weak_ref() is lst)      # call the reference to obtain the actual list
+      True
+      >>> del lst
+      >>> print(weak_ref())             # None is returned if list does not exist
+      None
+
 
 :class:`dllistnode` objects
 ---------------------------
@@ -355,6 +364,12 @@ Random access to elements using index is O(n).
    .. attribute:: value
 
       Value stored in this node.
+
+   .. attribute:: owner
+
+      Weak reference to the list which owns this node. This attribute is read-only.
+      It is possible for nodes to outlive the list they belong to. If the list
+      is no longer alive, calling the `owner` reference will return `None`.
 
    Note that value stored in the node can also be obtained through
    the :meth:`__call__()` method (using standard ``node()`` syntax).
@@ -719,6 +734,15 @@ Random access to elements using index is O(n).
       >>> print(ext_lst)
       sllist([1, 2, 3, 4, 1, 2, 3, 4])
 
+      >>> lst = sllist([0])
+      >>> node = lst.first
+      >>> weak_ref = node.owner         # get reference to the list which owns the node
+      >>> print(weak_ref() is lst)      # call the reference to obtain the actual list
+      True
+      >>> del lst
+      >>> print(weak_ref())             # None is returned if list does not exist
+      None
+
 
 :class:`sllistnode` objects
 ---------------------------
@@ -737,6 +761,12 @@ Random access to elements using index is O(n).
    .. attribute:: value
 
       Value stored in this node.
+
+   .. attribute:: owner
+
+      Weak reference to the list which owns this node. This attribute is read-only.
+      It is possible for nodes to outlive the list they belong to. If the list
+      is no longer alive, calling the `owner` reference will return `None`.
 
    Note that value stored in the node can also be obtained through
    the :meth:`__call__()` method (using standard ``node()`` syntax).
