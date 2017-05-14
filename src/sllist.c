@@ -207,6 +207,8 @@ static PyMemberDef SLListNodeMembers[] =
       "value" },
     { "next", T_OBJECT_EX, offsetof(SLListNodeObject, next), READONLY,
       "next node" },
+    { "owner", T_OBJECT_EX, offsetof(SLListNodeObject, list_weakref), READONLY,
+      "List that this node belongs to" },
     { NULL },   /* sentinel */
 };
 
