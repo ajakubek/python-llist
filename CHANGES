@@ -4,6 +4,7 @@
   - hash() function now returns different results for lists containing
     permuted elements
   - added owner attribute to nodes (contribution from Anand Aiyer)
+  - added clearing of neighbour and owner references in removed node
 
 -----------------------------------------------------------------------
 

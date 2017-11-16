@@ -76,6 +76,21 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
     return node;
 }
 
+/* Convenience function for deleting list nodes.
+ * Clears neighbour and owner references and decrefs the node.
+ */
+static void sllistnode_delete(SLListNodeObject* node)
+{
+  /* unlink from parent list */
+  Py_DECREF(node->list_weakref);
+  Py_INCREF(Py_None);
+  node->list_weakref = Py_None;
+
+  node->next = Py_None;
+
+  Py_DECREF((PyObject*)node);
+}
+
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
@@ -904,13 +919,7 @@ static PyObject* sllist_remove(SLListObject* self, PyObject* arg)
     value = del_node->value;
     Py_INCREF(value);
 
-    /* unlink from parent list */
-    Py_DECREF(del_node->list_weakref);
-    Py_INCREF(Py_None);
-    del_node->list_weakref = Py_None;
-
-    del_node->next = Py_None;
-    Py_DECREF(arg);
+    sllistnode_delete(del_node);
 
     return value;
 
@@ -1121,8 +1130,7 @@ static PyObject* sllist_popleft(SLListObject* self)
     Py_INCREF(del_node->value);
     value = del_node->value;
 
-    del_node->next = Py_None;
-    Py_DECREF((PyObject*)del_node);
+    sllistnode_delete(del_node);
 
     return value;
 }
@@ -1159,8 +1167,7 @@ static PyObject* sllist_popright(SLListObject* self)
     Py_INCREF(del_node->value);
     value = del_node->value;
 
-    del_node->next = Py_None;
-    Py_DECREF((PyObject*)del_node);
+    sllistnode_delete(del_node);
 
     return value;
 }

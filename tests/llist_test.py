@@ -545,38 +545,53 @@ class testsllist(unittest.TestCase):
     def test_pop(self):
         ref = py23_range(0, 1024, 4)
         ll = sllist(ref)
-        del_node = ll.nodeat(-1)
         result = ll.pop()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_pop(self):
+        ll = sllist([1, 2])
+        del_node = ll.last
+        ll.pop()
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_popleft(self):
         ref = py23_range(0, 1024, 4)
         ll = sllist(ref)
-        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_popleft(self):
+        ll = sllist([1, 2])
+        del_node = ll.first
+        ll.popleft()
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_popright(self):
         ref = py23_range(0, 1024, 4)
         ll = sllist(ref)
-        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_popright(self):
+        ll = sllist([1, 2])
+        del_node = ll.last
+        ll.popright()
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_pop_from_empty_list(self):
         ll = sllist()
@@ -598,7 +613,13 @@ class testsllist(unittest.TestCase):
         self.assertEqual(len(ll), len(ref))
         self.assertEqual(ll.size, len(ref))
         self.assertEqual(prev_node.next, next_node)
-        self.assertEqual(del_node.next, None)
+
+    def test_remove_after_remove(self):
+        ll = sllist([1, 2, 3])
+        del_node = ll.nodeat(1)
+        ll.remove(del_node)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_remove_from_empty_list(self):
         ll = sllist()
@@ -607,6 +628,7 @@ class testsllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = sllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, sllistnode())
+        self.assertEqual(len(ll), 4)
 
     def test_remove_already_deleted_node(self):
         ll = sllist([1, 2, 3, 4])
@@ -702,6 +724,13 @@ class testsllist(unittest.TestCase):
         for i in py23_xrange(len(ll)):
             del ll[0]
         self.assertEqual(len(ll), 0)
+
+    def test_node_after_del(self):
+        ll = sllist([1, 2, 3])
+        del_node = ll.nodeat(1)
+        del ll[1]
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_concat(self):
         a_ref = py23_range(0, 1024, 4)
@@ -1272,41 +1301,56 @@ class testdllist(unittest.TestCase):
     def test_pop(self):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
-        del_node = ll.nodeat(-1)
         result = ll.pop();
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
-        self.assertEqual(del_node.prev, None)
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_pop(self):
+        ll = dllist([1, 2])
+        del_node = ll.last
+        ll.pop()
+        self.assertIs(del_node.prev, None)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_popleft(self):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
-        del_node = ll.nodeat(0)
         result = ll.popleft()
         self.assertEqual(result, ref[0])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.first.value, ref[1])
         self.assertEqual(list(ll), ref[1:])
-        self.assertEqual(del_node.prev, None)
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_popleft(self):
+        ll = dllist([1, 2])
+        del_node = ll.first
+        ll.popleft()
+        self.assertIs(del_node.prev, None)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_popright(self):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
-        del_node = ll.nodeat(-1)
         result = ll.popright()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
         self.assertEqual(ll.last.value, ref[-2])
         self.assertEqual(list(ll), ref[:-1])
-        self.assertEqual(del_node.prev, None)
-        self.assertEqual(del_node.next, None)
+
+    def test_node_after_popright(self):
+        ll = dllist([1, 2])
+        del_node = ll.last
+        ll.popright()
+        self.assertIs(del_node.prev, None)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_pop_from_empty_list(self):
         ll = dllist()
@@ -1329,8 +1373,14 @@ class testdllist(unittest.TestCase):
         self.assertEqual(ll.size, len(ref))
         self.assertEqual(prev_node.next, next_node)
         self.assertEqual(next_node.prev, prev_node)
-        self.assertEqual(del_node.prev, None)
-        self.assertEqual(del_node.next, None)
+
+    def test_remove_after_remove(self):
+        ll = dllist([1, 2, 3])
+        del_node = ll.nodeat(1)
+        ll.remove(del_node)
+        self.assertIs(del_node.prev, None)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_remove_from_empty_list(self):
         ll = dllist()
@@ -1339,6 +1389,7 @@ class testdllist(unittest.TestCase):
     def test_remove_invalid_node(self):
         ll = dllist([1, 2, 3, 4])
         self.assertRaises(ValueError, ll.remove, dllistnode())
+        self.assertEqual(len(ll), 4)
 
     def test_remove_already_deleted_node(self):
         ll = dllist([1, 2, 3, 4])
@@ -1450,6 +1501,14 @@ class testdllist(unittest.TestCase):
         for i in py23_xrange(len(ll)):
             del ll[0]
         self.assertEqual(len(ll), 0)
+
+    def test_node_after_del(self):
+        ll = dllist([1, 2, 3])
+        del_node = ll.nodeat(1)
+        del ll[1]
+        self.assertIs(del_node.prev, None)
+        self.assertIs(del_node.next, None)
+        self.assertIs(del_node.owner, None)
 
     def test_concat(self):
         a_ref = py23_range(0, 1024, 4)

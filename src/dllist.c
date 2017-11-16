@@ -92,7 +92,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
 }
 
 /* Convenience function for deleting list nodes.
- * Automatically updates pointers in neigbours.
+ * Clears neighbour and owner references and decrefs the node.
  */
 static void dllistnode_delete(DLListNodeObject* node)
 {
@@ -110,6 +110,10 @@ static void dllistnode_delete(DLListNodeObject* node)
 
     node->prev = Py_None;
     node->next = Py_None;
+
+    Py_DECREF(node->list_weakref);
+    Py_INCREF(Py_None);
+    node->list_weakref = Py_None;
 
     Py_DECREF((PyObject*)node);
 }
@@ -1049,11 +1053,6 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
 
     Py_INCREF(del_node->value);
     value = del_node->value;
-
-    /* unlink from parent list */
-    Py_DECREF(del_node->list_weakref);
-    Py_INCREF(Py_None);
-    del_node->list_weakref = Py_None;
 
     dllistnode_delete(del_node);
 
