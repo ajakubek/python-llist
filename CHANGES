@@ -1,4 +1,4 @@
-* llist-0.5 (unreleased)
+* llist-0.5 (2017-11-18)
 
   - changed visibility of internal module functions to hidden
   - hash() function now returns different results for lists containing
