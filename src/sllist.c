@@ -94,11 +94,13 @@ static void sllistnode_delete(SLListNodeObject* node)
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
+
     Py_DECREF(self->list_weakref);
     Py_DECREF(self->value);
     Py_DECREF(Py_None);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 static int sllistnode_init(SLListNodeObject* self,
@@ -251,7 +253,8 @@ static PyTypeObject SLListNodeType =
     0,                              /* tp_getattro       */
     0,                              /* tp_setattro       */
     0,                              /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags          */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                    /* tp_flags          */
     "Singly linked list node",      /* tp_doc            */
     0,                              /* tp_traverse       */
     0,                              /* tp_clear          */
@@ -290,6 +293,7 @@ typedef struct
 
 static void sllist_dealloc(SLListObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
     PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
@@ -305,7 +309,7 @@ static void sllist_dealloc(SLListObject* self)
 
     Py_DECREF(Py_None);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 
@@ -1398,7 +1402,8 @@ static PyTypeObject SLListType =
     0,                           /* tp_getattro       */
     0,                           /* tp_setattro       */
     0,                           /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT,          /* tp_flags          */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                 /* tp_flags          */
     "Singly linked list",        /* tp_doc            */
     0,                           /* tp_traverse       */
     0,                           /* tp_clear          */
@@ -1433,10 +1438,12 @@ typedef struct
 
 static void sllistiterator_dealloc(SLListIteratorObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
+
     Py_XDECREF(self->current_node);
     Py_DECREF(self->list);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 static PyObject* sllistiterator_new(PyTypeObject* type,
@@ -1517,7 +1524,8 @@ static PyTypeObject SLListIteratorType =
     0,                                  /* tp_getattro       */
     0,                                  /* tp_setattro       */
     0,                                  /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT,                 /* tp_flags          */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                        /* tp_flags          */
     "Singly linked list iterator",      /* tp_doc            */
     0,                                  /* tp_traverse       */
     0,                                  /* tp_clear          */

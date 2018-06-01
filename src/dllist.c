@@ -154,11 +154,13 @@ str_alloc_error:
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
+
     Py_DECREF(self->list_weakref);
     Py_DECREF(self->value);
     Py_DECREF(Py_None);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 static PyObject* dllistnode_new(PyTypeObject* type,
@@ -258,7 +260,8 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_getattro */
     0,                              /* tp_setattro */
     0,                              /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,             /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                    /* tp_flags */
     "Doubly linked list node",      /* tp_doc */
     0,                              /* tp_traverse */
     0,                              /* tp_clear */
@@ -492,6 +495,7 @@ str_alloc_error:
 
 static void dllist_dealloc(DLListObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
     PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
@@ -506,7 +510,7 @@ static void dllist_dealloc(DLListObject* self)
 
     Py_DECREF(Py_None);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 static PyObject* dllist_new(PyTypeObject* type,
@@ -1340,7 +1344,8 @@ static PyTypeObject DLListType =
     0,                          /* tp_getattro */
     0,                          /* tp_setattro */
     0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,         /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                /* tp_flags */
     "Doubly linked list",       /* tp_doc */
     0,                          /* tp_traverse */
     0,                          /* tp_clear */
@@ -1375,10 +1380,12 @@ typedef struct
 
 static void dllistiterator_dealloc(DLListIteratorObject* self)
 {
+    PyObject* obj_self = (PyObject*)self;
+
     Py_XDECREF(self->current_node);
     Py_DECREF(self->list);
 
-    PyObject_Del((PyObject*)self);
+    obj_self->ob_type->tp_free(obj_self);
 }
 
 static PyObject* dllistiterator_new(PyTypeObject* type,
@@ -1456,7 +1463,8 @@ static PyTypeObject DLListIteratorType =
     0,                                  /* tp_getattro */
     0,                                  /* tp_setattro */
     0,                                  /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                 /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+                                        /* tp_flags */
     "Doubly linked list iterator",      /* tp_doc */
     0,                                  /* tp_traverse */
     0,                                  /* tp_clear */

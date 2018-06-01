@@ -848,6 +848,13 @@ class testsllist(unittest.TestCase):
         self.assertEqual(hash(sllist([0, 2])), hash(sllist([0.0, 2.0])))
         self.assertNotEqual(hash(sllist([1, 2])), hash(sllist([2, 1])))
 
+    def test_list_can_be_subclassed(self):
+        class DerivedList(sllist):
+            pass
+
+    def test_list_node_can_be_subclassed(self):
+        class DerivedNode(sllistnode):
+            pass
 
 class testdllist(unittest.TestCase):
 
@@ -1626,6 +1633,14 @@ class testdllist(unittest.TestCase):
             hash(dllist(py23_range(0, 1024, 4))))
         self.assertEqual(hash(dllist([0, 2])), hash(dllist([0.0, 2.0])))
         self.assertNotEqual(hash(sllist([1, 2])), hash(sllist([2, 1])))
+
+    def test_list_can_be_subclassed(self):
+        class DerivedList(dllist):
+            pass
+
+    def test_list_node_can_be_subclassed(self):
+        class DerivedNode(dllistnode):
+            pass
 
 
 def suite():

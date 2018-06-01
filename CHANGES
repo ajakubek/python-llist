@@ -1,3 +1,9 @@
+* llist-0.6 (unreleased)
+
+  - allow subclassing of list and node types
+
+-----------------------------------------------------------------------
+
 * llist-0.5 (2017-11-18)
 
   - changed visibility of internal module functions to hidden
