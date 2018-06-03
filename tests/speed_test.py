@@ -52,8 +52,8 @@ for container in [deque, dllist, sllist]:
         start = time.time()
         operation(c)
         elapsed = time.time() - start
-        print "Completed %s/%s in \t\t%.8f seconds:\t %.1f ops/sec" % (
+        print("Completed %s/%s in \t\t%.8f seconds:\t %.1f ops/sec" % (
             container.__name__,
             operation.__name__,
             elapsed,
-            num / elapsed)
+            num / elapsed))

@@ -16,7 +16,7 @@ N = 128 * 1024
 
 
 def generate_lucky_deque(max_num):
-    lucky_numbers = deque(xrange(1, max_num + 1, 2))
+    lucky_numbers = deque(range(1, max_num + 1, 2))
 
     multiple_node = lucky_numbers[1]
     multiple_pos = 2
@@ -38,7 +38,7 @@ def generate_lucky_deque(max_num):
 
 
 def generate_lucky_list(max_num):
-    lucky_numbers = dllist(xrange(1, max_num + 1, 2))
+    lucky_numbers = dllist(range(1, max_num + 1, 2))
 
     multiple_node = lucky_numbers.nodeat(1)
 
@@ -65,17 +65,17 @@ def time_execution(bench_func):
 
 
 if __name__ == '__main__':
-    print 'Calculating lucky numbers using deque...',
+    sys.stdout.write('Calculating lucky numbers using deque... ')
     sys.stdout.flush()
     result_deque, time_deque = time_execution(lambda: generate_lucky_deque(N))
-    print '%gs' % time_deque
+    print('%gs' % time_deque)
 
-    print 'Calculating lucky numbers using dllist...',
+    sys.stdout.write('Calculating lucky numbers using dllist... ')
     sys.stdout.flush()
     result_list, time_list = time_execution(lambda: generate_lucky_list(N))
-    print '%gs' % time_list
+    print('%gs' % time_list)
 
     if list(result_deque) == list(result_list):
-        print 'Both results are equal.'
+        print('Both results are equal.')
     else:
-        print 'Results differ, you might have found a bug!'
+        print('Results differ, you might have found a bug!')
