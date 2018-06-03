@@ -91,14 +91,30 @@ static void sllistnode_delete(SLListNodeObject* node)
   Py_DECREF((PyObject*)node);
 }
 
+static int sllistnode_traverse(SLListNodeObject* self,
+                               visitproc visit,
+                               void* arg)
+{
+    Py_VISIT(self->value);
+    Py_VISIT(self->list_weakref);
+
+    return 0;
+}
+
+static int sllistnode_clear_refs(SLListNodeObject* self)
+{
+    Py_CLEAR(self->value);
+    Py_CLEAR(self->list_weakref);
+    Py_DECREF(Py_None);
+
+    return 0;
+}
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
     PyObject* obj_self = (PyObject*)self;
 
-    Py_DECREF(self->list_weakref);
-    Py_DECREF(self->value);
-    Py_DECREF(Py_None);
+    sllistnode_clear_refs(self);
 
     obj_self->ob_type->tp_free(obj_self);
 }
@@ -253,11 +269,12 @@ static PyTypeObject SLListNodeType =
     0,                              /* tp_getattro       */
     0,                              /* tp_setattro       */
     0,                              /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                     /* tp_flags          */
     "Singly linked list node",      /* tp_doc            */
-    0,                              /* tp_traverse       */
-    0,                              /* tp_clear          */
+    (traverseproc)sllistnode_traverse,
+                                    /* tp_traverse       */
+    (inquiry)sllistnode_clear_refs, /* tp_clear          */
     0,                              /* tp_richcompare    */
     0,                              /* tp_weaklistoffset */
     0,                              /* tp_iter           */
@@ -291,27 +308,58 @@ typedef struct
 } SLListObject;
 
 
-static void sllist_dealloc(SLListObject* self)
+static int sllist_traverse(SLListObject* self, visitproc visit, void* arg)
 {
-    PyObject* obj_self = (PyObject*)self;
+  PyObject* node = self->first;
+
+  if (node != NULL)
+  {
+      while (node != Py_None)
+      {
+          PyObject* next_node = ((SLListNodeObject*)node)->next;
+          Py_VISIT(node);
+          node = next_node;
+      }
+  }
+
+  return 0;
+}
+
+static int sllist_clear_refs(SLListObject* self)
+{
     PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
 
-    while (node != Py_None)
+    if (node != NULL)
     {
-        PyObject* next_node = ((SLListNodeObject*)node)->next;
-        ((SLListNodeObject*)node)->next = Py_None;
-        Py_DECREF(node);
-        node = next_node;
+        while (node != Py_None)
+        {
+            PyObject* next_node = ((SLListNodeObject*)node)->next;
+            ((SLListNodeObject*)node)->next = Py_None;
+            Py_DECREF(node);
+            node = next_node;
+        }
     }
 
     Py_DECREF(Py_None);
 
-    obj_self->ob_type->tp_free(obj_self);
+    self->first = NULL;
+    self->last = NULL;
+    self->weakref_list = NULL;
+
+    return 0;
 }
 
+static void sllist_dealloc(SLListObject* self)
+{
+    PyObject* obj_self = (PyObject*)self;
+
+    sllist_clear_refs(self);
+
+    obj_self->ob_type->tp_free(obj_self);
+}
 
 static PyObject* sllist_new(PyTypeObject* type,
                             PyObject* args,
@@ -1402,11 +1450,12 @@ static PyTypeObject SLListType =
     0,                           /* tp_getattro       */
     0,                           /* tp_setattro       */
     0,                           /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                  /* tp_flags          */
     "Singly linked list",        /* tp_doc            */
-    0,                           /* tp_traverse       */
-    0,                           /* tp_clear          */
+    (traverseproc)sllist_traverse,
+                                 /* tp_traverse       */
+    (inquiry)sllist_clear_refs,  /* tp_clear          */
     (richcmpfunc)sllist_richcompare,
                                  /* tp_richcompare    */
     offsetof(SLListObject, weakref_list),
@@ -1436,12 +1485,29 @@ typedef struct
     PyObject* current_node;
 } SLListIteratorObject;
 
+static int sllistiterator_traverse(SLListIteratorObject* self,
+                                   visitproc visit,
+                                   void* arg)
+{
+    Py_VISIT(self->list);
+    Py_VISIT(self->current_node);
+
+    return 0;
+}
+
+static int sllistiterator_clear_refs(SLListIteratorObject* self)
+{
+    Py_CLEAR(self->list);
+    Py_CLEAR(self->current_node);
+
+    return 0;
+}
+
 static void sllistiterator_dealloc(SLListIteratorObject* self)
 {
     PyObject* obj_self = (PyObject*)self;
 
-    Py_XDECREF(self->current_node);
-    Py_DECREF(self->list);
+    sllistiterator_clear_refs(self);
 
     obj_self->ob_type->tp_free(obj_self);
 }
@@ -1524,11 +1590,12 @@ static PyTypeObject SLListIteratorType =
     0,                                  /* tp_getattro       */
     0,                                  /* tp_setattro       */
     0,                                  /* tp_as_buffer      */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                         /* tp_flags          */
     "Singly linked list iterator",      /* tp_doc            */
-    0,                                  /* tp_traverse       */
-    0,                                  /* tp_clear          */
+    (traverseproc)sllistiterator_traverse,
+                                        /* tp_traverse       */
+    (inquiry)sllistiterator_clear_refs, /* tp_clear          */
     0,                                  /* tp_richcompare    */
     0,                                  /* tp_weaklistoffset */
     0,                                  /* tp_iter           */

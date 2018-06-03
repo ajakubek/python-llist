@@ -152,13 +152,30 @@ str_alloc_error:
     return NULL;
 }
 
+static int dllistnode_traverse(DLListNodeObject* self,
+                               visitproc visit,
+                               void* arg)
+{
+    Py_VISIT(self->value);
+    Py_VISIT(self->list_weakref);
+
+    return 0;
+}
+
+static int dllistnode_clear_refs(DLListNodeObject* self)
+{
+    Py_CLEAR(self->value);
+    Py_CLEAR(self->list_weakref);
+    Py_DECREF(Py_None);
+
+    return 0;
+}
+
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
     PyObject* obj_self = (PyObject*)self;
 
-    Py_DECREF(self->list_weakref);
-    Py_DECREF(self->value);
-    Py_DECREF(Py_None);
+    dllistnode_clear_refs(self);
 
     obj_self->ob_type->tp_free(obj_self);
 }
@@ -260,11 +277,12 @@ static PyTypeObject DLListNodeType =
     0,                              /* tp_getattro */
     0,                              /* tp_setattro */
     0,                              /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                     /* tp_flags */
     "Doubly linked list node",      /* tp_doc */
-    0,                              /* tp_traverse */
-    0,                              /* tp_clear */
+    (traverseproc)dllistnode_traverse,
+                                    /* tp_traverse */
+    (inquiry)dllistnode_clear_refs, /* tp_clear */
     0,                              /* tp_richcompare */
     0,                              /* tp_weaklistoffset */
     0,                              /* tp_iter */
@@ -493,22 +511,54 @@ str_alloc_error:
     return NULL;
 }
 
-static void dllist_dealloc(DLListObject* self)
+static int dllist_traverse(DLListObject* self, visitproc visit, void* arg)
 {
-    PyObject* obj_self = (PyObject*)self;
+    PyObject* node = self->first;
+
+    if (node != NULL)
+    {
+        while (node != Py_None)
+        {
+            PyObject* next_node = ((DLListNodeObject*)node)->next;
+            Py_VISIT(node);
+            node = next_node;
+        }
+    }
+
+    return 0;
+}
+
+static int dllist_clear_refs(DLListObject* self)
+{
     PyObject* node = self->first;
 
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
 
-    while (node != Py_None)
+    if (node != NULL)
     {
-        PyObject* next_node = ((DLListNodeObject*)node)->next;
-        dllistnode_delete((DLListNodeObject*)node);
-        node = next_node;
+        while (node != Py_None)
+        {
+            PyObject* next_node = ((DLListNodeObject*)node)->next;
+            dllistnode_delete((DLListNodeObject*)node);
+            node = next_node;
+        }
     }
 
     Py_DECREF(Py_None);
+
+    self->first = NULL;
+    self->last = NULL;
+    self->weakref_list = NULL;
+
+    return 0;
+}
+
+static void dllist_dealloc(DLListObject* self)
+{
+    PyObject* obj_self = (PyObject*)self;
+
+    dllist_clear_refs(self);
 
     obj_self->ob_type->tp_free(obj_self);
 }
@@ -1344,11 +1394,12 @@ static PyTypeObject DLListType =
     0,                          /* tp_getattro */
     0,                          /* tp_setattro */
     0,                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                 /* tp_flags */
     "Doubly linked list",       /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
+    (traverseproc)dllist_traverse,
+                                /* tp_traverse */
+    (inquiry)dllist_clear_refs, /* tp_clear */
     (richcmpfunc)dllist_richcompare,
                                 /* tp_richcompare */
     offsetof(DLListObject, weakref_list),
@@ -1378,12 +1429,29 @@ typedef struct
     PyObject* current_node;
 } DLListIteratorObject;
 
+static int dllistiterator_traverse(DLListIteratorObject* self,
+                                    visitproc visit,
+                                    void* arg)
+{
+    Py_VISIT(self->list);
+    Py_VISIT(self->current_node);
+
+    return 0;
+}
+
+static int dllistiterator_clear_refs(DLListIteratorObject* self)
+{
+    Py_CLEAR(self->list);
+    Py_CLEAR(self->current_node);
+
+    return 0;
+}
+
 static void dllistiterator_dealloc(DLListIteratorObject* self)
 {
     PyObject* obj_self = (PyObject*)self;
 
-    Py_XDECREF(self->current_node);
-    Py_DECREF(self->list);
+    dllistiterator_clear_refs(self);
 
     obj_self->ob_type->tp_free(obj_self);
 }
@@ -1463,11 +1531,12 @@ static PyTypeObject DLListIteratorType =
     0,                                  /* tp_getattro */
     0,                                  /* tp_setattro */
     0,                                  /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
                                         /* tp_flags */
     "Doubly linked list iterator",      /* tp_doc */
-    0,                                  /* tp_traverse */
-    0,                                  /* tp_clear */
+    (traverseproc)dllistiterator_traverse,
+                                        /* tp_traverse */
+    (inquiry)dllistiterator_clear_refs, /* tp_clear */
     0,                                  /* tp_richcompare */
     0,                                  /* tp_weaklistoffset */
     0,                                  /* tp_iter */
