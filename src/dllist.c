@@ -800,6 +800,36 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
     return (PyObject*)new_node;
 }
 
+static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
+{
+    assert(PyObject_TypeCheck(arg, &DLListNodeType));
+
+    DLListNodeObject* node = (DLListNodeObject*) arg;
+
+    assert(node->list_weakref == Py_None);
+    assert(node->next == Py_None);
+    assert(node->prev == Py_None);
+
+    /* appending to empty list */
+    if(self->first == Py_None)
+        self->first = (PyObject*)node;
+    /* setting next of last element as new node */
+    else
+    {
+        ((DLListNodeObject*)self->last)->next = (PyObject*)node;
+        node->prev = self->last;
+    }
+
+    /* allways set last node to new node */
+    self->last = (PyObject*)node;
+
+    node->list_weakref = PyWeakref_NewRef((PyObject*) self, NULL);
+
+    ++self->size;
+    Py_INCREF((PyObject*)node);
+    return (PyObject*)node;
+}
+
 static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 {
     PyObject* val = NULL;
@@ -1323,6 +1353,8 @@ static PyMethodDef DLListMethods[] =
       "Append element at the end of the list" },
     { "appendright", (PyCFunction)dllist_appendright, METH_O,
       "Append element at the end of the list" },
+    { "appendnode", (PyCFunction)dllist_appendnode, METH_O,
+      "Append raw dllistnode at the end of the list" },
     { "clear", (PyCFunction)dllist_clear, METH_NOARGS,
       "Remove all elements from the list" },
     { "extend", (PyCFunction)dllist_extendright, METH_O,
