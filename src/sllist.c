@@ -669,6 +669,32 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
     return (PyObject*)new_node;
 }
 
+static PyObject* sllist_appendnode(SLListObject* self, PyObject* arg)
+{
+    assert(PyObject_TypeCheck(arg, &SLListNodeType));
+
+    SLListNodeObject* node = (SLListNodeObject*) arg;
+
+    assert(node->list_weakref == Py_None);
+    assert(node->next == Py_None);
+
+    /* appending to empty list */
+    if(self->first == Py_None)
+        self->first = (PyObject*)node;
+    /* setting next of last element as new node */
+    else
+        ((SLListNodeObject*)self->last)->next = (PyObject*)node;
+
+    /* allways set last node to new node */
+    self->last = (PyObject*)node;
+
+    node->list_weakref = PyWeakref_NewRef((PyObject*) self, NULL);
+
+    ++self->size;
+    Py_INCREF((PyObject*)node);
+    return (PyObject*)node;
+}
+
 static PyObject* sllist_insertafter(SLListObject* self, PyObject* arg)
 {
 
@@ -1359,6 +1385,9 @@ static PyMethodDef SLListMethods[] =
 
     { "appendright", (PyCFunction)sllist_appendright, METH_O,
       "Append element at the end of the list" },
+
+    { "appendnode", (PyCFunction)sllist_appendnode, METH_O,
+      "Append raw sllistnode at the end of the list" },
 
     { "append", (PyCFunction)sllist_appendright, METH_O,
       "Append element at the end of the list" },
