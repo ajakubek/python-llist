@@ -282,7 +282,7 @@ class testsllist(unittest.TestCase):
 
     def test_append_right(self):
         ll = sllist([1, 2, 3, 4])
-        ll.appendleft(5)
+        ll.appendright(5)
         self.assertEqual([1, 2, 3, 4, 5], list(ll))
 
     def test_pop_left_from_one_elem(self):
