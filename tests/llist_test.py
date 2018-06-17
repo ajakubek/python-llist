@@ -285,6 +285,22 @@ class testsllist(unittest.TestCase):
         ll.appendleft(5)
         self.assertTrue([1, 2, 3, 4, 5], list(ll))
 
+    def test_appendnode(self):
+        ll = sllist([1, 2, 3, 4])
+        node = sllistnode(5)
+        ll.appendnode(node)
+        self.assertEqual([1, 2, 3, 4, 5], list(ll))
+        self.assertIs(node, ll.last)
+
+    def test_appendnode_with_bad_argument_type(self):
+        ll = sllist()
+        self.assertRaises(TypeError, ll.appendnode, 'non-node argument')
+
+    def test_appendnode_with_already_owned_node(self):
+        ll = sllist()
+        other_list = sllist([1234])
+        self.assertRaises(ValueError, ll.appendnode, other_list.first)
+
     def test_pop_left_from_one_elem(self):
         ll = sllist(py23_xrange(0, 100))
         dd = ll.popleft()
@@ -1183,6 +1199,22 @@ class testdllist(unittest.TestCase):
         self.assertEqual(prev.next, new_node)
         self.assertEqual(ll.last, new_node)
         self.assertEqual(ll, ref)
+
+    def test_appendnode(self):
+        ll = dllist([1, 2, 3, 4])
+        node = dllistnode(5)
+        ll.appendnode(node)
+        self.assertEqual([1, 2, 3, 4, 5], list(ll))
+        self.assertIs(node, ll.last)
+
+    def test_appendnode_with_bad_argument_type(self):
+        ll = dllist()
+        self.assertRaises(TypeError, ll.appendnode, 'non-node argument')
+
+    def test_appendnode_with_already_owned_node(self):
+        ll = dllist()
+        other_list = dllist([1234])
+        self.assertRaises(ValueError, ll.appendnode, other_list.first)
 
     def test_extend(self):
         a_ref = py23_range(0, 1024, 4)
