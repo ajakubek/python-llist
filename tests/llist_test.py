@@ -1158,6 +1158,73 @@ class testdllist(unittest.TestCase):
         self.assertRaises(TypeError, ll.insert, 10, [])
         self.assertRaises(ValueError, ll.insert, 10, dllistnode())
 
+    def test_insert_node(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node)
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, prev)
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(new_node, ll.last)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_value_before(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([0, 1, 10, 2, 3])
+        prev = ll.nodeat(1)
+        next = ll.nodeat(2)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node, ll.nodeat(2))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, prev)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(next.prev, new_node)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_value_before_first(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([10, 0, 1, 2, 3])
+        next = ll.nodeat(0)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node, ll.nodeat(0))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, None)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(next.prev, new_node)
+        self.assertEqual(new_node, ll.first)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_with_bad_argument_type(self):
+        ll = dllist([1234])
+        self.assertRaises(
+            TypeError, ll.insertnode, 'non-node argument', ll.first)
+
+    def test_insert_node_with_already_owned_node(self):
+        ll = dllist([1234])
+        other_list = dllist([5678])
+        self.assertRaises(
+            ValueError, ll.insertnode, other_list.first, ll.first)
+
+    def test_insert_node_with_invalid_ref(self):
+        ll = dllist()
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), 1)
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), 'abc')
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), [])
+        self.assertRaises(
+            ValueError, ll.insertnode, dllistnode(10), dllistnode())
+
+    def test_insert_node_refcount_update(self):
+        ll = dllist([1234])
+        node = ll.insertnode(dllistnode(5678), ll.nodeat(0))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
+
     def test_append(self):
         ll = dllist(py23_xrange(4))
         ref = dllist([0, 1, 2, 3, 10])

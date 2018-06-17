@@ -30,8 +30,40 @@ typedef struct
     PyObject* list_weakref;
 } DLListNodeObject;
 
+/* Convenience function for linking list nodes.
+ * Automatically updates pointers in inserted node and its neighbours.
+ */
+static void dllistnode_link(PyObject* prev,
+                            PyObject* next,
+                            DLListNodeObject* inserted,
+                            PyObject* owner_list)
+{
+    assert(inserted != NULL);
+    assert(inserted->prev == Py_None);
+    assert(inserted->next == Py_None);
+    assert(owner_list != NULL);
+    assert(owner_list != Py_None);
+
+    /* prev is initialized to Py_None by default (by dllistnode_new) */
+    if (prev != NULL && prev != Py_None)
+    {
+        inserted->prev = prev;
+        ((DLListNodeObject*)prev)->next = (PyObject*)inserted;
+    }
+
+    /* next is initialized to Py_None by default (by dllistnode_new) */
+    if (next != NULL && next != Py_None)
+    {
+        inserted->next = next;
+        ((DLListNodeObject*)next)->prev = (PyObject*)inserted;
+    }
+
+    Py_DECREF(inserted->list_weakref);
+    inserted->list_weakref = PyWeakref_NewRef(owner_list, NULL);
+}
+
 /* Convenience function for creating list nodes.
- * Automatically update pointers in neigbours.
+ * Automatically update pointers in neighbours.
  */
 static DLListNodeObject* dllistnode_create(PyObject* prev,
                                            PyObject* next,
@@ -42,8 +74,6 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
     PyObject* args = NULL;
 
     assert(value != NULL);
-    assert(owner_list != NULL);
-    assert(owner_list != Py_None);
 
     if (value != Py_None)
     {
@@ -69,24 +99,7 @@ static DLListNodeObject* dllistnode_create(PyObject* prev,
 
     Py_XDECREF(args);
 
-    /* prev is initialized to Py_None by default
-     * (by dllistnode_new) */
-    if (prev != NULL && prev != Py_None)
-    {
-        node->prev = prev;
-        ((DLListNodeObject*)prev)->next = (PyObject*)node;
-    }
-
-    /* next is initialized to Py_None by default
-     * (by dllistnode_new) */
-    if (next != NULL && next != Py_None)
-    {
-        node->next = next;
-        ((DLListNodeObject*)next)->prev = (PyObject*)node;
-    }
-
-    Py_DECREF(node->list_weakref);
-    node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
+    dllistnode_link(prev, next, node, owner_list);
 
     return node;
 }
@@ -911,6 +924,89 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     return (PyObject*)new_node;
 }
 
+static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnode", 1, 2, &inserted, &ref))
+        return NULL;
+
+    if (!PyObject_TypeCheck(inserted, &DLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "Inserted object must be a dllistnode");
+        return NULL;
+    }
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
+
+    if (inserted_node->list_weakref != Py_None
+        || inserted_node->prev != Py_None
+        || inserted_node->next != Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Inserted node must not belong to a list");
+        return NULL;
+    }
+
+    if (ref == NULL || ref == Py_None)
+    {
+        /* append item at the end of the list */
+        dllistnode_link(self->last, NULL, inserted_node, (PyObject*)self);
+
+        self->last = inserted;
+
+        if (self->first == Py_None)
+            self->first = inserted;
+    }
+    else
+    {
+        /* insert item before ref_node */
+        if (!PyObject_TypeCheck(ref, &DLListNodeType))
+        {
+            PyErr_SetString(PyExc_TypeError,
+                "ref_node argument must be a dllistnode");
+            return NULL;
+        }
+
+        DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+        if (ref_node->list_weakref == Py_None)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "ref_node does not belong to a list");
+            return NULL;
+        }
+
+        PyObject* list_ref = PyWeakref_GetObject(ref_node->list_weakref);
+        if (list_ref != (PyObject*)self)
+        {
+            PyErr_SetString(PyExc_ValueError,
+                "ref_node belongs to another list");
+            return NULL;
+        }
+
+        dllistnode_link(ref_node->prev, ref, inserted_node, (PyObject*)self);
+
+        if (ref == self->first)
+            self->first = inserted;
+
+        if (self->last == Py_None)
+            self->last = inserted;
+
+        /* invalidate last accessed item */
+        self->last_accessed_node = Py_None;
+        self->last_accessed_idx = -1;
+    }
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
+}
+
 static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
@@ -1374,6 +1470,8 @@ static PyMethodDef DLListMethods[] =
     { "extendright", (PyCFunction)dllist_extendright, METH_O,
       "Append elements from iterable at the right side of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertnode", (PyCFunction)dllist_insertnode, METH_VARARGS,
       "Inserts element before node" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
       "Return node at index" },
