@@ -671,12 +671,20 @@ static PyObject* sllist_appendright(SLListObject* self, PyObject* arg)
 
 static PyObject* sllist_appendnode(SLListObject* self, PyObject* arg)
 {
-    assert(PyObject_TypeCheck(arg, &SLListNodeType));
+    if (!PyObject_TypeCheck(arg, &SLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a sllistnode");
+        return NULL;
+    }
 
     SLListNodeObject* node = (SLListNodeObject*) arg;
 
-    assert(node->list_weakref == Py_None);
-    assert(node->next == Py_None);
+    if (node->list_weakref != Py_None || node->next != Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Argument node must not belong to a list");
+        return NULL;
+    }
 
     /* appending to empty list */
     if(self->first == Py_None)
@@ -688,6 +696,7 @@ static PyObject* sllist_appendnode(SLListObject* self, PyObject* arg)
     /* allways set last node to new node */
     self->last = (PyObject*)node;
 
+    Py_DECREF(node->list_weakref);
     node->list_weakref = PyWeakref_NewRef((PyObject*) self, NULL);
 
     ++self->size;

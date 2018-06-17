@@ -802,13 +802,22 @@ static PyObject* dllist_appendright(DLListObject* self, PyObject* arg)
 
 static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
 {
-    assert(PyObject_TypeCheck(arg, &DLListNodeType));
+    if (!PyObject_TypeCheck(arg, &DLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a dllistnode");
+        return NULL;
+    }
 
     DLListNodeObject* node = (DLListNodeObject*) arg;
 
-    assert(node->list_weakref == Py_None);
-    assert(node->next == Py_None);
-    assert(node->prev == Py_None);
+    if (node->list_weakref != Py_None
+        || node->prev != Py_None
+        || node->next != Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Argument node must not belong to a list");
+        return NULL;
+    }
 
     /* appending to empty list */
     if(self->first == Py_None)
@@ -823,6 +832,7 @@ static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
     /* allways set last node to new node */
     self->last = (PyObject*)node;
 
+    Py_DECREF(node->list_weakref);
     node->list_weakref = PyWeakref_NewRef((PyObject*) self, NULL);
 
     ++self->size;
