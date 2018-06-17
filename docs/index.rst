@@ -73,6 +73,20 @@ Random access to elements using index is O(n).
       Argument *x* might be a :class:`dllistnode`. In that case a new
       node will be created and initialized with the value extracted from *x*.
 
+   .. method:: appendnode(node)
+
+      Add *node* to the end of the list. The node must not belong to a list.
+
+      The difference between :meth:`dllist.appendright()` and this method is
+      that the former will repack the value from the argument into a new node
+      while the latter will insert the passed node into the list.
+      This makes :meth:`dllist.appendnode()` useful when a subclassed node type
+      must be added to a list.
+
+      Raises :exc:`TypeError` if *node* is not of type :class:`dllistnode`.
+
+      Raises :exc:`ValueError` if *node* already belongs to a list.
+
    .. method:: clear()
 
       Remove all nodes from the list.
@@ -256,13 +270,20 @@ Random access to elements using index is O(n).
       <dllistnode(0)>
       >>> print(lst)
       dllist([0, 1, 2, 3, 4, 5])
-
-      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> new_node = dllistnode(6)
+      >>> lst.appendnode(new_node)      # append node to the end of the list
+      <dllistnode(6)>
       >>> print(lst)
-      dllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      dllist([0, 1, 2, 3, 4, 5, 6])
+      >>> print(lst.last is new_node)
+      True
+
+      >>> lst.extendright([7, 8, 9])    # right-extend list with elements from iterable
+      >>> print(lst)
+      dllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
       >>> print(lst)
-      dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+      dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
       >>> lst = dllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
@@ -459,6 +480,20 @@ Random access to elements using index is O(n).
       node will be created and initialized with the value extracted from *x*.
 
       This method has O(1) complexity.
+
+   .. method:: appendnode(node)
+
+      Add *node* to the end of the list. The node must not belong to a list.
+
+      The difference between :meth:`sllist.appendright()` and this method is
+      that the former will repack the value from the argument into a new node
+      while the latter will insert the passed node into the list.
+      This makes :meth:`sllist.appendnode()` useful when a subclassed node type
+      must be added to a list.
+
+      Raises :exc:`TypeError` if *node* is not of type :class:`sllistnode`.
+
+      Raises :exc:`ValueError` if *node* already belongs to a list.
 
    .. method:: clear()
 
@@ -657,13 +692,20 @@ Random access to elements using index is O(n).
       <sllistnode(0)>
       >>> print(lst)
       sllist([0, 1, 2, 3, 4, 5])
-
-      >>> lst.extendright([6, 7, 8])    # right-extend list with elements from iterable
+      >>> new_node = sllistnode(6)
+      >>> lst.appendnode(new_node)      # append node to the end of the list
+      <sllistnode(6)>
       >>> print(lst)
-      sllist([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      sllist([0, 1, 2, 3, 4, 5, 6])
+      >>> print(lst.last is new_node)
+      True
+
+      >>> lst.extendright([7, 8, 9])    # right-extend list with elements from iterable
+      >>> print(lst)
+      sllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
       >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
       >>> print(lst)
-      sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8])
+      sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
       >>> lst = sllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
