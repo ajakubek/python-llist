@@ -119,6 +119,23 @@ Random access to elements using index is O(n).
 
       Raises :exc:`ValueError` if *before* does not belong to *self*.
 
+   .. method:: insertnode(node, [before])
+
+      Add *node* to the right side of the list if *before* is not specified,
+      or insert *node* to the left side of :class:`dllistnode` *before*.
+      Return inserted :class:`dllistnode`.
+
+      Argument *node* must be a :class:`dllistnode` object which does not belong
+      to any list. The node will be inserted directly into *self*.
+      This makes :meth:`dllist.insertnode()` useful when a subclassed node type
+      must be added to a list.
+
+      Raises :exc:`TypeError` if *node* or *before* is not of type
+      :class:`dllistnode`.
+
+      Raises :exc:`ValueError` if *node* belongs to another list or *before*
+      does not belong to *self*.
+
    .. method:: nodeat(index)
 
       Return node (of type :class:`dllistnode`) at *index*.
@@ -199,118 +216,129 @@ Random access to elements using index is O(n).
 
       >>> from llist import dllist, dllistnode
 
-      >>> empty_lst = dllist()          # create an empty list
+      >>> empty_lst = dllist()                # create an empty list
       >>> print(empty_lst)
       dllist()
 
-      >>> print(len(empty_lst))         # display length of the list
+      >>> print(len(empty_lst))               # display length of the list
       0
       >>> print(empty_lst.size)
       0
 
-      >>> print(empty_lst.first)        # display the first node (nonexistent)
+      >>> print(empty_lst.first)              # display the first node (nonexistent)
       None
-      >>> print(empty_lst.last)         # display the last node (nonexistent)
+      >>> print(empty_lst.last)               # display the last node (nonexistent)
       None
 
-      >>> lst = dllist([1, 2, 3])       # create and initialize a list
-      >>> print(lst)                    # display elements in the list
+      >>> lst = dllist([1, 2, 3])             # create and initialize a list
+      >>> print(lst)                          # display elements in the list
       dllist([1, 2, 3])
 
-      >>> print(len(lst))               # display length of the list
+      >>> print(len(lst))                     # display length of the list
       3
       >>> print(lst.size)
       3
 
-      >>> print(lst.nodeat(0))          # access nodes by index
+      >>> print(lst.nodeat(0))                # access nodes by index
       dllistnode(1)
       >>> print(lst.nodeat(1))
       dllistnode(2)
       >>> print(lst.nodeat(2))
       dllistnode(3)
 
-      >>> print(lst[0])                 # access elements by index
+      >>> print(lst[0])                       # access elements by index
       1
       >>> print(lst[1])
       2
       >>> print(lst[2])
       3
 
-      >>> node = lst.first              # get the first node (same as lst[0])
+      >>> node = lst.first                    # get the first node (same as lst[0])
       >>> print(node)
       dllistnode(1)
 
-      >>> print(node.value)             # get value of node
+      >>> print(node.value)                   # get value of node
       1
-      >>> print(node())                 # get value of node
+      >>> print(node())                       # get value of node
       1
-      >>> print(node.prev)              # get the previous node (nonexistent)
+      >>> print(node.prev)                    # get the previous node (nonexistent)
       None
-      >>> print(node.next)              # get the next node
+      >>> print(node.next)                    # get the next node
       dllistnode(2)
-      >>> print(node.next.value)        # get value of the next node
+      >>> print(node.next.value)              # get value of the next node
       2
 
-      >>> for value in lst:             # iterate over list elements
+      >>> for value in lst:                   # iterate over list elements
       ...     print(value * 2)
       2
       4
       6
 
-      >>> lst.appendright(4)            # append value to the right side of the list
+      >>> lst.appendright(4)                  # append value to the right side of the list
       <dllistnode(4)>
       >>> print(lst)
       dllist([1, 2, 3, 4])
       >>> new_node = dllistnode(5)
-      >>> lst.appendright(new_node)     # append value from a node
+      >>> lst.appendright(new_node)           # append value from a node
       <dllistnode(5)>
       >>> print(lst)
       dllist([1, 2, 3, 4, 5])
-      >>> lst.appendleft(0)             # append value to the left side of the list
+      >>> lst.appendleft(0)                   # append value to the left side of the list
       <dllistnode(0)>
       >>> print(lst)
       dllist([0, 1, 2, 3, 4, 5])
       >>> new_node = dllistnode(6)
-      >>> lst.appendnode(new_node)      # append node to the end of the list
+      >>> lst.appendnode(new_node)            # append node to the end of the list
       <dllistnode(6)>
       >>> print(lst)
       dllist([0, 1, 2, 3, 4, 5, 6])
       >>> print(lst.last is new_node)
       True
 
-      >>> lst.extendright([7, 8, 9])    # right-extend list with elements from iterable
+      >>> lst.extendright([7, 8, 9])          # right-extend list with elements from iterable
       >>> print(lst)
       dllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> lst.extendleft([-1, -2, -3])        # left-extend list with elements from iterable
       >>> print(lst)
       dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
       >>> lst = dllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
-      >>> lst.insert(1.5, node)         # insert 1.5 before node
+      >>> lst.insert(1.5, node)               # insert 1.5 before node
       <dllistnode(1.5)>
       >>> print(lst)
       dllist([0, 1, 1.5, 2, 3, 4, 5])
-      >>> lst.insert(6)                 # append value to the right side of the list
+      >>> lst.insert(6)                       # append value to the right side of the list
       <dllistnode(6)>
       >>> print(lst)
       dllist([0, 1, 1.5, 2, 3, 4, 5, 6])
+      >>> new_node = dllistnode(2.5)
+      >>> ref_node = lst.nodeat(4)
+      >>> lst.insertnode(new_node, ref_node)  # insert new_node before ref_node
+      <dllistnode(2.5)>
+      >>> print(lst)
+      dllist([0, 1, 1.5, 2, 2.5, 3, 4, 5, 6])
+      >>> new_node = dllistnode(6.5)
+      >>> lst.insertnode(new_node)            # insert new_node at the end of the list
+      <dllistnode(6.5)>
+      >>> print(lst)
+      dllist([0, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 6.5])
 
-      >>> lst.popleft()                 # remove leftmost node from the list
+      >>> lst.popleft()                       # remove leftmost node from the list
       0
       >>> print(lst)
-      dllist([1, 1.5, 2, 3, 4, 5, 6])
-      >>> lst.popright()                # remove rightmost node from the list
-      6
+      dllist([1, 1.5, 2, 2.5, 3, 4, 5, 6, 6.5])
+      >>> lst.popright()                      # remove rightmost node from the list
+      6.5
       >>> print(lst)
-      dllist([1, 1.5, 2, 3, 4, 5])
+      dllist([1, 1.5, 2, 2.5, 3, 4, 5, 6])
       >>> node = lst.nodeat(1)
-      >>> lst.remove(node)              # remove 2nd node from the list
+      >>> lst.remove(node)                    # remove 2nd node from the list
       1.5
       >>> print(lst)
-      dllist([1, 2, 3, 4, 5])
-      >>> foreign_node = dllistnode()   # create an unassigned node
-      >>> lst.remove(foreign_node)      # try to remove node not present in the list
+      dllist([1, 2, 2.5, 3, 4, 5, 6])
+      >>> foreign_node = dllistnode()         # create an unassigned node
+      >>> lst.remove(foreign_node)            # try to remove node not present in the list
       Traceback (most recent call last):
         File "/usr/lib/python2.6/doctest.py", line 1253, in __run
           compileflags, 1) in test.globs
@@ -330,7 +358,7 @@ Random access to elements using index is O(n).
       >>> print(lst)
       dllist([3, 4, 5, 1, 2])
 
-      >>> dllist() == dllist([])        # list comparison (lexicographical order)
+      >>> dllist() == dllist([])              # list comparison (lexicographical order)
       True
       >>> dllist() != dllist([])
       False
@@ -343,7 +371,7 @@ Random access to elements using index is O(n).
       >>> dllist([1, 2, 3]) >= dllist([1, 2, 3])
       True
 
-      >>> lst1 = dllist([1, 2, 3, 4])   # extending lists
+      >>> lst1 = dllist([1, 2, 3, 4])         # extending lists
       >>> lst2 = dllist([5, 6, 7, 8])
       >>> ext_lst = lst1 + lst2
       >>> print(ext_lst)
@@ -356,11 +384,11 @@ Random access to elements using index is O(n).
 
       >>> lst = dllist([0])
       >>> node = lst.first
-      >>> weak_ref = node.owner         # get reference to the list which owns the node
-      >>> print(weak_ref() is lst)      # call the reference to obtain the actual list
+      >>> weak_ref = node.owner               # get reference to the list which owns the node
+      >>> print(weak_ref() is lst)            # call the reference to obtain the actual list
       True
       >>> del lst
-      >>> print(weak_ref())             # None is returned if list does not exist
+      >>> print(weak_ref())                   # None is returned if list does not exist
       None
 
 
@@ -519,7 +547,7 @@ Random access to elements using index is O(n).
 
       This method has O(n) complexity (in the size of *iterable*).
 
-   .. method:: insertafter(x, node)
+   .. method:: insertafter(x, ref)
 
       Inserts *x* after *node* and return inserted :class:`sllistnode`.
 
@@ -532,7 +560,7 @@ Random access to elements using index is O(n).
 
       This method has O(1) complexity.
 
-   .. method:: insertbefore(x, node)
+   .. method:: insertbefore(x, ref)
 
       Inserts *x* before *node* and return inserted :class:`sllistnode`.
 
@@ -544,6 +572,38 @@ Random access to elements using index is O(n).
       Raises :exc:`ValueError` if *before* does not belong to *self*.
 
       This method has O(n) complexity.
+
+   .. method:: insertnodeafter(node, ref)
+
+      Add *node* to the right side of *ref*.
+      Return inserted :class:`sllistnode`.
+
+      Argument *node* must be a :class:`sllistnode` instance which does not
+      belong to any list. The node will be inserted directly into *self*.
+      This makes :meth:`sllist.insertnodeafter()` useful when a subclassed node
+      type must be added to a list.
+
+      Raises :exc:`TypeError` if *node* or *ref* is not of type
+      :class:`sllistnode`.
+
+      Raises :exc:`ValueError` if *node* belongs to another list or *ref* does
+      not belong to *self*.
+
+   .. method:: insertnodebefore(node, ref)
+
+      Add *node* to the left side of *ref*.
+      Return inserted :class:`sllistnode`.
+
+      Argument *node* must be a :class:`sllistnode` instance which does not
+      belong to any list. The node will be inserted directly into *self*.
+      This makes :meth:`sllist.insertnodebefore()` useful when a subclassed node
+      type must be added to a list.
+
+      Raises :exc:`TypeError` if *node* or *ref* is not of type
+      :class:`sllistnode`.
+
+      Raises :exc:`ValueError` if *node* belongs to another list or *ref* does
+      not belong to *self*.
 
    .. method:: nodeat(index)
 
@@ -623,116 +683,128 @@ Random access to elements using index is O(n).
 
       >>> from llist import sllist, sllistnode
 
-      >>> empty_lst = sllist()          # create an empty list
+      >>> empty_lst = sllist()                      # create an empty list
       >>> print(empty_lst)
       sllist()
 
-      >>> print(len(empty_lst))         # display length of the list
+      >>> print(len(empty_lst))                     # display length of the list
       0
       >>> print(empty_lst.size)
       0
 
-      >>> print(empty_lst.first)        # display the first node (nonexistent)
+      >>> print(empty_lst.first)                    # display the first node (nonexistent)
       None
-      >>> print(empty_lst.last)         # display the last node (nonexistent)
+      >>> print(empty_lst.last)                     # display the last node (nonexistent)
       None
 
-      >>> lst = sllist([1, 2, 3])       # create and initialize a list
-      >>> print(lst)                    # display elements in the list
+      >>> lst = sllist([1, 2, 3])                   # create and initialize a list
+      >>> print(lst)                                # display elements in the list
       sllist([1, 2, 3])
 
-      >>> print(len(lst))               # display length of the list
+      >>> print(len(lst))                           # display length of the list
       3
       >>> print(lst.size)
       3
 
-      >>> print(lst.nodeat(0))          # access nodes by index
+      >>> print(lst.nodeat(0))                      # access nodes by index
       sllistnode(1)
       >>> print(lst.nodeat(1))
       sllistnode(2)
       >>> print(lst.nodeat(2))
       sllistnode(3)
 
-      >>> print(lst[0])                 # access elements by index
+      >>> print(lst[0])                             # access elements by index
       1
       >>> print(lst[1])
       2
       >>> print(lst[2])
       3
 
-      >>> node = lst.first              # get the first node (same as lst[0])
+      >>> node = lst.first                          # get the first node (same as lst[0])
       >>> print(node)
       sllistnode(1)
 
-      >>> print(node.value)             # get value of node
+      >>> print(node.value)                         # get value of node
       1
-      >>> print(node())                 # get value of node
+      >>> print(node())                             # get value of node
       1
-      >>> print(node.next)              # get the next node
+      >>> print(node.next)                          # get the next node
       sllistnode(2)
-      >>> print(node.next.value)        # get value of the next node
+      >>> print(node.next.value)                    # get value of the next node
       2
 
-      >>> for value in lst:             # iterate over list elements
+      >>> for value in lst:                         # iterate over list elements
       ...     print(value * 2)
       2
       4
       6
 
-      >>> lst.appendright(4)            # append value to the right side of the list
+      >>> lst.appendright(4)                        # append value to the right side of the list
       <sllistnode(4)>
       >>> print(lst)
       sllist([1, 2, 3, 4])
       >>> new_node = sllistnode(5)
-      >>> lst.appendright(new_node)     # append value from a node
+      >>> lst.appendright(new_node)                 # append value from a node
       <sllistnode(5)>
       >>> print(lst)
       sllist([1, 2, 3, 4, 5])
-      >>> lst.appendleft(0)             # append value to the left side of the list
+      >>> lst.appendleft(0)                         # append value to the left side of the list
       <sllistnode(0)>
       >>> print(lst)
       sllist([0, 1, 2, 3, 4, 5])
       >>> new_node = sllistnode(6)
-      >>> lst.appendnode(new_node)      # append node to the end of the list
+      >>> lst.appendnode(new_node)                  # append node to the end of the list
       <sllistnode(6)>
       >>> print(lst)
       sllist([0, 1, 2, 3, 4, 5, 6])
       >>> print(lst.last is new_node)
       True
 
-      >>> lst.extendright([7, 8, 9])    # right-extend list with elements from iterable
+      >>> lst.extendright([7, 8, 9])                # right-extend list with elements from iterable
       >>> print(lst)
       sllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      >>> lst.extendleft([-1, -2, -3])  # left-extend list with elements from iterable
+      >>> lst.extendleft([-1, -2, -3])              # left-extend list with elements from iterable
       >>> print(lst)
       sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
       >>> lst = sllist([0, 1, 2, 3, 4, 5])
       >>> node = lst.nodeat(2)
-      >>> lst.insertbefore(1.5, node)  # insert 1.5 before node
+      >>> lst.insertbefore(1.5, node)               # insert 1.5 before node
       <sllistnode(1.5)>
       >>> print(lst)
       sllist([0, 1, 1.5, 2, 3, 4, 5])
-      >>> lst.insertafter(2.5, node)   # insert 2.5 after node
+      >>> lst.insertafter(2.5, node)                # insert 2.5 after node
       <sllistnode(2.5)>
       >>> print(lst)
       sllist([0, 1, 1.5, 2, 2.5, 3, 4, 5])
+      >>> new_node = sllistnode(3.5)
+      >>> ref_node = lst.nodeat(6)
+      >>> lst.insertnodebefore(new_node, ref_node)  # insert new_node before ref_node
+      <sllistnode(3.5)>
+      >>> print(lst)
+      sllist([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5])
+      >>> new_node = sllistnode(4.5)
+      >>> ref_node = lst.nodeat(7)
+      >>> lst.insertnodeafter(new_node, ref_node)   # insert new_node after ref_node
+      <sllistnode(4.5)>
+      >>> print(lst)
+      sllist([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
 
-      >>> lst.popleft()                 # remove leftmost node from the list
+      >>> lst.popleft()                             # remove leftmost node from the list
       0
       >>> print(lst)
-      sllist([1, 1.5, 2, 2.5, 3, 4, 5])
-      >>> lst.popright()                # remove rightmost node from the list
+      sllist([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
+      >>> lst.popright()                            # remove rightmost node from the list
       5
       >>> print(lst)
-      sllist([1, 1.5, 2, 2.5, 3, 4])
+      sllist([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5])
       >>> node = lst.nodeat(1)
-      >>> lst.remove(node)              # remove 2nd node from the list
+      >>> lst.remove(node)                          # remove 2nd node from the list
       1.5
       >>> print(lst)
-      sllist([1, 2, 2.5, 3, 4])
-      >>> foreign_node = sllistnode()   # create an unassigned node
-      >>> lst.remove(foreign_node)      # try to remove node not present in the list
+      sllist([1, 2, 2.5, 3, 3.5, 4, 4.5])
+      >>> foreign_node = sllistnode()               # create an unassigned node
+      >>> lst.remove(foreign_node)                  # try to remove node not present in the list
       Traceback (most recent call last):
         File "/usr/lib/python2.6/doctest.py", line 1253, in __run
           compileflags, 1) in test.globs
@@ -752,7 +824,7 @@ Random access to elements using index is O(n).
       >>> print(lst)
       sllist([3, 4, 5, 1, 2])
 
-      >>> sllist() == sllist([])        # list comparison (lexicographical order)
+      >>> sllist() == sllist([])                    # list comparison (lexicographical order)
       True
       >>> sllist() != sllist([])
       False
@@ -765,7 +837,7 @@ Random access to elements using index is O(n).
       >>> sllist([1, 2, 3]) >= sllist([1, 2, 3])
       True
 
-      >>> lst1 = sllist([1, 2, 3, 4])   # extending lists
+      >>> lst1 = sllist([1, 2, 3, 4])               # extending lists
       >>> lst2 = sllist([5, 6, 7, 8])
       >>> ext_lst = lst1 + lst2
       >>> print(ext_lst)
@@ -778,11 +850,11 @@ Random access to elements using index is O(n).
 
       >>> lst = sllist([0])
       >>> node = lst.first
-      >>> weak_ref = node.owner         # get reference to the list which owns the node
-      >>> print(weak_ref() is lst)      # call the reference to obtain the actual list
+      >>> weak_ref = node.owner                     # get reference to the list which owns the node
+      >>> print(weak_ref() is lst)                  # call the reference to obtain the actual list
       True
       >>> del lst
-      >>> print(weak_ref())             # None is returned if list does not exist
+      >>> print(weak_ref())                         # None is returned if list does not exist
       None
 
 
