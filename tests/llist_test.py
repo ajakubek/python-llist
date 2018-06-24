@@ -405,6 +405,116 @@ class testsllist(unittest.TestCase):
         self.assertRaises(TypeError, ll.insertbefore, 10, [])
         self.assertRaises(ValueError, ll.insertbefore, 10, sllistnode())
 
+    def test_insert_node_after_first(self):
+        ll = sllist([1, 3, '123'])
+        arg_node = sllistnode(100)
+        new_node = ll.insertnodeafter(arg_node, ll.first)
+        self.assertEqual([1, 100, 3, '123'], list(ll))
+        self.assertEqual(new_node, arg_node);
+
+    def test_insert_node_before_first(self):
+        ll = sllist([1, 3, '123'])
+        arg_node = sllistnode(100)
+        new_node = ll.insertnodebefore(arg_node, ll.first)
+        self.assertEqual([100, 1, 3, '123'], list(ll))
+        self.assertEqual(new_node, arg_node);
+
+    def test_insert_node_after_another(self):
+        ll = sllist(py23_xrange(4))
+        ref = sllist([0, 1, 2, 10, 3])
+        prev = ll.nodeat(2)
+        next = ll.nodeat(3)
+        arg_node = sllistnode(10)
+        new_node = ll.insertnodeafter(arg_node, ll.nodeat(2))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_after_last(self):
+        ll = sllist(py23_xrange(4))
+        ref = sllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(3)
+        arg_node = sllistnode(10)
+        new_node = ll.insertnodeafter(arg_node, ll.nodeat(-1))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(new_node, ll.last)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_before_another(self):
+        ll = sllist(py23_xrange(4))
+        ref = sllist([0, 1, 10, 2, 3])
+        prev = ll.nodeat(1)
+        next = ll.nodeat(2)
+        arg_node = sllistnode(10)
+        new_node = ll.insertnodebefore(arg_node, ll.nodeat(2))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_before_first(self):
+        ll = sllist(py23_xrange(4))
+        ref = sllist([10, 0, 1, 2, 3])
+        next = ll.nodeat(0)
+        arg_node = sllistnode(10)
+        new_node = ll.insertnodebefore(arg_node, ll.nodeat(0))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(new_node, ll.first)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_after_with_bad_argument_type(self):
+        ll = sllist([1234])
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, 'non-node argument', ll.first)
+
+    def test_insert_node_before_with_bad_argument_type(self):
+        ll = sllist([1234])
+        self.assertRaises(
+            TypeError, ll.insertnodebefore, 'non-node argument', ll.first)
+
+    def test_insert_node_after_with_already_owned_node(self):
+        ll = sllist([1234])
+        other_list = sllist([5678])
+        self.assertRaises(
+            ValueError, ll.insertnodeafter, other_list.first, ll.first)
+
+    def test_insert_node_before_with_already_owned_node(self):
+        ll = sllist([1234])
+        other_list = sllist([5678])
+        self.assertRaises(
+            ValueError, ll.insertnodebefore, other_list.first, ll.first)
+
+    def test_insert_node_with_invalid_ref(self):
+        ll = sllist([1, 2, 3, 4])
+        self.assertRaises(TypeError, ll.insertnodeafter, sllistnode(10), 1)
+        self.assertRaises(TypeError, ll.insertnodeafter, sllistnode(10), 'abc')
+        self.assertRaises(TypeError, ll.insertnodeafter, sllistnode(10), [])
+        self.assertRaises(
+            ValueError, ll.insertnodeafter, sllistnode(10), sllistnode())
+        self.assertRaises(TypeError, ll.insertnodebefore, sllistnode(10), 1)
+        self.assertRaises(TypeError, ll.insertnodebefore, sllistnode(10), 'abc')
+        self.assertRaises(TypeError, ll.insertnodebefore, sllistnode(10), [])
+        self.assertRaises(
+            ValueError, ll.insertnodebefore, sllistnode(10), sllistnode())
+
+    def test_insert_node_after_refcount_update(self):
+        ll = sllist([1234])
+        node = ll.insertnodeafter(sllistnode(5678), ll.nodeat(0))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
+
+    def test_insert_node_before_refcount_update(self):
+        ll = sllist([1234])
+        node = ll.insertnodebefore(sllistnode(5678), ll.nodeat(0))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
+
     def test_append(self):
         ll = sllist(py23_xrange(4))
         ref = sllist([0, 1, 2, 3, 10])
@@ -1162,6 +1272,73 @@ class testdllist(unittest.TestCase):
         self.assertRaises(TypeError, ll.insert, 10, 'abc')
         self.assertRaises(TypeError, ll.insert, 10, [])
         self.assertRaises(ValueError, ll.insert, 10, dllistnode())
+
+    def test_insert_node(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([0, 1, 2, 3, 10])
+        prev = ll.nodeat(-1)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node)
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, prev)
+        self.assertEqual(new_node.next, None)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(new_node, ll.last)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_value_before(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([0, 1, 10, 2, 3])
+        prev = ll.nodeat(1)
+        next = ll.nodeat(2)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node, ll.nodeat(2))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, prev)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(prev.next, new_node)
+        self.assertEqual(next.prev, new_node)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_value_before_first(self):
+        ll = dllist(py23_xrange(4))
+        ref = dllist([10, 0, 1, 2, 3])
+        next = ll.nodeat(0)
+        arg_node = dllistnode(10)
+        new_node = ll.insertnode(arg_node, ll.nodeat(0))
+        self.assertEqual(new_node, arg_node)
+        self.assertEqual(new_node.value, 10)
+        self.assertEqual(new_node.prev, None)
+        self.assertEqual(new_node.next, next)
+        self.assertEqual(next.prev, new_node)
+        self.assertEqual(new_node, ll.first)
+        self.assertEqual(ll, ref)
+
+    def test_insert_node_with_bad_argument_type(self):
+        ll = dllist([1234])
+        self.assertRaises(
+            TypeError, ll.insertnode, 'non-node argument', ll.first)
+
+    def test_insert_node_with_already_owned_node(self):
+        ll = dllist([1234])
+        other_list = dllist([5678])
+        self.assertRaises(
+            ValueError, ll.insertnode, other_list.first, ll.first)
+
+    def test_insert_node_with_invalid_ref(self):
+        ll = dllist()
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), 1)
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), 'abc')
+        self.assertRaises(TypeError, ll.insertnode, dllistnode(10), [])
+        self.assertRaises(
+            ValueError, ll.insertnode, dllistnode(10), dllistnode())
+
+    def test_insert_node_refcount_update(self):
+        ll = dllist([1234])
+        node = ll.insertnode(dllistnode(5678), ll.nodeat(0))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
 
     def test_append(self):
         ll = dllist(py23_xrange(4))

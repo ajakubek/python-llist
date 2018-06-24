@@ -30,6 +30,22 @@ typedef struct
 } SLListNodeObject;
 
 
+static void sllistnode_link(PyObject* next,
+                            SLListNodeObject* inserted,
+                            PyObject* owner_list)
+{
+    assert(inserted != NULL);
+    assert(inserted->next == Py_None);
+    assert(owner_list != NULL);
+    assert(owner_list != Py_None);
+
+    if (next != NULL)
+        inserted->next = next;
+
+    Py_DECREF(inserted->list_weakref);
+    inserted->list_weakref = PyWeakref_NewRef(owner_list, NULL);
+}
+
 static SLListNodeObject* sllistnode_create(PyObject* next,
                                            PyObject* value,
                                            PyObject* owner_list)
@@ -65,13 +81,7 @@ static SLListNodeObject* sllistnode_create(PyObject* next,
 
     Py_XDECREF(args);
 
-    /* next is initialized to Py_None by default
-     * (by sllistnode_new) */
-    if (next != NULL && next != Py_None)
-        node->next = next;
-
-    Py_DECREF(node->list_weakref);
-    node->list_weakref = PyWeakref_NewRef(owner_list, NULL);
+    sllistnode_link(next, node, owner_list);
 
     return node;
 }
@@ -708,7 +718,6 @@ static PyObject* sllist_appendnode(SLListObject* self, PyObject* arg)
 
 static PyObject* sllist_insertafter(SLListObject* self, PyObject* arg)
 {
-
     PyObject* value = NULL;
     PyObject* before = NULL;
     PyObject* list_ref;
@@ -819,6 +828,136 @@ static PyObject* sllist_insertbefore(SLListObject* self, PyObject* arg)
     return (PyObject*)new_node;
 }
 
+static PyObject* sllist_insertnodeafter(SLListObject* self, PyObject* arg)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(arg, "insertnodeafter", 2, 2, &inserted, &ref))
+        return NULL;
+
+    if (!PyObject_TypeCheck(inserted, &SLListNodeType))
+    {
+      PyErr_SetString(PyExc_TypeError,
+          "Inserted object must be an sllistnode");
+      return NULL;
+    }
+
+    SLListNodeObject* inserted_node = (SLListNodeObject*)inserted;
+
+    if (inserted_node->list_weakref != Py_None
+        || inserted_node->next != Py_None)
+    {
+      PyErr_SetString(PyExc_ValueError,
+          "Inserted node must not belong to a list");
+      return NULL;
+    }
+
+    if (!PyObject_TypeCheck(ref, &SLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "ref_node argument must be an sllistnode");
+        return NULL;
+    }
+
+    SLListNodeObject* ref_node = (SLListNodeObject*)ref;
+
+    if (ref_node->list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "ref_node does not belong to a list");
+        return NULL;
+    }
+
+    PyObject* list_ref = PyWeakref_GetObject(ref_node->list_weakref);
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "ref_node belongs to another list");
+        return NULL;
+    }
+
+    sllistnode_link(ref_node->next, inserted_node, (PyObject*)self);
+
+    /* putting new node in created gap */
+    ref_node->next = inserted;
+
+    if (self->last == ref)
+        self->last = inserted;
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
+}
+
+static PyObject* sllist_insertnodebefore(SLListObject* self, PyObject* arg)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(arg, "insertnodebefore", 2, 2, &inserted, &ref))
+        return NULL;
+
+    if (!PyObject_TypeCheck(inserted, &SLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "Inserted object must be an sllistnode");
+        return NULL;
+    }
+
+    SLListNodeObject* inserted_node = (SLListNodeObject*)inserted;
+
+    if (inserted_node->list_weakref != Py_None
+        || inserted_node->next != Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "Inserted node must not belong to a list");
+        return NULL;
+    }
+
+    if (!PyObject_TypeCheck(ref, &SLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "ref_node argument must be an sllistnode");
+        return NULL;
+    }
+
+    SLListNodeObject* ref_node = (SLListNodeObject*)ref;
+
+    if (ref_node->list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "ref_node does not belong to a list");
+        return NULL;
+    }
+
+    PyObject* list_ref = PyWeakref_GetObject(ref_node->list_weakref);
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "ref_node belongs to another list");
+        return NULL;
+    }
+
+    sllistnode_link(ref, inserted_node, (PyObject*)self);
+
+    /* getting prev node for this from arg*/
+    SLListNodeObject* prev_node = sllist_get_prev(self, ref_node);
+
+    /* putting new node in created gap, not first and exists */
+    if ((PyObject*)prev_node != Py_None && prev_node != NULL)
+        prev_node->next = inserted;
+    else
+        self->first = inserted;
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
+}
 
 static PyObject* sllist_extendleft(SLListObject* self, PyObject* sequence)
 {
@@ -1419,6 +1558,12 @@ static PyMethodDef SLListMethods[] =
       "Inserts element after node" },
 
     { "insertbefore", (PyCFunction)sllist_insertbefore, METH_VARARGS,
+      "Inserts element before node" },
+
+    { "insertnodeafter", (PyCFunction)sllist_insertnodeafter, METH_VARARGS,
+      "Inserts element after node" },
+
+    { "insertnodebefore", (PyCFunction)sllist_insertnodebefore, METH_VARARGS,
       "Inserts element before node" },
 
     { "nodeat", (PyCFunction)sllist_node_at, METH_O,

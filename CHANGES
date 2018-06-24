@@ -3,6 +3,8 @@
   - allow subclassing of list and node types
   - added appendnode() method to dllist and sllist (contribution from
     Alex Stennet)
+  - added insertnode() method to dllist and
+    insertnodeafter()/insertnodebefore() methods to sllist
   - support for cyclic garbabe collection
 
 -----------------------------------------------------------------------
