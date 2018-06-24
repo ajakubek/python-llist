@@ -301,6 +301,11 @@ class testsllist(unittest.TestCase):
         other_list = sllist([1234])
         self.assertRaises(ValueError, ll.appendnode, other_list.first)
 
+    def test_appendnode_refcount_update(self):
+        ll = sllist()
+        node = ll.appendnode(sllistnode(1234))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
+
     def test_pop_left_from_one_elem(self):
         ll = sllist(py23_xrange(0, 100))
         dd = ll.popleft()
@@ -1215,6 +1220,11 @@ class testdllist(unittest.TestCase):
         ll = dllist()
         other_list = dllist([1234])
         self.assertRaises(ValueError, ll.appendnode, other_list.first)
+
+    def test_appendnode_refcount_update(self):
+        ll = dllist()
+        node = ll.appendnode(dllistnode(1234))
+        self.assertGreaterEqual(sys.getrefcount(node), 3)
 
     def test_extend(self):
         a_ref = py23_range(0, 1024, 4)

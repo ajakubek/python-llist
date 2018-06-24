@@ -835,7 +835,9 @@ static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
     Py_DECREF(node->list_weakref);
     node->list_weakref = PyWeakref_NewRef((PyObject*) self, NULL);
 
+    Py_INCREF((PyObject*)node);
     ++self->size;
+
     Py_INCREF((PyObject*)node);
     return (PyObject*)node;
 }
