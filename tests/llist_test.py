@@ -278,12 +278,12 @@ class testsllist(unittest.TestCase):
     def test_append_left(self):
         ll = sllist([1, 2, 3, 4])
         ll.appendleft(5)
-        self.assertTrue([5, 1, 2, 3, 4], list(ll))
+        self.assertEqual([5, 1, 2, 3, 4], list(ll))
 
     def test_append_right(self):
         ll = sllist([1, 2, 3, 4])
-        ll.appendleft(5)
-        self.assertTrue([1, 2, 3, 4, 5], list(ll))
+        ll.appendright(5)
+        self.assertEqual([1, 2, 3, 4, 5], list(ll))
 
     def test_appendnode(self):
         ll = sllist([1, 2, 3, 4])
