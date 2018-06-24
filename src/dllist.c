@@ -124,7 +124,7 @@ static void dllistnode_delete(DLListNodeObject* node)
     node->prev = Py_None;
     node->next = Py_None;
 
-    Py_DECREF(node->list_weakref);
+    Py_XDECREF(node->list_weakref);
     Py_INCREF(Py_None);
     node->list_weakref = Py_None;
 
@@ -548,6 +548,10 @@ static int dllist_clear_refs(DLListObject* self)
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
 
+    self->first = NULL;
+    self->last = NULL;
+    self->weakref_list = NULL;
+
     if (node != NULL)
     {
         while (node != Py_None)
@@ -559,10 +563,6 @@ static int dllist_clear_refs(DLListObject* self)
     }
 
     Py_DECREF(Py_None);
-
-    self->first = NULL;
-    self->last = NULL;
-    self->weakref_list = NULL;
 
     return 0;
 }

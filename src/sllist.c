@@ -342,6 +342,10 @@ static int sllist_clear_refs(SLListObject* self)
     if (self->weakref_list != NULL)
         PyObject_ClearWeakRefs((PyObject*)self);
 
+    self->first = NULL;
+    self->last = NULL;
+    self->weakref_list = NULL;
+
     if (node != NULL)
     {
         while (node != Py_None)
@@ -354,10 +358,6 @@ static int sllist_clear_refs(SLListObject* self)
     }
 
     Py_DECREF(Py_None);
-
-    self->first = NULL;
-    self->last = NULL;
-    self->weakref_list = NULL;
 
     return 0;
 }
