@@ -1,0 +1,1099 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>llist — Linked list datatypes for Python &#8212; llist 0.6 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.6',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">llist 0.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-llist">
+<span id="llist-linked-list-datatypes-for-python"></span><h1><a class="reference internal" href="#module-llist" title="llist: Linked list datatypes for Python"><code class="xref py py-mod docutils literal"><span class="pre">llist</span></code></a> — Linked list datatypes for Python<a class="headerlink" href="#module-llist" title="Permalink to this headline">¶</a></h1>
+<p>This module implements linked list data structures.
+Currently two types of lists are supported: a doubly linked <a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a>
+and a singly linked <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a>.</p>
+<p>All data types defined in this module support efficient O(1) insertion
+and removal of elements (except removal in <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> which is O(n)).
+Random access to elements using index is O(n).</p>
+<div class="section" id="dllist-objects">
+<h2><a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a> objects<a class="headerlink" href="#dllist-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.dllist">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">dllist</code><span class="sig-paren">(</span><span class="optional">[</span><em>iterable</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new doubly linked list initialized with elements from <em>iterable</em>.
+If <em>iterable</em> is not specified, the new <a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a> is empty.</p>
+<p>dllist objects provide the following attributes:</p>
+<dl class="attribute">
+<dt id="llist.dllist.first">
+<code class="descname">first</code><a class="headerlink" href="#llist.dllist.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>First <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> object in the list. <cite>None</cite> if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.dllist.last">
+<code class="descname">last</code><a class="headerlink" href="#llist.dllist.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> object in the list. <cite>None</cite> if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.dllist.size">
+<code class="descname">size</code><a class="headerlink" href="#llist.dllist.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of elements in the list. 0 if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<p>dllist objects also support the following methods (all methods below have
+O(1) time complexity unless specifically documented otherwise):</p>
+<dl class="method">
+<dt id="llist.dllist.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the right side of the list and return inserted
+<a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.appendleft">
+<code class="descname">appendleft</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.appendleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the left side of the list and return inserted
+<a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.appendright">
+<code class="descname">appendright</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.appendright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the right side of the list and return inserted
+<a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> (synonymous with <a class="reference internal" href="#llist.dllist.append" title="llist.dllist.append"><code class="xref py py-meth docutils literal"><span class="pre">append()</span></code></a>).</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.appendnode">
+<code class="descname">appendnode</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.appendnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>node</em> to the end of the list. The node must not belong to a list.</p>
+<p>The difference between <a class="reference internal" href="#llist.dllist.appendright" title="llist.dllist.appendright"><code class="xref py py-meth docutils literal"><span class="pre">dllist.appendright()</span></code></a> and this method is
+that the former will repack the value from the argument into a new node
+while the latter will insert the passed node into the list.
+This makes <a class="reference internal" href="#llist.dllist.appendnode" title="llist.dllist.appendnode"><code class="xref py py-meth docutils literal"><span class="pre">dllist.appendnode()</span></code></a> useful when a subclassed node type
+must be added to a list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>node</em> already belongs to a list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all nodes from the list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the right side of the list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.extendleft">
+<code class="descname">extendleft</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.extendleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the left side of the list.
+Note that elements will be appended in reversed order.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.extendright">
+<code class="descname">extendright</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.extendright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the right side of the list
+(synonymous with <a class="reference internal" href="#llist.dllist.extend" title="llist.dllist.extend"><code class="xref py py-meth docutils literal"><span class="pre">extend()</span></code></a>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.insert">
+<code class="descname">insert</code><span class="sig-paren">(</span><em>x</em><span class="optional">[</span>, <em>before</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the right side of the list if <em>before</em> is not specified,
+or insert <em>x</em> to the left side of <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> <em>before</em>.
+Return inserted <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>before</em> is not of type
+<a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>before</em> does not belong to <em>self</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.insertnode">
+<code class="descname">insertnode</code><span class="sig-paren">(</span><em>node</em><span class="optional">[</span>, <em>before</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.insertnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>node</em> to the right side of the list if <em>before</em> is not specified,
+or insert <em>node</em> to the left side of <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> <em>before</em>.
+Return inserted <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Argument <em>node</em> must be a <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> object which does not belong
+to any list. The node will be inserted directly into <em>self</em>.
+This makes <a class="reference internal" href="#llist.dllist.insertnode" title="llist.dllist.insertnode"><code class="xref py py-meth docutils literal"><span class="pre">dllist.insertnode()</span></code></a> useful when a subclassed node type
+must be added to a list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> or <em>before</em> is not of type
+<a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>node</em> belongs to another list or <em>before</em>
+does not belong to <em>self</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.nodeat">
+<code class="descname">nodeat</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.nodeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node (of type <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>) at <em>index</em>.
+Negative indices are allowed (to count nodes from the right).</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>index</em> is not an integer.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> if <em>index</em> is out of range.</p>
+<p>This method has O(n) complexity, but most recently accessed node is
+cached, so that accessing its neighbours is O(1).
+Note that inserting/deleting a node in the middle of the list will
+invalidate this cache.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the right side of the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.popleft">
+<code class="descname">popleft</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.popleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the left side of the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.popright">
+<code class="descname">popright</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.popright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the right side of the list
+(synonymous with <a class="reference internal" href="#llist.dllist.pop" title="llist.dllist.pop"><code class="xref py py-meth docutils literal"><span class="pre">pop()</span></code></a>).</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove <em>node</em> from the list and return the element which was
+stored in it.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty, or <em>node</em> does
+not belong to <em>self</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.dllist.rotate">
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllist.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate the list <em>n</em> steps to the right. If <em>n</em> is negative, rotate
+to the left. If <em>n</em> is 0, do nothing.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>n</em> is not an integer.</p>
+<p>This method has O(n) time complexity (with regards to the size of
+the list).</p>
+</dd></dl>
+
+<p>In addition to these methods, <a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a> supports iteration,
+<code class="docutils literal"><span class="pre">cmp(lst1,</span> <span class="pre">lst2)</span></code>, rich comparison operators, constant time <code class="docutils literal"><span class="pre">len(lst)</span></code>,
+<code class="docutils literal"><span class="pre">hash(lst)</span></code> and subscript references <code class="docutils literal"><span class="pre">lst[1234]</span></code> for accessing elements
+by index.</p>
+<p>Indexed access has O(n) complexity, but most recently accessed node is
+cached, so that accessing its neighbours is O(1).
+Note that inserting/deleting a node in the middle of the list will
+invalidate this cache.</p>
+<p>Subscript references like <code class="docutils literal"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">lst[1234]</span></code> return values stored in nodes.
+Negative indices are allowed (to count nodes from the right).</p>
+<p>Iteration over <a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a> elements (using <em>for</em> or list
+comprehensions) will also directly yield values stored in nodes.</p>
+<p>Like most containers, <a class="reference internal" href="#llist.dllist" title="llist.dllist"><code class="xref py py-class docutils literal"><span class="pre">dllist</span></code></a> objects can be extended using
+<code class="docutils literal"><span class="pre">lst1</span> <span class="pre">+</span> <span class="pre">lst2</span></code> and <code class="docutils literal"><span class="pre">lst</span> <span class="pre">*</span> <span class="pre">num</span></code> syntax (including in-place <code class="docutils literal"><span class="pre">+=</span></code>
+and <code class="docutils literal"><span class="pre">*=</span></code> variants of these operators).</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">llist</span> <span class="k">import</span> <span class="n">dllist</span><span class="p">,</span> <span class="n">dllistnode</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">empty_lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">()</span>                <span class="c1"># create an empty list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="p">)</span>
+<span class="go">dllist()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">empty_lst</span><span class="p">))</span>               <span class="c1"># display length of the list</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="go">0</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>              <span class="c1"># display the first node (nonexistent)</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">last</span><span class="p">)</span>               <span class="c1"># display the last node (nonexistent)</span>
+<span class="go">None</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>             <span class="c1"># create and initialize a list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>                          <span class="c1"># display elements in the list</span>
+<span class="go">dllist([1, 2, 3])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">))</span>                     <span class="c1"># display length of the list</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="go">3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>                <span class="c1"># access nodes by index</span>
+<span class="go">dllistnode(1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">dllistnode(2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">dllistnode(3)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>                       <span class="c1"># access elements by index</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="go">3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">first</span>                    <span class="c1"># get the first node (same as lst[0])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="go">dllistnode(1)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>                   <span class="c1"># get value of node</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">())</span>                       <span class="c1"># get value of node</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prev</span><span class="p">)</span>                    <span class="c1"># get the previous node (nonexistent)</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="p">)</span>                    <span class="c1"># get the next node</span>
+<span class="go">dllistnode(2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>              <span class="c1"># get value of the next node</span>
+<span class="go">2</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>                   <span class="c1"># iterate over list elements</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="go">4</span>
+<span class="go">6</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendright</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>                  <span class="c1"># append value to the right side of the list</span>
+<span class="go">&lt;dllistnode(4)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([1, 2, 3, 4])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">dllistnode</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendright</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>           <span class="c1"># append value from a node</span>
+<span class="go">&lt;dllistnode(5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([1, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                   <span class="c1"># append value to the left side of the list</span>
+<span class="go">&lt;dllistnode(0)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">dllistnode</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendnode</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>            <span class="c1"># append node to the end of the list</span>
+<span class="go">&lt;dllistnode(6)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 2, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">last</span> <span class="ow">is</span> <span class="n">new_node</span><span class="p">)</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">extendright</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>          <span class="c1"># right-extend list with elements from iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">extendleft</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">])</span>        <span class="c1"># left-extend list with elements from iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>               <span class="c1"># insert 1.5 before node</span>
+<span class="go">&lt;dllistnode(1.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 1.5, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>                       <span class="c1"># append value to the right side of the list</span>
+<span class="go">&lt;dllistnode(6)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 1.5, 2, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">dllistnode</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertnode</span><span class="p">(</span><span class="n">new_node</span><span class="p">,</span> <span class="n">ref_node</span><span class="p">)</span>  <span class="c1"># insert new_node before ref_node</span>
+<span class="go">&lt;dllistnode(2.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 1.5, 2, 2.5, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">dllistnode</span><span class="p">(</span><span class="mf">6.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertnode</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>            <span class="c1"># insert new_node at the end of the list</span>
+<span class="go">&lt;dllistnode(6.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([0, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 6.5])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>                       <span class="c1"># remove leftmost node from the list</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([1, 1.5, 2, 2.5, 3, 4, 5, 6, 6.5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">popright</span><span class="p">()</span>                      <span class="c1"># remove rightmost node from the list</span>
+<span class="go">6.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([1, 1.5, 2, 2.5, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>                    <span class="c1"># remove 2nd node from the list</span>
+<span class="go">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([1, 2, 2.5, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foreign_node</span> <span class="o">=</span> <span class="n">dllistnode</span><span class="p">()</span>         <span class="c1"># create an unassigned node</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">foreign_node</span><span class="p">)</span>            <span class="c1"># try to remove node not present in the list</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;/usr/lib/python2.6/doctest.py&quot;</span>, line <span class="m">1253</span>, in <span class="n">__run</span>
+    <span class="n">compileflags</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">test</span><span class="o">.</span><span class="n">globs</span>
+  File <span class="nb">&quot;&lt;doctest default[39]&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+    <span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">foreign_node</span><span class="p">)</span>
+<span class="gr">ValueError</span>: <span class="n">dllistnode belongs to another list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([4, 5, 1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">dllist([3, 4, 5, 1, 2])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">()</span> <span class="o">==</span> <span class="n">dllist</span><span class="p">([])</span>              <span class="c1"># list comparison (lexicographical order)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">()</span> <span class="o">!=</span> <span class="n">dllist</span><span class="p">([])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">dllist</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst1</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>         <span class="c1"># extending lists</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst2</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ext_lst</span> <span class="o">=</span> <span class="n">lst1</span> <span class="o">+</span> <span class="n">lst2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ext_lst</span><span class="p">)</span>
+<span class="go">dllist([1, 2, 3, 4, 5, 6, 7, 8])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ext_lst</span> <span class="o">=</span> <span class="n">lst</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ext_lst</span><span class="p">)</span>
+<span class="go">dllist([1, 2, 3, 4, 1, 2, 3, 4])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">first</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weak_ref</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">owner</span>               <span class="c1"># get reference to the list which owns the node</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">weak_ref</span><span class="p">()</span> <span class="ow">is</span> <span class="n">lst</span><span class="p">)</span>            <span class="c1"># call the reference to obtain the actual list</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">lst</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">weak_ref</span><span class="p">())</span>                   <span class="c1"># None is returned if list does not exist</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="dllistnode-objects">
+<h2><a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a> objects<a class="headerlink" href="#dllistnode-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.dllistnode">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">dllistnode</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.dllistnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new doubly linked list node, initialized (optionally)
+with <em>value</em>.</p>
+<p>dllistnode objects provide the following attributes:</p>
+<dl class="attribute">
+<dt id="llist.dllistnode.next">
+<code class="descname">next</code><a class="headerlink" href="#llist.dllistnode.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Next node in the list. This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.dllistnode.prev">
+<code class="descname">prev</code><a class="headerlink" href="#llist.dllistnode.prev" title="Permalink to this definition">¶</a></dt>
+<dd><p>Previous node in the list. This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.dllistnode.value">
+<code class="descname">value</code><a class="headerlink" href="#llist.dllistnode.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value stored in this node.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.dllistnode.owner">
+<code class="descname">owner</code><a class="headerlink" href="#llist.dllistnode.owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weak reference to the list which owns this node. This attribute is read-only.
+It is possible for nodes to outlive the list they belong to. If the list
+is no longer alive, calling the <cite>owner</cite> reference will return <cite>None</cite>.</p>
+</dd></dl>
+
+<p>Note that value stored in the node can also be obtained through
+the <code class="xref py py-meth docutils literal"><span class="pre">__call__()</span></code> method (using standard <code class="docutils literal"><span class="pre">node()</span></code> syntax).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="dllistiterator-objects">
+<h2><a class="reference internal" href="#llist.dllistiterator" title="llist.dllistiterator"><code class="xref py py-class docutils literal"><span class="pre">dllistiterator</span></code></a> objects<a class="headerlink" href="#dllistiterator-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.dllistiterator">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">dllistiterator</code><a class="headerlink" href="#llist.dllistiterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new doubly linked list iterator.</p>
+<p>dllistiterator objects are not meant to be created by user.
+They are returned by the <code class="xref py py-meth docutils literal"><span class="pre">dllist.__iter__()</span></code> method to hold
+iteration state.</p>
+<p>Note that iteration using <a class="reference internal" href="#llist.dllistiterator" title="llist.dllistiterator"><code class="xref py py-class docutils literal"><span class="pre">dllistiterator</span></code></a> interface will
+directly yield values stored in nodes, not <a class="reference internal" href="#llist.dllistnode" title="llist.dllistnode"><code class="xref py py-class docutils literal"><span class="pre">dllistnode</span></code></a>
+objects.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">llist</span> <span class="k">import</span> <span class="n">dllist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">dllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="go">4</span>
+<span class="go">6</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="sllist-objects">
+<h2><a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> objects<a class="headerlink" href="#sllist-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.sllist">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">sllist</code><span class="sig-paren">(</span><span class="optional">[</span><em>iterable</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new singly linked list initialized with elements from <em>iterable</em>.
+If <em>iterable</em> is not specified, the new <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> is empty.</p>
+<p>sllist objects provide the following attributes:</p>
+<dl class="attribute">
+<dt id="llist.sllist.first">
+<code class="descname">first</code><a class="headerlink" href="#llist.sllist.first" title="Permalink to this definition">¶</a></dt>
+<dd><p>First <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a> object in the list. <cite>None</cite> if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.sllist.last">
+<code class="descname">last</code><a class="headerlink" href="#llist.sllist.last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a> object in the list. <cite>None</cite> if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.sllist.size">
+<code class="descname">size</code><a class="headerlink" href="#llist.sllist.size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of elements in the list. 0 if list is empty.
+This attribute is read-only.</p>
+</dd></dl>
+
+<p>sllist objects also support the following methods:</p>
+<dl class="method">
+<dt id="llist.sllist.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the right side of the list and return inserted
+<a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>This method has O(1) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.appendleft">
+<code class="descname">appendleft</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.appendleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the left side of the list and return inserted
+<a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>This method has O(1) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.appendright">
+<code class="descname">appendright</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.appendright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>x</em> to the right side of the list and return inserted
+<a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>This method has O(1) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.appendnode">
+<code class="descname">appendnode</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.appendnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>node</em> to the end of the list. The node must not belong to a list.</p>
+<p>The difference between <a class="reference internal" href="#llist.sllist.appendright" title="llist.sllist.appendright"><code class="xref py py-meth docutils literal"><span class="pre">sllist.appendright()</span></code></a> and this method is
+that the former will repack the value from the argument into a new node
+while the latter will insert the passed node into the list.
+This makes <a class="reference internal" href="#llist.sllist.appendnode" title="llist.sllist.appendnode"><code class="xref py py-meth docutils literal"><span class="pre">sllist.appendnode()</span></code></a> useful when a subclassed node type
+must be added to a list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>node</em> already belongs to a list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all nodes from the list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.extend">
+<code class="descname">extend</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the right side of the list.</p>
+<p>This method has O(n) complexity (in the size of <em>iterable</em>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.extendleft">
+<code class="descname">extendleft</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.extendleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the left side of the list.
+Note that elements will be appended in reversed order.</p>
+<p>This method has O(n) complexity (in the size of <em>iterable</em>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.extendright">
+<code class="descname">extendright</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.extendright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append elements from <em>iterable</em> to the right side of the list
+(synonymous with <a class="reference internal" href="#llist.sllist.extend" title="llist.sllist.extend"><code class="xref py py-meth docutils literal"><span class="pre">extend()</span></code></a>).</p>
+<p>This method has O(n) complexity (in the size of <em>iterable</em>).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.insertafter">
+<code class="descname">insertafter</code><span class="sig-paren">(</span><em>x</em>, <em>ref</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.insertafter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts <em>x</em> after <em>node</em> and return inserted <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>before</em> does not belong to <em>self</em>.</p>
+<p>This method has O(1) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.insertbefore">
+<code class="descname">insertbefore</code><span class="sig-paren">(</span><em>x</em>, <em>ref</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.insertbefore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts <em>x</em> before <em>node</em> and return inserted <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>x</em> might be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>. In that case a new
+node will be created and initialized with the value extracted from <em>x</em>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>before</em> does not belong to <em>self</em>.</p>
+<p>This method has O(n) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.insertnodeafter">
+<code class="descname">insertnodeafter</code><span class="sig-paren">(</span><em>node</em>, <em>ref</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.insertnodeafter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>node</em> to the right side of <em>ref</em>.
+Return inserted <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>node</em> must be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a> instance which does not
+belong to any list. The node will be inserted directly into <em>self</em>.
+This makes <a class="reference internal" href="#llist.sllist.insertnodeafter" title="llist.sllist.insertnodeafter"><code class="xref py py-meth docutils literal"><span class="pre">sllist.insertnodeafter()</span></code></a> useful when a subclassed node
+type must be added to a list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> or <em>ref</em> is not of type
+<a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>node</em> belongs to another list or <em>ref</em> does
+not belong to <em>self</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.insertnodebefore">
+<code class="descname">insertnodebefore</code><span class="sig-paren">(</span><em>node</em>, <em>ref</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.insertnodebefore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <em>node</em> to the left side of <em>ref</em>.
+Return inserted <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Argument <em>node</em> must be a <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a> instance which does not
+belong to any list. The node will be inserted directly into <em>self</em>.
+This makes <a class="reference internal" href="#llist.sllist.insertnodebefore" title="llist.sllist.insertnodebefore"><code class="xref py py-meth docutils literal"><span class="pre">sllist.insertnodebefore()</span></code></a> useful when a subclassed node
+type must be added to a list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> or <em>ref</em> is not of type
+<a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>node</em> belongs to another list or <em>ref</em> does
+not belong to <em>self</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.nodeat">
+<code class="descname">nodeat</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.nodeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return node (of type <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>) at <em>index</em>.
+Negative indices are allowed (to count nodes from the right).</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>index</em> is not an integer.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> if <em>index</em> is out of range.</p>
+<p>This method has O(n) complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the right side of the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+<p>This method has O(n) time complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.popleft">
+<code class="descname">popleft</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.popleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the left side of the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+<p>This method has O(1) time complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.popright">
+<code class="descname">popright</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.popright" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove and return an element’s value from the right side of the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty.</p>
+<p>This method has O(n) time complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove <em>node</em> from the list.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>node</em> is not of type <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> if <em>self</em> is empty, or <em>node</em> does
+not belong to <em>self</em>.</p>
+<p>This method has O(n) time complexity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="llist.sllist.rotate">
+<code class="descname">rotate</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllist.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate the list <em>n</em> steps to the right. If <em>n</em> is negative, rotate
+to the left. If <em>n</em> is 0, do nothing.</p>
+<p>Raises <code class="xref py py-exc docutils literal"><span class="pre">TypeError</span></code> if <em>n</em> is not an integer.</p>
+<p>This method has O(n) time complexity (with regards to the size of
+the list).</p>
+</dd></dl>
+
+<p>In addition to these methods, <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> supports iteration,
+<code class="docutils literal"><span class="pre">cmp(lst1,</span> <span class="pre">lst2)</span></code>, rich comparison operators, constant time <code class="docutils literal"><span class="pre">len(lst)</span></code>,
+<code class="docutils literal"><span class="pre">hash(lst)</span></code> and subscript references <code class="docutils literal"><span class="pre">lst[1234]</span></code> for accessing elements
+by index.</p>
+<p>Subscript references like <code class="docutils literal"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">lst[1234]</span></code> return values stored in nodes.
+Negative indices are allowed (to count nodes from the right).</p>
+<p>Iteration over <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> elements (using <em>for</em> or list
+comprehensions) will also directly yield values stored in nodes.</p>
+<p>Like most containers, <a class="reference internal" href="#llist.sllist" title="llist.sllist"><code class="xref py py-class docutils literal"><span class="pre">sllist</span></code></a> objects can be extended using
+<code class="docutils literal"><span class="pre">lst1</span> <span class="pre">+</span> <span class="pre">lst2</span></code> and <code class="docutils literal"><span class="pre">lst</span> <span class="pre">*</span> <span class="pre">num</span></code> syntax (including in-place <code class="docutils literal"><span class="pre">+=</span></code>
+and <code class="docutils literal"><span class="pre">*=</span></code> variants of these operators).</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">llist</span> <span class="k">import</span> <span class="n">sllist</span><span class="p">,</span> <span class="n">sllistnode</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">empty_lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">()</span>                      <span class="c1"># create an empty list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="p">)</span>
+<span class="go">sllist()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">empty_lst</span><span class="p">))</span>                     <span class="c1"># display length of the list</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="go">0</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">first</span><span class="p">)</span>                    <span class="c1"># display the first node (nonexistent)</span>
+<span class="go">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">empty_lst</span><span class="o">.</span><span class="n">last</span><span class="p">)</span>                     <span class="c1"># display the last node (nonexistent)</span>
+<span class="go">None</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>                   <span class="c1"># create and initialize a list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>                                <span class="c1"># display elements in the list</span>
+<span class="go">sllist([1, 2, 3])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">))</span>                           <span class="c1"># display length of the list</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+<span class="go">3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>                      <span class="c1"># access nodes by index</span>
+<span class="go">sllistnode(1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">sllistnode(2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">sllistnode(3)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>                             <span class="c1"># access elements by index</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="go">3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">first</span>                          <span class="c1"># get the first node (same as lst[0])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="go">sllistnode(1)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>                         <span class="c1"># get value of node</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">())</span>                             <span class="c1"># get value of node</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="p">)</span>                          <span class="c1"># get the next node</span>
+<span class="go">sllistnode(2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">next</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>                    <span class="c1"># get value of the next node</span>
+<span class="go">2</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>                         <span class="c1"># iterate over list elements</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="go">4</span>
+<span class="go">6</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendright</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>                        <span class="c1"># append value to the right side of the list</span>
+<span class="go">&lt;sllistnode(4)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([1, 2, 3, 4])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">sllistnode</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendright</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>                 <span class="c1"># append value from a node</span>
+<span class="go">&lt;sllistnode(5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([1, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                         <span class="c1"># append value to the left side of the list</span>
+<span class="go">&lt;sllistnode(0)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">sllistnode</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">appendnode</span><span class="p">(</span><span class="n">new_node</span><span class="p">)</span>                  <span class="c1"># append node to the end of the list</span>
+<span class="go">&lt;sllistnode(6)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 2, 3, 4, 5, 6])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="o">.</span><span class="n">last</span> <span class="ow">is</span> <span class="n">new_node</span><span class="p">)</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">extendright</span><span class="p">([</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>                <span class="c1"># right-extend list with elements from iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">extendleft</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">])</span>              <span class="c1"># left-extend list with elements from iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertbefore</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>               <span class="c1"># insert 1.5 before node</span>
+<span class="go">&lt;sllistnode(1.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 1.5, 2, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertafter</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>                <span class="c1"># insert 2.5 after node</span>
+<span class="go">&lt;sllistnode(2.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 1.5, 2, 2.5, 3, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">sllistnode</span><span class="p">(</span><span class="mf">3.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertnodebefore</span><span class="p">(</span><span class="n">new_node</span><span class="p">,</span> <span class="n">ref_node</span><span class="p">)</span>  <span class="c1"># insert new_node before ref_node</span>
+<span class="go">&lt;sllistnode(3.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_node</span> <span class="o">=</span> <span class="n">sllistnode</span><span class="p">(</span><span class="mf">4.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ref_node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">insertnodeafter</span><span class="p">(</span><span class="n">new_node</span><span class="p">,</span> <span class="n">ref_node</span><span class="p">)</span>   <span class="c1"># insert new_node after ref_node</span>
+<span class="go">&lt;sllistnode(4.5)&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>                             <span class="c1"># remove leftmost node from the list</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">popright</span><span class="p">()</span>                            <span class="c1"># remove rightmost node from the list</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">nodeat</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>                          <span class="c1"># remove 2nd node from the list</span>
+<span class="go">1.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([1, 2, 2.5, 3, 3.5, 4, 4.5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">foreign_node</span> <span class="o">=</span> <span class="n">sllistnode</span><span class="p">()</span>               <span class="c1"># create an unassigned node</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">foreign_node</span><span class="p">)</span>                  <span class="c1"># try to remove node not present in the list</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;/usr/lib/python2.6/doctest.py&quot;</span>, line <span class="m">1253</span>, in <span class="n">__run</span>
+    <span class="n">compileflags</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">test</span><span class="o">.</span><span class="n">globs</span>
+  File <span class="nb">&quot;&lt;doctest default[39]&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+    <span class="n">lst</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">foreign_node</span><span class="p">)</span>
+<span class="gr">ValueError</span>: <span class="n">sllistnode belongs to another list</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([4, 5, 1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">sllist([3, 4, 5, 1, 2])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">()</span> <span class="o">==</span> <span class="n">sllist</span><span class="p">([])</span>                    <span class="c1"># list comparison (lexicographical order)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">()</span> <span class="o">!=</span> <span class="n">sllist</span><span class="p">([])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">sllist</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="go">True</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst1</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>               <span class="c1"># extending lists</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst2</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ext_lst</span> <span class="o">=</span> <span class="n">lst1</span> <span class="o">+</span> <span class="n">lst2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ext_lst</span><span class="p">)</span>
+<span class="go">sllist([1, 2, 3, 4, 5, 6, 7, 8])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ext_lst</span> <span class="o">=</span> <span class="n">lst</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ext_lst</span><span class="p">)</span>
+<span class="go">sllist([1, 2, 3, 4, 1, 2, 3, 4])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">lst</span><span class="o">.</span><span class="n">first</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">weak_ref</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">owner</span>                     <span class="c1"># get reference to the list which owns the node</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">weak_ref</span><span class="p">()</span> <span class="ow">is</span> <span class="n">lst</span><span class="p">)</span>                  <span class="c1"># call the reference to obtain the actual list</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">lst</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">weak_ref</span><span class="p">())</span>                         <span class="c1"># None is returned if list does not exist</span>
+<span class="go">None</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="sllistnode-objects">
+<h2><a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a> objects<a class="headerlink" href="#sllistnode-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.sllistnode">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">sllistnode</code><span class="sig-paren">(</span><span class="optional">[</span><em>value</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#llist.sllistnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new singly linked list node, initialized (optionally)
+with <em>value</em>.</p>
+<p>sllistnode objects provide the following attributes:</p>
+<dl class="attribute">
+<dt id="llist.sllistnode.next">
+<code class="descname">next</code><a class="headerlink" href="#llist.sllistnode.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Next node in the list. This attribute is read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.sllistnode.value">
+<code class="descname">value</code><a class="headerlink" href="#llist.sllistnode.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value stored in this node.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="llist.sllistnode.owner">
+<code class="descname">owner</code><a class="headerlink" href="#llist.sllistnode.owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weak reference to the list which owns this node. This attribute is read-only.
+It is possible for nodes to outlive the list they belong to. If the list
+is no longer alive, calling the <cite>owner</cite> reference will return <cite>None</cite>.</p>
+</dd></dl>
+
+<p>Note that value stored in the node can also be obtained through
+the <code class="xref py py-meth docutils literal"><span class="pre">__call__()</span></code> method (using standard <code class="docutils literal"><span class="pre">node()</span></code> syntax).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sllistiterator-objects">
+<h2><a class="reference internal" href="#llist.sllistiterator" title="llist.sllistiterator"><code class="xref py py-class docutils literal"><span class="pre">sllistiterator</span></code></a> objects<a class="headerlink" href="#sllistiterator-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="llist.sllistiterator">
+<em class="property">class </em><code class="descclassname">llist.</code><code class="descname">sllistiterator</code><a class="headerlink" href="#llist.sllistiterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new singly linked list iterator.</p>
+<p>sllistiterator objects are not meant to be created by user.
+They are returned by the <code class="xref py py-meth docutils literal"><span class="pre">sllist.__iter__()</span></code> method to hold
+iteration state.</p>
+<p>Note that iteration using <a class="reference internal" href="#llist.sllistiterator" title="llist.sllistiterator"><code class="xref py py-class docutils literal"><span class="pre">sllistiterator</span></code></a> interface will
+directly yield values stored in nodes, not <a class="reference internal" href="#llist.sllistnode" title="llist.sllistnode"><code class="xref py py-class docutils literal"><span class="pre">sllistnode</span></code></a>
+objects.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">llist</span> <span class="k">import</span> <span class="n">sllist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">sllist</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="go">4</span>
+<span class="go">6</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="changes">
+<h1>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>llist-0.6 (unreleased)<ul>
+<li>allow subclassing of list and node types</li>
+<li>added appendnode() method to dllist and sllist (contribution from
+Alex Stennet)</li>
+<li>added insertnode() method to dllist and
+insertnodeafter()/insertnodebefore() methods to sllist</li>
+<li>support for cyclic garbabe collection</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<ul class="simple">
+<li>llist-0.5 (2017-11-18)<ul>
+<li>changed visibility of internal module functions to hidden</li>
+<li>hash() function now returns different results for lists containing
+permuted elements</li>
+<li>added owner attribute to nodes (contribution from Anand Aiyer)</li>
+<li>added clearing of neighbour and owner references in removed node</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<ul class="simple">
+<li>llist-0.4 (2013-01-01)<ul>
+<li>Python 3.x support</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<ul class="simple">
+<li>llist-0.3 (2012-01-22)<ul>
+<li>fixed neighbour references (prev and next) in dangling nodes</li>
+<li>implemented clear() method in dllist and sllist</li>
+<li>implemented rotate() method in dllist and sllist</li>
+<li>fixed reference counting of list weakrefs</li>
+<li>fixed segmentation fault when removing a node that does not belong
+to the list (issue #1)</li>
+<li>implemented extend(), extendleft() and extendright() methods in
+dllist and sllist</li>
+<li>changed insert_before() to insertbefore() and insert_after() to
+insertafter()</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<ul class="simple">
+<li>llist-0.2 (2011-12-30)<ul>
+<li>subscript operator <cite>lst[x]</cite> now directly returns values stored
+in the list, not dllistnode objects</li>
+<li>implemented nodeat() method in dllist and sllist</li>
+<li>fixed segmentation faults in sllist.insert and sllist.delete
+methods</li>
+<li>added missing Py_DECREFs to sllist</li>
+<li>added concatenation and in-place concatenation operator</li>
+<li>added repeat operator</li>
+<li>added hash() support</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<ul>
+<li><p class="first">llist-0.1 (2011-12-26)</p>
+<p>Initial release</p>
+</li>
+</ul>
+</div>
+<div class="section" id="copyright">
+<h1>Copyright<a class="headerlink" href="#copyright" title="Permalink to this headline">¶</a></h1>
+<p>This module is copyrighted by Adam Jakubek and Rafał Gałczyński.</p>
+<p>It is distributed under the MIT license. Please see the LICENSE file
+included in this package for more details.</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><code class="docutils literal"><span class="pre">llist</span></code> — Linked list datatypes for Python</a><ul>
+<li><a class="reference internal" href="#dllist-objects"><code class="docutils literal"><span class="pre">dllist</span></code> objects</a></li>
+<li><a class="reference internal" href="#dllistnode-objects"><code class="docutils literal"><span class="pre">dllistnode</span></code> objects</a></li>
+<li><a class="reference internal" href="#dllistiterator-objects"><code class="docutils literal"><span class="pre">dllistiterator</span></code> objects</a></li>
+<li><a class="reference internal" href="#sllist-objects"><code class="docutils literal"><span class="pre">sllist</span></code> objects</a></li>
+<li><a class="reference internal" href="#sllistnode-objects"><code class="docutils literal"><span class="pre">sllistnode</span></code> objects</a></li>
+<li><a class="reference internal" href="#sllistiterator-objects"><code class="docutils literal"><span class="pre">sllistiterator</span></code> objects</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#changes">Changes</a></li>
+<li><a class="reference internal" href="#copyright">Copyright</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">llist 0.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2018 Adam Jakubek, Rafał Gałczyński.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
+  </body>
+</html>
