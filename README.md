@@ -20,7 +20,7 @@ Currently llist provides the following types of linked lists:
  - sllist - a singly linked list
 
 Full documentation of these classes is available at:
-http://packages.python.org/llist/
+https://ajakubek.github.io/python-llist/index.html
 
 To install this package, either run "pip install llist",
 or download it manually from http://pypi.python.org/pypi
