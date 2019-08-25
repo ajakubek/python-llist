@@ -1,3 +1,7 @@
+* llist-0.7 (unreleased)
+
+-----------------------------------------------------------------------
+
 * llist-0.6 (2018-06-30)
 
   - allow subclassing of list and node types
