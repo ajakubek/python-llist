@@ -87,6 +87,31 @@ class testsllist(unittest.TestCase):
         c = sllist(['abc', None]).first
         self.assertEqual(repr(c), '<sllistnode(\'abc\')>')
 
+    def test_str_recursive_list(self):
+        ll = sllist()
+        ll.append(sllistnode(ll))
+        self.assertEqual(str(ll), 'sllist([sllist(<...>)])')
+
+    def test_str_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(str(ll), 'sllist([sllistnode(sllistnode(<...>))])')
+
+    def test_repr_recursive_list(self):
+        ll = sllist()
+        ll.append(sllistnode(ll))
+        self.assertEqual(repr(ll), 'sllist([sllist(<...>)])')
+
+    def test_repr_recursive_node_list(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(repr(ll), 'sllist([<sllistnode(sllistnode(<...>))>])')
+
+    def make_recursive_node_list(self):
+        ll = sllist()
+        node = sllistnode()
+        node.value = node
+        ll.append(node)
+        return ll
+
     def test_cmp(self):
         a = sllist(py23_xrange(0, 1100))
         b = sllist(py23_xrange(0, 1101))
@@ -1034,6 +1059,31 @@ class testdllist(unittest.TestCase):
         self.assertEqual(repr(b), '<dllistnode(1)>')
         c = dllist(['abc', None]).first
         self.assertEqual(repr(c), '<dllistnode(\'abc\')>')
+
+    def test_str_recursive_list(self):
+        ll = dllist()
+        ll.append(dllistnode(ll))
+        self.assertEqual(str(ll), 'dllist([dllist(<...>)])')
+
+    def test_str_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(str(ll), 'dllist([dllistnode(dllistnode(<...>))])')
+
+    def test_repr_recursive_list(self):
+        ll = dllist()
+        ll.append(dllistnode(ll))
+        self.assertEqual(repr(ll), 'dllist([dllist(<...>)])')
+
+    def test_repr_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(repr(ll), 'dllist([<dllistnode(dllistnode(<...>))>])')
+
+    def make_recursive_node_list(self):
+        ll = dllist()
+        node = dllistnode()
+        node.value = node
+        ll.append(node)
+        return ll
 
     def test_cmp(self):
         a = dllist(py23_xrange(0, 1100))

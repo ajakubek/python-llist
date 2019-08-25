@@ -143,6 +143,9 @@ static PyObject* dllistnode_to_string(DLListNodeObject* self,
 
     assert(fmt_func != NULL);
 
+    if (Py_ReprEnter((PyObject*)self) > 0)
+        return Py23String_FromString("dllistnode(<...>)");
+
     str = Py23String_FromString(prefix);
     if (str == NULL)
         goto str_alloc_error;
@@ -157,11 +160,16 @@ static PyObject* dllistnode_to_string(DLListNodeObject* self,
         goto str_alloc_error;
     Py23String_ConcatAndDel(&str, tmp_str);
 
+    Py_ReprLeave((PyObject*)self);
+
     return str;
 
 str_alloc_error:
     Py_XDECREF(str);
     PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+
+    Py_ReprLeave((PyObject*)self);
+
     return NULL;
 }
 
@@ -478,6 +486,9 @@ static PyObject* dllist_to_string(DLListObject* self,
 
     assert(fmt_func != NULL);
 
+    if (Py_ReprEnter((PyObject*)self) > 0)
+        return Py23String_FromString("dllist(<...>)");
+
     if (self->first == Py_None)
     {
         str = Py23String_FromString("dllist()");
@@ -515,12 +526,17 @@ static PyObject* dllist_to_string(DLListObject* self,
         goto str_alloc_error;
     Py23String_ConcatAndDel(&str, tmp_str);
 
+    Py_ReprLeave((PyObject*)self);
+
     return str;
 
 str_alloc_error:
     Py_XDECREF(str);
     Py_XDECREF(comma_str);
     PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+
+    Py_ReprLeave((PyObject*)self);
+
     return NULL;
 }
 
