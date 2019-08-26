@@ -4,7 +4,9 @@
 
 #include <Python.h>
 #include <structmember.h>
+
 #include "config.h"
+#include "flags.h"
 #include "py23macros.h"
 #include "utils.h"
 
@@ -28,6 +30,7 @@ typedef struct
     PyObject* prev;
     PyObject* next;
     PyObject* list_weakref;
+    unsigned char flags;
 } DLListNodeObject;
 
 /* Convenience function for linking list nodes.
@@ -187,7 +190,12 @@ static int dllistnode_clear_refs(DLListNodeObject* self)
 {
     Py_CLEAR(self->value);
     Py_CLEAR(self->list_weakref);
-    Py_DECREF(Py_None);
+
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+        self->flags &= ~LLIST_HAS_PY_NONE_REF;
+        Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -219,6 +227,7 @@ static PyObject* dllistnode_new(PyTypeObject* type,
     self->prev = Py_None;
     self->next = Py_None;
     self->list_weakref = Py_None;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     Py_INCREF(self->value);
     Py_INCREF(self->list_weakref);
@@ -333,6 +342,7 @@ typedef struct
     Py_ssize_t last_accessed_idx;
     Py_ssize_t size;
     PyObject* weakref_list;
+    unsigned char flags;
 } DLListObject;
 
 static Py_ssize_t py_ssize_t_abs(Py_ssize_t x)
@@ -578,7 +588,11 @@ static int dllist_clear_refs(DLListObject* self)
         }
     }
 
-    Py_DECREF(Py_None);
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+        self->flags &= ~LLIST_HAS_PY_NONE_REF;
+        Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -612,6 +626,7 @@ static PyObject* dllist_new(PyTypeObject* type,
     self->last_accessed_idx = -1;
     self->size = 0;
     self->weakref_list = NULL;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     return (PyObject*)self;
 }

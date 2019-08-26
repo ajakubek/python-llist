@@ -1012,6 +1012,26 @@ class testsllist(unittest.TestCase):
         class DerivedNode(sllistnode):
             pass
 
+    def test_cyclic_list_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = sllist()
+            ll.append(sllistnode(ll))
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+    def test_cyclic_node_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = self.make_recursive_node_list()
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+
 class testdllist(unittest.TestCase):
 
     def test_init_empty(self):
@@ -1910,6 +1930,25 @@ class testdllist(unittest.TestCase):
     def test_list_node_can_be_subclassed(self):
         class DerivedNode(dllistnode):
             pass
+
+    def test_cyclic_list_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = dllist()
+            ll.append(dllistnode(ll))
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+    def test_cyclic_node_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = self.make_recursive_node_list()
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
 
 
 def suite():

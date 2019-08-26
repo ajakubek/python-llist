@@ -4,7 +4,9 @@
 
 #include <Python.h>
 #include <structmember.h>
+
 #include "config.h"
+#include "flags.h"
 #include "py23macros.h"
 #include "utils.h"
 
@@ -27,6 +29,7 @@ typedef struct
     PyObject* value;
     PyObject* next;
     PyObject* list_weakref;
+    unsigned char flags;
 } SLListNodeObject;
 
 
@@ -115,7 +118,12 @@ static int sllistnode_clear_refs(SLListNodeObject* self)
 {
     Py_CLEAR(self->value);
     Py_CLEAR(self->list_weakref);
-    Py_DECREF(Py_None);
+
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+        self->flags &= ~LLIST_HAS_PY_NONE_REF;
+        Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -168,6 +176,7 @@ static PyObject* sllistnode_new(PyTypeObject* type,
     self->next = Py_None;
     self->value = Py_None;
     self->list_weakref = Py_None;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     Py_INCREF(self->value);
     Py_INCREF(self->list_weakref);
@@ -309,6 +318,7 @@ typedef struct
     PyObject* last;
     Py_ssize_t size;
     PyObject* weakref_list;
+    unsigned char flags;
 } SLListObject;
 
 
@@ -351,7 +361,11 @@ static int sllist_clear_refs(SLListObject* self)
         }
     }
 
-    Py_DECREF(Py_None);
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+      self->flags &= ~LLIST_HAS_PY_NONE_REF;
+      Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -383,6 +397,7 @@ static PyObject* sllist_new(PyTypeObject* type,
     self->last = Py_None;
     self->weakref_list = NULL;
     self->size = 0;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     return (PyObject*)self;
 }

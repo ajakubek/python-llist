@@ -2,6 +2,8 @@
 
   - fixed repr() and str() for self-referencing lists and nodes
     (closes issue #10)
+  - fixed duplicated release of Py_None during destruction of
+    self-referencing lists and nodes (closes issue #11)
 
 -----------------------------------------------------------------------
 
