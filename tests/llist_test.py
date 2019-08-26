@@ -87,6 +87,31 @@ class testsllist(unittest.TestCase):
         c = sllist(['abc', None]).first
         self.assertEqual(repr(c), '<sllistnode(\'abc\')>')
 
+    def test_str_recursive_list(self):
+        ll = sllist()
+        ll.append(sllistnode(ll))
+        self.assertEqual(str(ll), 'sllist([sllist(<...>)])')
+
+    def test_str_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(str(ll), 'sllist([sllistnode(sllistnode(<...>))])')
+
+    def test_repr_recursive_list(self):
+        ll = sllist()
+        ll.append(sllistnode(ll))
+        self.assertEqual(repr(ll), 'sllist([sllist(<...>)])')
+
+    def test_repr_recursive_node_list(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(repr(ll), 'sllist([<sllistnode(sllistnode(<...>))>])')
+
+    def make_recursive_node_list(self):
+        ll = sllist()
+        node = sllistnode()
+        node.value = node
+        ll.append(node)
+        return ll
+
     def test_cmp(self):
         a = sllist(py23_xrange(0, 1100))
         b = sllist(py23_xrange(0, 1101))
@@ -987,6 +1012,26 @@ class testsllist(unittest.TestCase):
         class DerivedNode(sllistnode):
             pass
 
+    def test_cyclic_list_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = sllist()
+            ll.append(sllistnode(ll))
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+    def test_cyclic_node_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = self.make_recursive_node_list()
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+
 class testdllist(unittest.TestCase):
 
     def test_init_empty(self):
@@ -1034,6 +1079,31 @@ class testdllist(unittest.TestCase):
         self.assertEqual(repr(b), '<dllistnode(1)>')
         c = dllist(['abc', None]).first
         self.assertEqual(repr(c), '<dllistnode(\'abc\')>')
+
+    def test_str_recursive_list(self):
+        ll = dllist()
+        ll.append(dllistnode(ll))
+        self.assertEqual(str(ll), 'dllist([dllist(<...>)])')
+
+    def test_str_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(str(ll), 'dllist([dllistnode(dllistnode(<...>))])')
+
+    def test_repr_recursive_list(self):
+        ll = dllist()
+        ll.append(dllistnode(ll))
+        self.assertEqual(repr(ll), 'dllist([dllist(<...>)])')
+
+    def test_repr_recursive_node(self):
+        ll = self.make_recursive_node_list()
+        self.assertEqual(repr(ll), 'dllist([<dllistnode(dllistnode(<...>))>])')
+
+    def make_recursive_node_list(self):
+        ll = dllist()
+        node = dllistnode()
+        node.value = node
+        ll.append(node)
+        return ll
 
     def test_cmp(self):
         a = dllist(py23_xrange(0, 1100))
@@ -1860,6 +1930,25 @@ class testdllist(unittest.TestCase):
     def test_list_node_can_be_subclassed(self):
         class DerivedNode(dllistnode):
             pass
+
+    def test_cyclic_list_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = dllist()
+            ll.append(dllistnode(ll))
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
+
+    def test_cyclic_node_destruction_does_not_release_extra_None_refs(self):
+        original_ref_count = sys.getrefcount(None)
+
+        for _ in range(original_ref_count * 10):
+            ll = self.make_recursive_node_list()
+            del ll
+
+        self.assertGreater(sys.getrefcount(None), 0)
 
 
 def suite():

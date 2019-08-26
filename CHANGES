@@ -1,3 +1,12 @@
+* llist-0.7 (unreleased)
+
+  - fixed repr() and str() for self-referencing lists and nodes
+    (closes issue #10)
+  - fixed duplicated release of Py_None during destruction of
+    self-referencing lists and nodes (closes issue #11)
+
+-----------------------------------------------------------------------
+
 * llist-0.6 (2018-06-30)
 
   - allow subclassing of list and node types

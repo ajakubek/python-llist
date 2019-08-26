@@ -4,7 +4,9 @@
 
 #include <Python.h>
 #include <structmember.h>
+
 #include "config.h"
+#include "flags.h"
 #include "py23macros.h"
 #include "utils.h"
 
@@ -27,6 +29,7 @@ typedef struct
     PyObject* value;
     PyObject* next;
     PyObject* list_weakref;
+    unsigned char flags;
 } SLListNodeObject;
 
 
@@ -115,7 +118,12 @@ static int sllistnode_clear_refs(SLListNodeObject* self)
 {
     Py_CLEAR(self->value);
     Py_CLEAR(self->list_weakref);
-    Py_DECREF(Py_None);
+
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+        self->flags &= ~LLIST_HAS_PY_NONE_REF;
+        Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -168,6 +176,7 @@ static PyObject* sllistnode_new(PyTypeObject* type,
     self->next = Py_None;
     self->value = Py_None;
     self->list_weakref = Py_None;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     Py_INCREF(self->value);
     Py_INCREF(self->list_weakref);
@@ -176,61 +185,55 @@ static PyObject* sllistnode_new(PyTypeObject* type,
 }
 
 
-
-static PyObject* sllistnode_repr(SLListNodeObject* self)
+/* Convenience function for formatting list node to a string.
+ * Pass PyObject_Repr or PyObject_Str in the fmt_func argument. */
+static PyObject* sllistnode_to_string(SLListNodeObject* self,
+                                      reprfunc fmt_func,
+                                      const char* prefix,
+                                      const char* suffix)
 {
     PyObject* str = NULL;
     PyObject* tmp_str;
 
-    str = Py23String_FromString("<sllistnode(");
+    if (Py_ReprEnter((PyObject*)self) > 0)
+        return Py23String_FromString("sllistnode(<...>)");
+
+    str = Py23String_FromString(prefix);
     if (str == NULL)
         goto str_alloc_error;
 
-    tmp_str = PyObject_Repr(self->value);
+    tmp_str = fmt_func(self->value);
     if (tmp_str == NULL)
         goto str_alloc_error;
     Py23String_ConcatAndDel(&str, tmp_str);
 
-    tmp_str = Py23String_FromString(")>");
+    tmp_str = Py23String_FromString(suffix);
     if (tmp_str == NULL)
         goto str_alloc_error;
     Py23String_ConcatAndDel(&str, tmp_str);
+
+    Py_ReprLeave((PyObject*)self);
 
     return str;
 
 str_alloc_error:
     Py_XDECREF(str);
     PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+
+    Py_ReprLeave((PyObject*)self);
+
     return NULL;
+}
+
+static PyObject* sllistnode_repr(SLListNodeObject* self)
+{
+    return sllistnode_to_string(self, PyObject_Repr, "<sllistnode(", ")>");
 }
 
 static PyObject* sllistnode_str(SLListNodeObject* self)
 {
-    PyObject* str = NULL;
-    PyObject* tmp_str;
-
-    str = Py23String_FromString("sllistnode(");
-    if (str == NULL)
-        goto str_alloc_error;
-
-    tmp_str = PyObject_Str(self->value);
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    Py23String_ConcatAndDel(&str, tmp_str);
-
-    tmp_str = Py23String_FromString(")");
-    if (tmp_str == NULL)
-        goto str_alloc_error;
-    Py23String_ConcatAndDel(&str, tmp_str);
-
-    return str;
-
-str_alloc_error:
-    Py_XDECREF(str);
-    PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
-    return NULL;
+    return sllistnode_to_string(self, PyObject_Str, "sllistnode(", ")");
 }
-
 
 
 
@@ -315,6 +318,7 @@ typedef struct
     PyObject* last;
     Py_ssize_t size;
     PyObject* weakref_list;
+    unsigned char flags;
 } SLListObject;
 
 
@@ -357,7 +361,11 @@ static int sllist_clear_refs(SLListObject* self)
         }
     }
 
-    Py_DECREF(Py_None);
+    if ((self->flags & LLIST_HAS_PY_NONE_REF) != 0)
+    {
+      self->flags &= ~LLIST_HAS_PY_NONE_REF;
+      Py_DECREF(Py_None);
+    }
 
     return 0;
 }
@@ -389,6 +397,7 @@ static PyObject* sllist_new(PyTypeObject* type,
     self->last = Py_None;
     self->weakref_list = NULL;
     self->size = 0;
+    self->flags = LLIST_HAS_PY_NONE_REF;
 
     return (PyObject*)self;
 }
@@ -1441,6 +1450,9 @@ static PyObject* sllist_to_string(SLListObject* self,
 
     assert(fmt_func != NULL);
 
+    if (Py_ReprEnter((PyObject*)self) > 0)
+        return Py23String_FromString("sllist(<...>)");
+
     if (self->first == Py_None)
     {
         str = Py23String_FromString("sllist()");
@@ -1478,12 +1490,17 @@ static PyObject* sllist_to_string(SLListObject* self,
         goto str_alloc_error;
     Py23String_ConcatAndDel(&str, tmp_str);
 
+    Py_ReprLeave((PyObject*)self);
+
     return str;
 
 str_alloc_error:
     Py_XDECREF(str);
     Py_XDECREF(comma_str);
     PyErr_SetString(PyExc_RuntimeError, "Failed to create string");
+
+    Py_ReprLeave((PyObject*)self);
+
     return NULL;
 }
 
