@@ -4,6 +4,8 @@
     (closes issue #10)
   - fixed duplicated release of Py_None during destruction of
     self-referencing lists and nodes (closes issue #11)
+  - fixed a bug where a list item could be missed if it had been added
+    during preceding step of list iteration (closes issue #12)
 
 -----------------------------------------------------------------------
 

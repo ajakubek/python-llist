@@ -283,6 +283,27 @@ class testsllist(unittest.TestCase):
             count += 1
         self.assertEqual(count, 0)
 
+    def test_iter_of_appended_node(self):
+        ll = sllist()
+        ll.append('initial item')
+
+        appended_item_visited = False
+
+        for x in ll:
+            if x == 'initial item':
+                ll.append('new item')
+            elif x == 'new item':
+                appended_item_visited = True
+
+        self.assertTrue(appended_item_visited)
+
+    def test_iter_of_removed_node(self):
+        ll = sllist(['x', 'removed item'])
+
+        for x in ll:
+            self.assertNotEqual(x, 'removed item')
+            ll.remove(ll.last)
+
     def test_reversed(self):
         ref = py23_range(0, 1024, 4)
         ll = sllist(ref)
@@ -1275,6 +1296,26 @@ class testdllist(unittest.TestCase):
         for val in ll:
             count += 1
         self.assertEqual(count, 0)
+
+    def test_iter_of_appended_node(self):
+        ll = dllist(['initial item'])
+
+        appended_item_visited = False
+
+        for x in ll:
+            if x == 'initial item':
+                ll.append('new item')
+            elif x == 'new item':
+                appended_item_visited = True
+
+        self.assertTrue(appended_item_visited)
+
+    def test_iter_of_removed_node(self):
+        ll = dllist(['x', 'removed item'])
+
+        for x in ll:
+            self.assertNotEqual(x, 'removed item')
+            ll.remove(ll.last)
 
     def test_reversed(self):
         ref = py23_range(0, 1024, 4)
