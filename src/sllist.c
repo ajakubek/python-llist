@@ -1735,10 +1735,9 @@ static PyObject* sllistiterator_new(PyTypeObject* type,
         return NULL;
 
     self->list = (SLListObject*)owner_list;
-    self->current_node = self->list->first;
+    self->current_node = NULL;
 
     Py_INCREF(self->list);
-    Py_INCREF(self->current_node);
 
     return (PyObject*)self;
 }
@@ -1748,23 +1747,31 @@ static PyObject* sllistiterator_iternext(PyObject* self)
 {
     SLListIteratorObject* iter_self = (SLListIteratorObject*)self;
     PyObject* value;
-    PyObject* next_node;
 
-    if (iter_self->current_node == NULL || iter_self->current_node == Py_None)
+    if (iter_self->current_node == NULL)
     {
-        Py_XDECREF(iter_self->current_node);
-        iter_self->current_node = NULL;
+        // first iteration
+        iter_self->current_node = iter_self->list->first;
+        Py_INCREF(iter_self->current_node);
+    }
+    else if (iter_self->current_node != Py_None)
+    {
+        PyObject* next_node;
+
+        next_node = ((SLListNodeObject*)iter_self->current_node)->next;
+        Py_INCREF(next_node);
+        Py_DECREF(iter_self->current_node);
+        iter_self->current_node = next_node;
+    }
+
+    if (iter_self->current_node == Py_None)
+    {
         PyErr_SetNone(PyExc_StopIteration);
         return NULL;
     }
 
     value = ((SLListNodeObject*)iter_self->current_node)->value;
     Py_INCREF(value);
-
-    next_node = ((SLListNodeObject*)iter_self->current_node)->next;
-    Py_INCREF(next_node);
-    Py_DECREF(iter_self->current_node);
-    iter_self->current_node = next_node;
 
     return value;
 }
