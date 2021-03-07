@@ -886,6 +886,36 @@ static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
     return (PyObject*)node;
 }
 
+static int dllist_validate_ref_node(DLListObject* self, PyObject* ref_node)
+{
+    if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "ref_node argument must be a dllistnode");
+        return 0;
+    }
+
+    PyObject* list_weakref = ((DLListNodeObject*)ref_node)->list_weakref;
+
+    if (list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "dllistnode does not belong to a list");
+        return 0;
+    }
+
+    PyObject* list_ref = PyWeakref_GetObject(list_weakref);
+
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "dllistnode belongs to another list");
+        return 0;
+    }
+
+    return 1;
+}
+
 static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 {
     PyObject* val = NULL;
@@ -910,32 +940,10 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     }
     else
     {
-        PyObject* list_ref;
+        if (!dllist_validate_ref_node(self, ref_node))
+            return NULL;
 
         /* insert item before ref_node */
-        if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
-        {
-            PyErr_SetString(PyExc_TypeError,
-                "ref_node argument must be a dllistnode");
-            return NULL;
-        }
-
-        if (((DLListNodeObject*)ref_node)->list_weakref == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "dllistnode does not belong to a list");
-            return NULL;
-        }
-
-        list_ref = PyWeakref_GetObject(
-            ((DLListNodeObject*)ref_node)->list_weakref);
-        if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "dllistnode belongs to another list");
-            return NULL;
-        }
-
         new_node = dllistnode_create(
             ((DLListNodeObject*)ref_node)->prev,
             ref_node, val, (PyObject*)self);
@@ -995,31 +1003,12 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
     }
     else
     {
-        /* insert item before ref_node */
-        if (!PyObject_TypeCheck(ref, &DLListNodeType))
-        {
-            PyErr_SetString(PyExc_TypeError,
-                "ref_node argument must be a dllistnode");
+        if (!dllist_validate_ref_node(self, ref))
             return NULL;
-        }
 
         DLListNodeObject* ref_node = (DLListNodeObject*)ref;
 
-        if (ref_node->list_weakref == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "ref_node does not belong to a list");
-            return NULL;
-        }
-
-        PyObject* list_ref = PyWeakref_GetObject(ref_node->list_weakref);
-        if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "ref_node belongs to another list");
-            return NULL;
-        }
-
+        /* insert item before ref_node */
         dllistnode_link(ref_node->prev, ref, inserted_node, (PyObject*)self);
 
         if (ref == self->first)
