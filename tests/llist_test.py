@@ -1458,6 +1458,80 @@ class testdllist(unittest.TestCase):
         ll.insertbefore(1234, ll.first)
         self.assertEqual(len(ll), 2)
 
+    def test_insertafter_without_ref_node(self):
+        ll = dllist()
+        self.assertRaises(TypeError, ll.insertafter, 1234)
+
+    def test_insertafter_with_invalid_ref_node(self):
+        ll = dllist()
+        other_list = dllist(['node in other list'])
+        self.assertRaises(TypeError, ll.insertafter, 1234, None)
+        self.assertRaises(TypeError, ll.insertafter, 1234, 'not a dllist node')
+        self.assertRaises(ValueError, ll.insertafter, 1234, dllistnode())
+        self.assertRaises(ValueError, ll.insertafter, 1234, other_list.first)
+
+    def test_insertafter_adds_item_in_correct_position(self):
+        ll = dllist([0, 1, 2, 3, 4])
+        ref_node = ll.nodeat(2)
+        ll.insertafter(1234, ref_node)
+        self.assertEqual(ll, dllist([0, 1, 2, 1234, 3, 4]))
+
+    def test_insertafter_returns_node_with_inserted_value(self):
+        ll = dllist([0])
+        value = 'inserted value'
+        new_node = ll.insertafter(value, ll.first)
+        self.assertIs(new_node.value, value)
+
+    def test_insertafter_extracts_value_from_inserted_node(self):
+        ll = dllist([0])
+        free_node = dllistnode('free node')
+        other_list = dllist(['node in other list'])
+        new_node = ll.insertafter(free_node, ll.first)
+        self.assertIsNot(new_node, free_node)
+        self.assertIs(new_node.value, free_node.value)
+        new_node = ll.insertafter(other_list.first, ll.first)
+        self.assertIsNot(new_node, other_list.first)
+        self.assertIs(new_node.value, other_list.first.value)
+
+    def test_insertafter_correctly_links_items(self):
+        ll = dllist([0, 1, 2, 3])
+        prev_node = ll.nodeat(1)
+        next_node = ll.nodeat(2)
+        new_node = ll.insertafter(1234, prev_node)
+        self.assertIs(new_node.prev, prev_node)
+        self.assertIs(prev_node.next, new_node)
+        self.assertIs(new_node.next, next_node)
+        self.assertIs(next_node.prev, new_node)
+
+    def test_insertafter_after_last_item_makes_node_without_next(self):
+        ll = dllist([0])
+        new_node = ll.insertafter(1234, ll.last)
+        self.assertIs(new_node.next, None)
+
+    def test_insertafter_after_last_item_updates_list_tail(self):
+        ll = dllist([0])
+        original_tail = ll.last
+        new_node = ll.insertafter(1234, ll.last)
+        self.assertIs(ll.last, new_node)
+
+    def test_insertafter_before_last_item_does_not_update_list_tail(self):
+        ll = dllist([0, 1])
+        original_tail = ll.last
+        ll.insertafter(1234, ll.first)
+        self.assertIs(ll.last, original_tail)
+
+    def test_insertafter_does_not_update_list_head(self):
+        ll = dllist([0])
+        original_head = ll.first
+        ll.insertafter(1234, ll.first)
+        self.assertIs(ll.first, original_head)
+
+    def test_insertafter_updates_list_length(self):
+        ll = dllist([0])
+        self.assertEqual(len(ll), 1)
+        ll.insertafter(1234, ll.first)
+        self.assertEqual(len(ll), 2)
+
     def test_insert_node(self):
         ll = dllist(py23_xrange(4))
         ref = dllist([0, 1, 2, 3, 10])

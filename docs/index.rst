@@ -119,6 +119,19 @@ Random access to elements using index is O(n).
 
       Raises :exc:`ValueError` if *before* does not belong to *self*.
 
+   .. method:: insertafter(x, ref)
+
+      Insert *x* after *ref* and return inserted :class:`dllistnode`.
+
+      Argument *x* might be a :class:`dllistnode`. In that case a new
+      node will be created and initialized with the value extracted from *x*.
+
+      Raises :exc:`TypeError` if *ref* is not of type :class:`dllistnode`.
+
+      Raises :exc:`ValueError` if *ref* does not belong to *self*.
+
+      This method has O(1) complexity.
+
    .. method:: insertbefore(x, ref)
 
       Insert *x* before *ref* and return inserted :class:`dllistnode`.
@@ -341,20 +354,25 @@ Random access to elements using index is O(n).
       <dllistnode(4.5)>
       >>> print(lst)
       dllist([0, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.5])
+      >>> ref_node = lst.nodeat(9)
+      >>> lst.insertbefore(5.5, ref_node)
+      <dllistnode(5.5)>
+      >>> print(lst)
+      dllist([0, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
 
       >>> lst.popleft()                       # remove leftmost node from the list
       0
       >>> print(lst)
-      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.5])
+      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
       >>> lst.popright()                      # remove rightmost node from the list
       6.5
       >>> print(lst)
-      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6])
+      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
       >>> node = lst.nodeat(1)
       >>> lst.remove(node)                    # remove 2nd node from the list
       1.5
       >>> print(lst)
-      dllist([1, 2, 2.5, 3, 4, 4.5, 5, 6])
+      dllist([1, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
       >>> foreign_node = dllistnode()         # create an unassigned node
       >>> lst.remove(foreign_node)            # try to remove node not present in the list
       Traceback (most recent call last):
