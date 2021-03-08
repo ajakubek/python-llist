@@ -965,6 +965,39 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     return (PyObject*)new_node;
 }
 
+static PyObject* dllist_insertbefore(DLListObject* self, PyObject* args)
+{
+    PyObject* value = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertbefore", 2, 2, &value, &ref))
+        return NULL;
+
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    /* if inserted item is a node, extract and insert its value instead */
+    if (PyObject_TypeCheck(value, &DLListNodeType))
+        value = ((DLListNodeObject*)value)->value;
+
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    DLListNodeObject* new_node = dllistnode_create(
+        ref_node->prev, ref, value, (PyObject*)self);
+
+    if (ref == self->first)
+        self->first = (PyObject*)new_node;
+
+    /* invalidate last accessed item */
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
+}
+
 static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
 {
     PyObject* inserted = NULL;
@@ -1492,6 +1525,8 @@ static PyMethodDef DLListMethods[] =
     { "extendright", (PyCFunction)dllist_extendright, METH_O,
       "Append elements from iterable at the right side of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertbefore", (PyCFunction)dllist_insertbefore, METH_VARARGS,
       "Inserts element before node" },
     { "insertnode", (PyCFunction)dllist_insertnode, METH_VARARGS,
       "Inserts element before node" },
