@@ -1031,19 +1031,13 @@ static PyObject* dllist_insertafter(DLListObject* self, PyObject* args)
     return (PyObject*)new_node;
 }
 
-static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
+static int dllist_validate_inserted_node(DLListObject* self, PyObject* inserted)
 {
-    PyObject* inserted = NULL;
-    PyObject* ref = NULL;
-
-    if (!PyArg_UnpackTuple(args, "insertnode", 1, 2, &inserted, &ref))
-        return NULL;
-
     if (!PyObject_TypeCheck(inserted, &DLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError,
             "Inserted object must be a dllistnode");
-        return NULL;
+        return 0;
     }
 
     DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
@@ -1054,8 +1048,24 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
     {
         PyErr_SetString(PyExc_ValueError,
             "Inserted node must not belong to a list");
-        return NULL;
+        return 0;
     }
+
+    return 1;
+}
+
+static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnode", 1, 2, &inserted, &ref))
+        return NULL;
+
+    if (!dllist_validate_inserted_node(self, inserted))
+        return NULL;
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
 
     if (ref == NULL || ref == Py_None)
     {
