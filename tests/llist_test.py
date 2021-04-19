@@ -1699,6 +1699,105 @@ class testdllist(unittest.TestCase):
         ll.insertnodebefore(dllistnode(1234), ll.first)
         self.assertEqual(len(ll), 2)
 
+    def test_insertnodeafter_with_invalid_type_of_inserted_node(self):
+        ll = dllist([0])
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, None, ll.first)
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, 'non-node argument', ll.first)
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, sllistnode(1234), ll.first)
+
+    def test_insertnodeafter_with_already_owned_inserted_node(self):
+        ll = dllist([0])
+        other_list = dllist([0])
+        self.assertRaises(ValueError, ll.insertnodeafter, ll.first, ll.first)
+        self.assertRaises(
+            ValueError, ll.insertnodeafter, other_list.first, ll.first)
+
+    def test_insertnodeafter_without_ref_node(self):
+        ll = dllist([0])
+        self.assertRaises(TypeError, ll.insertnodeafter, dllistnode(1234))
+
+    def test_insertnodeafter_with_invalid_type_of_ref_node(self):
+        ll = dllist([0])
+        self.assertRaises(TypeError, ll.insertnodeafter, dllistnode(1234), None)
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, dllistnode(1234), 'not a dllist node')
+        self.assertRaises(
+            TypeError, ll.insertnodeafter, dllistnode(1234), sllistnode(1234))
+
+    def test_insertnodeafter_with_unowned_ref_node(self):
+        ll = dllist([0])
+        self.assertRaises(
+            ValueError, ll.insertnodeafter, dllistnode(1234), dllistnode())
+
+    def test_insertnodeafter_with_ref_node_from_different_list(self):
+        ll = dllist([0])
+        other_list = dllist(['node in other list'])
+        self.assertRaises(
+            ValueError, ll.insertnodeafter, dllistnode(1234), other_list.first)
+
+    def test_insertnodeafter_adds_node_in_correct_position(self):
+        ll = dllist([0, 1, 2, 3, 4])
+        inserted_node = dllistnode(1234)
+        ref_node = ll.nodeat(2)
+        ll.insertnodeafter(inserted_node, ref_node)
+        self.assertIs(ll.nodeat(3), inserted_node)
+        self.assertIs(ll.nodeat(3).value, inserted_node.value)
+        self.assertEqual(ll, dllist([0, 1, 2, 1234, 3, 4]))
+
+    def test_insertnodeafter_returns_inserted_node(self):
+        ll = dllist([0])
+        inserted_value = 'inserted value'
+        inserted_node = dllistnode(inserted_value)
+        returned_node = ll.insertnodeafter(inserted_node, ll.first)
+        self.assertIs(returned_node, inserted_node)
+        self.assertIs(returned_node.value, inserted_value)
+
+    def test_insertnodeafter_correctly_links_items(self):
+        ll = dllist([0, 1, 2, 3])
+        prev_node = ll.nodeat(1)
+        next_node = ll.nodeat(2)
+        inserted_node = dllistnode(1234)
+        ll.insertnodeafter(inserted_node, prev_node)
+        self.assertIs(inserted_node.prev, prev_node)
+        self.assertIs(prev_node.next, inserted_node)
+        self.assertIs(inserted_node.next, next_node)
+        self.assertIs(next_node.prev, inserted_node)
+
+    def test_insertnodeafter_sets_next_in_inserted_node_to_none_if_it_becomes_tail(self):
+        ll = dllist([0])
+        inserted_node = dllistnode(1234)
+        ll.insertnodeafter(inserted_node, ll.last)
+        self.assertIs(inserted_node.next, None)
+
+    def test_insertnodeafter_updates_list_tail_if_inserted_node_becomes_tail(self):
+        ll = dllist([0])
+        inserted_node = dllistnode(1234)
+        new_node = ll.insertnodeafter(inserted_node, ll.last)
+        self.assertIs(ll.last, inserted_node)
+
+    def test_insertnodeafter_before_last_item_does_not_update_list_tail(self):
+        ll = dllist([0, 1])
+        original_tail = ll.last
+        inserted_node = dllistnode(1234)
+        ll.insertnodeafter(inserted_node, ll.first)
+        self.assertIs(ll.last, original_tail)
+
+    def test_insertnodeafter_does_not_update_list_head(self):
+        ll = dllist([0])
+        original_head = ll.first
+        inserted_node = dllistnode(1234)
+        ll.insertnodeafter(inserted_node, ll.first)
+        self.assertIs(ll.first, original_head)
+
+    def test_insertnodeafter_updates_list_length(self):
+        ll = dllist([0])
+        self.assertEqual(len(ll), 1)
+        ll.insertnodeafter(dllistnode(1234), ll.first)
+        self.assertEqual(len(ll), 2)
+
     def test_append(self):
         ll = dllist(py23_xrange(4))
         ref = dllist([0, 1, 2, 3, 10])
