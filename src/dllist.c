@@ -1105,6 +1105,37 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
     return inserted;
 }
 
+static PyObject* dllist_insertnodebefore(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnodebefore", 2, 2, &inserted, &ref))
+        return NULL;
+
+    if (!dllist_validate_inserted_node(self, inserted))
+        return NULL;
+
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    dllistnode_link(ref_node->prev, ref, inserted_node, (PyObject*)self);
+
+    if (ref == self->first)
+        self->first = inserted;
+
+    /* invalidate last accessed item */
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
 static PyObject* dllist_extendleft(DLListObject* self, PyObject* sequence)
 {
     Py_ssize_t i;
@@ -1574,6 +1605,8 @@ static PyMethodDef DLListMethods[] =
     { "insertafter", (PyCFunction)dllist_insertafter, METH_VARARGS,
       "Inserts element after node" },
     { "insertnode", (PyCFunction)dllist_insertnode, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertnodebefore", (PyCFunction)dllist_insertnodebefore, METH_VARARGS,
       "Inserts element before node" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
       "Return node at index" },

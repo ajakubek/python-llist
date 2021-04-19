@@ -159,8 +159,24 @@ Random access to elements using index is O(n).
       Raises :exc:`TypeError` if *node* or *before* is not of type
       :class:`dllistnode`.
 
-      Raises :exc:`ValueError` if *node* belongs to another list or *before*
+      Raises :exc:`ValueError` if *node* belongs to a list or *before*
       does not belong to *self*.
+
+   .. method:: insertnodebefore(node, ref)
+
+      Insert *node* before *ref* and return inserted :class:`dllistnode`.
+
+      Argument *node* must be a :class:`dllistnode` object which does not
+      belong to any list. The node will be inserted directly into *self*.
+      This makes :meth:`dllist.insertnodebefore()` useful when a subclassed node
+      type must be added to a list.
+
+      Raises :exc:`TypeError` if *ref* is not of type :class:`dllistnode`.
+
+      Raises :exc:`ValueError` if *node* belongs to a list or *ref* does not
+      belong to *self*.
+
+      This method has O(1) complexity.
 
    .. method:: nodeat(index)
 
@@ -359,20 +375,26 @@ Random access to elements using index is O(n).
       <dllistnode(5.5)>
       >>> print(lst)
       dllist([0, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
+      >>> new_node = dllistnode(0.5)
+      >>> ref_node = lst.nodeat(1)
+      >>> lst.insertnodebefore(new_node, ref_node)
+      <dllistnode(0.5)>
+      >>> print(lst)
+      dllist([0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
 
       >>> lst.popleft()                       # remove leftmost node from the list
       0
       >>> print(lst)
-      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
+      dllist([0.5, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6, 6.5])
       >>> lst.popright()                      # remove rightmost node from the list
       6.5
       >>> print(lst)
-      dllist([1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
-      >>> node = lst.nodeat(1)
-      >>> lst.remove(node)                    # remove 2nd node from the list
+      dllist([0.5, 1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
+      >>> node = lst.nodeat(2)
+      >>> lst.remove(node)                    # remove 3rd node from the list
       1.5
       >>> print(lst)
-      dllist([1, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
+      dllist([0.5, 1, 2, 2.5, 3, 4, 4.5, 5, 5.5, 6])
       >>> foreign_node = dllistnode()         # create an unassigned node
       >>> lst.remove(foreign_node)            # try to remove node not present in the list
       Traceback (most recent call last):
