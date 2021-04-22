@@ -567,6 +567,12 @@ static int dllist_traverse(DLListObject* self, visitproc visit, void* arg)
     return 0;
 }
 
+static void dllist_invalidate_last_access_cache(DLListObject* self)
+{
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
+}
+
 static int dllist_clear_refs(DLListObject* self)
 {
     PyObject* node = self->first;
@@ -954,9 +960,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
         if (self->last == Py_None)
             self->last = (PyObject*)new_node;
 
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
+        dllist_invalidate_last_access_cache(self);
     }
 
     ++self->size;
@@ -988,9 +992,7 @@ static PyObject* dllist_insertbefore(DLListObject* self, PyObject* args)
     if (ref == self->first)
         self->first = (PyObject*)new_node;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     ++self->size;
 
@@ -1021,9 +1023,7 @@ static PyObject* dllist_insertafter(DLListObject* self, PyObject* args)
     if (ref == self->last)
         self->last = (PyObject*)new_node;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     ++self->size;
 
@@ -1093,9 +1093,7 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
         if (self->last == Py_None)
             self->last = inserted;
 
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
+        dllist_invalidate_last_access_cache(self);
     }
 
     Py_INCREF(inserted);
@@ -1127,9 +1125,7 @@ static PyObject* dllist_insertnodebefore(DLListObject* self, PyObject* args)
     if (ref == self->first)
         self->first = inserted;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     Py_INCREF(inserted);
     ++self->size;
@@ -1160,9 +1156,7 @@ static PyObject* dllist_insertnodeafter(DLListObject* self, PyObject* args)
     if (ref == self->last)
         self->last = inserted;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     Py_INCREF(inserted);
     ++self->size;
@@ -1273,9 +1267,7 @@ static PyObject* dllist_clear(DLListObject* self)
         dllistnode_delete(iter_node);
     }
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     self->first = Py_None;
     self->last = Py_None;
@@ -1307,11 +1299,7 @@ static PyObject* dllist_popleft(DLListObject* self)
             --self->last_accessed_idx;
     }
     else
-    {
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
-    }
+      dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
@@ -1341,11 +1329,7 @@ static PyObject* dllist_popright(DLListObject* self)
         self->first = Py_None;
 
     if (self->last_accessed_node == (PyObject*)del_node)
-    {
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
-    }
+      dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
@@ -1399,9 +1383,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     if (self->last_accessed_node == arg)
         self->last_accessed_node = del_node->prev;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
