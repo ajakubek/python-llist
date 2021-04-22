@@ -567,6 +567,12 @@ static int dllist_traverse(DLListObject* self, visitproc visit, void* arg)
     return 0;
 }
 
+static void dllist_invalidate_last_access_cache(DLListObject* self)
+{
+    self->last_accessed_node = Py_None;
+    self->last_accessed_idx = -1;
+}
+
 static int dllist_clear_refs(DLListObject* self)
 {
     PyObject* node = self->first;
@@ -886,6 +892,36 @@ static PyObject* dllist_appendnode(DLListObject* self, PyObject* arg)
     return (PyObject*)node;
 }
 
+static int dllist_validate_ref_node(DLListObject* self, PyObject* ref_node)
+{
+    if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
+    {
+        PyErr_SetString(PyExc_TypeError,
+            "ref_node argument must be a dllistnode");
+        return 0;
+    }
+
+    PyObject* list_weakref = ((DLListNodeObject*)ref_node)->list_weakref;
+
+    if (list_weakref == Py_None)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "dllistnode does not belong to a list");
+        return 0;
+    }
+
+    PyObject* list_ref = PyWeakref_GetObject(list_weakref);
+
+    if (list_ref != (PyObject*)self)
+    {
+        PyErr_SetString(PyExc_ValueError,
+            "dllistnode belongs to another list");
+        return 0;
+    }
+
+    return 1;
+}
+
 static PyObject* dllist_insert(DLListObject* self, PyObject* args)
 {
     PyObject* val = NULL;
@@ -910,32 +946,10 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     }
     else
     {
-        PyObject* list_ref;
+        if (!dllist_validate_ref_node(self, ref_node))
+            return NULL;
 
         /* insert item before ref_node */
-        if (!PyObject_TypeCheck(ref_node, &DLListNodeType))
-        {
-            PyErr_SetString(PyExc_TypeError,
-                "ref_node argument must be a dllistnode");
-            return NULL;
-        }
-
-        if (((DLListNodeObject*)ref_node)->list_weakref == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "dllistnode does not belong to a list");
-            return NULL;
-        }
-
-        list_ref = PyWeakref_GetObject(
-            ((DLListNodeObject*)ref_node)->list_weakref);
-        if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "dllistnode belongs to another list");
-            return NULL;
-        }
-
         new_node = dllistnode_create(
             ((DLListNodeObject*)ref_node)->prev,
             ref_node, val, (PyObject*)self);
@@ -946,9 +960,7 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
         if (self->last == Py_None)
             self->last = (PyObject*)new_node;
 
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
+        dllist_invalidate_last_access_cache(self);
     }
 
     ++self->size;
@@ -957,19 +969,75 @@ static PyObject* dllist_insert(DLListObject* self, PyObject* args)
     return (PyObject*)new_node;
 }
 
-static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
+static PyObject* dllist_insertbefore(DLListObject* self, PyObject* args)
 {
-    PyObject* inserted = NULL;
+    PyObject* value = NULL;
     PyObject* ref = NULL;
 
-    if (!PyArg_UnpackTuple(args, "insertnode", 1, 2, &inserted, &ref))
+    if (!PyArg_UnpackTuple(args, "insertbefore", 2, 2, &value, &ref))
         return NULL;
 
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    /* if inserted item is a node, extract and insert its value instead */
+    if (PyObject_TypeCheck(value, &DLListNodeType))
+        value = ((DLListNodeObject*)value)->value;
+
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    DLListNodeObject* new_node = dllistnode_create(
+        ref_node->prev, ref, value, (PyObject*)self);
+
+    if (ref == self->first)
+        self->first = (PyObject*)new_node;
+
+    dllist_invalidate_last_access_cache(self);
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
+}
+
+static PyObject* dllist_insertafter(DLListObject* self, PyObject* args)
+{
+    PyObject* value = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertafter", 2, 2, &value, &ref))
+        return NULL;
+
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    /* if inserted item is a node, extract and insert its value instead */
+    if (PyObject_TypeCheck(value, &DLListNodeType))
+        value = ((DLListNodeObject*)value)->value;
+
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    DLListNodeObject* new_node = dllistnode_create(
+        ref, ref_node->next, value, (PyObject*)self);
+
+    if (ref == self->last)
+        self->last = (PyObject*)new_node;
+
+    dllist_invalidate_last_access_cache(self);
+
+    ++self->size;
+
+    Py_INCREF((PyObject*)new_node);
+    return (PyObject*)new_node;
+}
+
+static int dllist_validate_inserted_node(DLListObject* self, PyObject* inserted)
+{
     if (!PyObject_TypeCheck(inserted, &DLListNodeType))
     {
         PyErr_SetString(PyExc_TypeError,
             "Inserted object must be a dllistnode");
-        return NULL;
+        return 0;
     }
 
     DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
@@ -980,8 +1048,24 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
     {
         PyErr_SetString(PyExc_ValueError,
             "Inserted node must not belong to a list");
-        return NULL;
+        return 0;
     }
+
+    return 1;
+}
+
+static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnode", 1, 2, &inserted, &ref))
+        return NULL;
+
+    if (!dllist_validate_inserted_node(self, inserted))
+        return NULL;
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
 
     if (ref == NULL || ref == Py_None)
     {
@@ -995,31 +1079,12 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
     }
     else
     {
-        /* insert item before ref_node */
-        if (!PyObject_TypeCheck(ref, &DLListNodeType))
-        {
-            PyErr_SetString(PyExc_TypeError,
-                "ref_node argument must be a dllistnode");
+        if (!dllist_validate_ref_node(self, ref))
             return NULL;
-        }
 
         DLListNodeObject* ref_node = (DLListNodeObject*)ref;
 
-        if (ref_node->list_weakref == Py_None)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "ref_node does not belong to a list");
-            return NULL;
-        }
-
-        PyObject* list_ref = PyWeakref_GetObject(ref_node->list_weakref);
-        if (list_ref != (PyObject*)self)
-        {
-            PyErr_SetString(PyExc_ValueError,
-                "ref_node belongs to another list");
-            return NULL;
-        }
-
+        /* insert item before ref_node */
         dllistnode_link(ref_node->prev, ref, inserted_node, (PyObject*)self);
 
         if (ref == self->first)
@@ -1028,10 +1093,70 @@ static PyObject* dllist_insertnode(DLListObject* self, PyObject* args)
         if (self->last == Py_None)
             self->last = inserted;
 
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
+        dllist_invalidate_last_access_cache(self);
     }
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
+}
+
+static PyObject* dllist_insertnodebefore(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnodebefore", 2, 2, &inserted, &ref))
+        return NULL;
+
+    if (!dllist_validate_inserted_node(self, inserted))
+        return NULL;
+
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    dllistnode_link(ref_node->prev, ref, inserted_node, (PyObject*)self);
+
+    if (ref == self->first)
+        self->first = inserted;
+
+    dllist_invalidate_last_access_cache(self);
+
+    Py_INCREF(inserted);
+    ++self->size;
+
+    Py_INCREF(inserted);
+    return inserted;
+}
+
+static PyObject* dllist_insertnodeafter(DLListObject* self, PyObject* args)
+{
+    PyObject* inserted = NULL;
+    PyObject* ref = NULL;
+
+    if (!PyArg_UnpackTuple(args, "insertnodeafter", 2, 2, &inserted, &ref))
+        return NULL;
+
+    if (!dllist_validate_inserted_node(self, inserted))
+        return NULL;
+
+    if (!dllist_validate_ref_node(self, ref))
+        return NULL;
+
+    DLListNodeObject* inserted_node = (DLListNodeObject*)inserted;
+    DLListNodeObject* ref_node = (DLListNodeObject*)ref;
+
+    dllistnode_link(ref, ref_node->next, inserted_node, (PyObject*)self);
+
+    if (ref == self->last)
+        self->last = inserted;
+
+    dllist_invalidate_last_access_cache(self);
 
     Py_INCREF(inserted);
     ++self->size;
@@ -1142,9 +1267,7 @@ static PyObject* dllist_clear(DLListObject* self)
         dllistnode_delete(iter_node);
     }
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     self->first = Py_None;
     self->last = Py_None;
@@ -1176,11 +1299,7 @@ static PyObject* dllist_popleft(DLListObject* self)
             --self->last_accessed_idx;
     }
     else
-    {
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
-    }
+      dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
@@ -1210,11 +1329,7 @@ static PyObject* dllist_popright(DLListObject* self)
         self->first = Py_None;
 
     if (self->last_accessed_node == (PyObject*)del_node)
-    {
-        /* invalidate last accessed item */
-        self->last_accessed_node = Py_None;
-        self->last_accessed_idx = -1;
-    }
+      dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
@@ -1268,9 +1383,7 @@ static PyObject* dllist_remove(DLListObject* self, PyObject* arg)
     if (self->last_accessed_node == arg)
         self->last_accessed_node = del_node->prev;
 
-    /* invalidate last accessed item */
-    self->last_accessed_node = Py_None;
-    self->last_accessed_idx = -1;
+    dllist_invalidate_last_access_cache(self);
 
     --self->size;
 
@@ -1504,7 +1617,15 @@ static PyMethodDef DLListMethods[] =
       "Append elements from iterable at the right side of the list" },
     { "insert", (PyCFunction)dllist_insert, METH_VARARGS,
       "Inserts element before node" },
+    { "insertbefore", (PyCFunction)dllist_insertbefore, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertafter", (PyCFunction)dllist_insertafter, METH_VARARGS,
+      "Inserts element after node" },
     { "insertnode", (PyCFunction)dllist_insertnode, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertnodebefore", (PyCFunction)dllist_insertnodebefore, METH_VARARGS,
+      "Inserts element before node" },
+    { "insertnodeafter", (PyCFunction)dllist_insertnodeafter, METH_VARARGS,
       "Inserts element before node" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
       "Return node at index" },
