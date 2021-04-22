@@ -6,6 +6,8 @@
     self-referencing lists and nodes (closes issue #11)
   - fixed a bug where a list item could be missed if it had been added
     during preceding step of list iteration (closes issue #12)
+  - added insertbefore(), insertafter(), insertnodebefore()
+    and insertnodeafter() methods to dllist (closes issue #14)
 
 -----------------------------------------------------------------------
 
