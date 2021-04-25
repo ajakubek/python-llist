@@ -271,7 +271,7 @@ class testsllist(unittest.TestCase):
         ll = sllist(ref)
         idx = 0
         for val in ll:
-            self.assertFalse(isinstance(val, sllistnode))
+            self.assertNotIsInstance(val, sllistnode)
             self.assertEqual(val, ref[idx])
             idx += 1
         self.assertEqual(idx, len(ref))
@@ -283,14 +283,14 @@ class testsllist(unittest.TestCase):
         self.assertIsNotNone(second_iter)
         self.assertIs(first_iter, second_iter)
 
-    def test_iter_empty(self):
+    def test_iter_with_empty(self):
         ll = sllist()
         count = 0
         for val in ll:
             count += 1
         self.assertEqual(count, 0)
 
-    def test_iter_of_appended_node(self):
+    def test_iter_with_appended_node(self):
         ll = sllist()
         ll.append('initial item')
 
@@ -304,12 +304,102 @@ class testsllist(unittest.TestCase):
 
         self.assertTrue(appended_item_visited)
 
-    def test_iter_of_removed_node(self):
+    def test_iter_with_removed_node(self):
         ll = sllist(['x', 'removed item'])
 
         for x in ll:
             self.assertNotEqual(x, 'removed item')
             ll.remove(ll.last)
+
+    def test_itervalues(self):
+        ref = py23_range(0, 1024, 4)
+        ll = sllist(ref)
+        idx = 0
+        for val in ll.itervalues():
+            self.assertNotIsInstance(val, sllistnode)
+            self.assertEqual(val, ref[idx])
+            idx += 1
+        self.assertEqual(idx, len(ref))
+
+    def test_iter_on_itervalues_iterator_returns_same_object(self):
+        ll = sllist([0, 1, 2, 3])
+        first_iter = ll.itervalues()
+        second_iter = iter(first_iter)
+        self.assertIsNotNone(second_iter)
+        self.assertIs(first_iter, second_iter)
+
+    def test_itervalues_with_empty_list(self):
+        ll = sllist()
+        count = 0
+        for val in ll.itervalues():
+            count += 1
+        self.assertEqual(count, 0)
+
+    def test_itervalues_with_appended_node(self):
+        ll = sllist(['initial item'])
+
+        appended_item_visited = False
+
+        for x in ll.itervalues():
+            if x == 'initial item':
+                ll.append('new item')
+            elif x == 'new item':
+                appended_item_visited = True
+
+        self.assertTrue(appended_item_visited)
+
+    def test_itervalues_with_removed_node(self):
+        ll = sllist(['x', 'removed item'])
+
+        for x in ll.itervalues():
+            self.assertNotEqual(x, 'removed item')
+            ll.remove(ll.last)
+
+    def test_iternodes(self):
+        ref = list(py23_range(0, 1024, 4))
+        ll = sllist(ref)
+        idx = 0
+        for node in ll.iternodes():
+            self.assertIsInstance(node, sllistnode)
+            self.assertIs(node, ll.nodeat(idx))
+            idx += 1
+        self.assertEqual(idx, len(ref))
+
+    def test_iter_on_iternodes_iterator_returns_same_object(self):
+        ll = sllist([0, 1, 2, 3])
+        first_iter = ll.iternodes()
+        second_iter = iter(first_iter)
+        self.assertIsNotNone(second_iter)
+        self.assertIs(first_iter, second_iter)
+
+    def test_iternodes_with_empty_list(self):
+        ll = sllist()
+        count = 0
+        for node in ll.iternodes():
+            count += 1
+        self.assertEqual(count, 0)
+
+    def test_iternodes_with_appended_node(self):
+        ll = sllist(['initial item'])
+
+        appended_node = None
+        appended_node_visited = False
+
+        for node in ll.iternodes():
+            if node == ll.first:
+                appended_node = ll.append('new item')
+            elif node is not None and node is appended_node:
+                appended_node_visited = True
+
+        self.assertTrue(appended_node_visited)
+
+    def test_iternodes_with_removed_node(self):
+        ll = sllist(['x', 'removed item'])
+        removed_node = ll.last
+
+        for node in ll.iternodes():
+            self.assertNotEqual(node, removed_node)
+            ll.remove(removed_node)
 
     def test_reversed(self):
         ref = py23_range(0, 1024, 4)

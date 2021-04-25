@@ -707,6 +707,16 @@ Random access to elements using index is O(n).
       Raises :exc:`ValueError` if *node* belongs to another list or *ref* does
       not belong to *self*.
 
+   .. method:: iternodes()
+
+      Return iterator over all nodes in the list.
+
+   .. method:: itervalues()
+
+      Return iterator over all values in the list.
+
+      Equivalent to ``iter(lst)``.
+
    .. method:: nodeat(index)
 
       Return node (of type :class:`sllistnode`) at *index*.
@@ -837,6 +847,18 @@ Random access to elements using index is O(n).
 
       >>> for value in lst:                         # iterate over list elements
       ...     print(value * 2)
+      2
+      4
+      6
+
+      >>> for value in lst.itervalues():            # iterate over values in list explicitly
+      ...     print(value * 2)
+      2
+      4
+      6
+
+      >>> for node in lst.iternodes():              # iterate over nodes in list
+      ...     print(node.value * 2)
       2
       4
       6
