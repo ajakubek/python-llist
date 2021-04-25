@@ -194,6 +194,16 @@ Random access to elements using index is O(n).
 
       This method has O(1) complexity.
 
+   .. method:: iternodes()
+
+      Return iterator over all nodes in the list.
+
+   .. method:: itervalues()
+
+      Return iterator over all values in the list.
+
+      Equivalent to ``iter(lst)``.
+
    .. method:: nodeat(index)
 
       Return node (of type :class:`dllistnode`) at *index*.
@@ -326,8 +336,20 @@ Random access to elements using index is O(n).
       >>> print(node.next.value)              # get value of the next node
       2
 
-      >>> for value in lst:                   # iterate over list elements
+      >>> for value in lst:                   # iterate over values in list
       ...     print(value * 2)
+      2
+      4
+      6
+
+      >>> for value in lst.itervalues():      # iterate over values in list explicitly
+      ...     print(value * 2)
+      2
+      4
+      6
+
+      >>> for node in lst.iternodes():        # iterate over nodes in list
+      ...     print(node.value * 2)
       2
       4
       6

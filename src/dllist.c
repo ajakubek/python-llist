@@ -19,6 +19,7 @@
 static PyTypeObject DLListType;
 static PyTypeObject DLListNodeType;
 static PyTypeObject DLListIteratorType;
+static PyTypeObject DLListNodeIteratorType;
 
 
 /* DLListNode */
@@ -1445,7 +1446,7 @@ static PyObject* dllist_rotate(DLListObject* self, PyObject* nObject)
     Py_RETURN_NONE;
 }
 
-static PyObject* dllist_iter(PyObject* self)
+static PyObject* dllist_create_iterator(PyObject* self, PyObject* iterator_type)
 {
     PyObject* args;
     PyObject* result;
@@ -1466,11 +1467,21 @@ static PyObject* dllist_iter(PyObject* self)
         return NULL;
     }
 
-    result = PyObject_CallObject((PyObject*)&DLListIteratorType, args);
+    result = PyObject_CallObject(iterator_type, args);
 
     Py_DECREF(args);
 
     return result;
+}
+
+static PyObject* dllist_iternodes(PyObject* self)
+{
+    return dllist_create_iterator(self, (PyObject*)&DLListNodeIteratorType);
+}
+
+static PyObject* dllist_itervalues(PyObject* self)
+{
+    return dllist_create_iterator(self, (PyObject*)&DLListIteratorType);
 }
 
 static Py_ssize_t dllist_len(PyObject* self)
@@ -1627,6 +1638,10 @@ static PyMethodDef DLListMethods[] =
       "Inserts element before node" },
     { "insertnodeafter", (PyCFunction)dllist_insertnodeafter, METH_VARARGS,
       "Inserts element before node" },
+    { "iternodes", (PyCFunction)dllist_iternodes, METH_NOARGS,
+      "Return iterator over list nodes" },
+    { "itervalues", (PyCFunction)dllist_itervalues, METH_NOARGS,
+      "Return iterator over list values" },
     { "nodeat", (PyCFunction)dllist_node_at, METH_O,
       "Return node at index" },
     { "popleft", (PyCFunction)dllist_popleft, METH_NOARGS,
@@ -1698,7 +1713,7 @@ static PyTypeObject DLListType =
                                 /* tp_richcompare */
     offsetof(DLListObject, weakref_list),
                                 /* tp_weaklistoffset */
-    dllist_iter,                /* tp_iter */
+    dllist_itervalues,          /* tp_iter */
     0,                          /* tp_iternext */
     DLListMethods,              /* tp_methods */
     DLListMembers,              /* tp_members */
@@ -1778,7 +1793,7 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
     return (PyObject*)self;
 }
 
-static PyObject* dllistiterator_iternext(PyObject* self)
+static DLListNodeObject* dllistiterator_advance(PyObject* self)
 {
     DLListIteratorObject* iter_self = (DLListIteratorObject*)self;
     PyObject* value;
@@ -1805,10 +1820,27 @@ static PyObject* dllistiterator_iternext(PyObject* self)
         return NULL;
     }
 
-    value = ((DLListNodeObject*)iter_self->current_node)->value;
+    return (DLListNodeObject*)iter_self->current_node;
+}
+
+static PyObject* dllistvalueiterator_iternext(PyObject* self)
+{
+    DLListNodeObject* current_node = dllistiterator_advance(self);
+
+    if (current_node == NULL)
+        return NULL;
+
+    PyObject* value = current_node->value;
     Py_INCREF(value);
 
     return value;
+}
+
+static PyObject* dllistnodeiterator_iternext(PyObject* self)
+{
+    DLListNodeObject* current_node = dllistiterator_advance(self);
+    Py_XINCREF(current_node);
+    return (PyObject*)current_node;
 }
 
 static PyTypeObject DLListIteratorType =
@@ -1841,7 +1873,7 @@ static PyTypeObject DLListIteratorType =
     0,                                  /* tp_richcompare */
     0,                                  /* tp_weaklistoffset */
     PyObject_SelfIter,                  /* tp_iter */
-    dllistiterator_iternext,            /* tp_iternext */
+    dllistvalueiterator_iternext,       /* tp_iternext */
     0,                                  /* tp_methods */
     0,                                  /* tp_members */
     0,                                  /* tp_getset */
@@ -1855,13 +1887,57 @@ static PyTypeObject DLListIteratorType =
     dllistiterator_new,                 /* tp_new */
 };
 
+static PyTypeObject DLListNodeIteratorType =
+{
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "llist.dllistnodeiterator",         /* tp_name */
+    sizeof(DLListIteratorObject),       /* tp_basicsize */
+    0,                                  /* tp_itemsize */
+    (destructor)dllistiterator_dealloc, /* tp_dealloc */
+    0,                                  /* tp_print */
+    0,                                  /* tp_getattr */
+    0,                                  /* tp_setattr */
+    0,                                  /* tp_compare */
+    0,                                  /* tp_repr */
+    0,                                  /* tp_as_number */
+    0,                                  /* tp_as_sequence */
+    0,                                  /* tp_as_mapping */
+    0,                                  /* tp_hash */
+    0,                                  /* tp_call */
+    0,                                  /* tp_str */
+    0,                                  /* tp_getattro */
+    0,                                  /* tp_setattro */
+    0,                                  /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+                                        /* tp_flags */
+    "Doubly linked list node iterator", /* tp_doc */
+    (traverseproc)dllistiterator_traverse,
+                                        /* tp_traverse */
+    (inquiry)dllistiterator_clear_refs, /* tp_clear */
+    0,                                  /* tp_richcompare */
+    0,                                  /* tp_weaklistoffset */
+    PyObject_SelfIter,                  /* tp_iter */
+    dllistnodeiterator_iternext,        /* tp_iternext */
+    0,                                  /* tp_methods */
+    0,                                  /* tp_members */
+    0,                                  /* tp_getset */
+    0,                                  /* tp_base */
+    0,                                  /* tp_dict */
+    0,                                  /* tp_descr_get */
+    0,                                  /* tp_descr_set */
+    0,                                  /* tp_dictoffset */
+    0,                                  /* tp_init */
+    0,                                  /* tp_alloc */
+    dllistiterator_new,                 /* tp_new */
+};
 
 LLIST_INTERNAL int dllist_init_type(void)
 {
     return
         ((PyType_Ready(&DLListType) == 0) &&
          (PyType_Ready(&DLListNodeType) == 0) &&
-         (PyType_Ready(&DLListIteratorType) == 0))
+         (PyType_Ready(&DLListIteratorType) == 0) &&
+         (PyType_Ready(&DLListNodeIteratorType) == 0))
         ? 1 : 0;
 }
 
@@ -1870,8 +1946,12 @@ LLIST_INTERNAL void dllist_register(PyObject* module)
     Py_INCREF(&DLListType);
     Py_INCREF(&DLListNodeType);
     Py_INCREF(&DLListIteratorType);
+    Py_INCREF(&DLListNodeIteratorType);
 
     PyModule_AddObject(module, "dllist", (PyObject*)&DLListType);
     PyModule_AddObject(module, "dllistnode", (PyObject*)&DLListNodeType);
-    PyModule_AddObject(module, "dllistiterator", (PyObject*)&DLListIteratorType);
+    PyModule_AddObject(
+        module, "dllistiterator", (PyObject*)&DLListIteratorType);
+    PyModule_AddObject(
+        module, "dllistnodeiterator", (PyObject*)&DLListNodeIteratorType);
 }
