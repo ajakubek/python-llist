@@ -1840,7 +1840,7 @@ static PyTypeObject DLListIteratorType =
     (inquiry)dllistiterator_clear_refs, /* tp_clear */
     0,                                  /* tp_richcompare */
     0,                                  /* tp_weaklistoffset */
-    0,                                  /* tp_iter */
+    PyObject_SelfIter,                  /* tp_iter */
     dllistiterator_iternext,            /* tp_iternext */
     0,                                  /* tp_methods */
     0,                                  /* tp_members */

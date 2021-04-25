@@ -276,6 +276,13 @@ class testsllist(unittest.TestCase):
             idx += 1
         self.assertEqual(idx, len(ref))
 
+    def test_iter_on_iterator_returns_same_object(self):
+        ll = sllist([0, 1, 2, 3])
+        first_iter = iter(ll)
+        second_iter = iter(first_iter)
+        self.assertIsNotNone(second_iter)
+        self.assertIs(first_iter, second_iter)
+
     def test_iter_empty(self):
         ll = sllist()
         count = 0
@@ -1289,6 +1296,13 @@ class testdllist(unittest.TestCase):
             self.assertEqual(val, ref[idx])
             idx += 1
         self.assertEqual(idx, len(ref))
+
+    def test_iter_on_iterator_returns_same_object(self):
+        ll = dllist([0, 1, 2, 3])
+        first_iter = iter(ll)
+        second_iter = iter(first_iter)
+        self.assertIsNotNone(second_iter)
+        self.assertIs(first_iter, second_iter)
 
     def test_iter_empty(self):
         ll = dllist()
