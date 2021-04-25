@@ -19,6 +19,7 @@
 static PyTypeObject SLListType;
 static PyTypeObject SLListNodeType;
 static PyTypeObject SLListIteratorType;
+static PyTypeObject SLListNodeIteratorType;
 
 
 /* SLListNode */
@@ -1410,7 +1411,7 @@ static PyObject* sllist_popright(SLListObject* self)
 }
 
 
-static PyObject* sllist_iter(PyObject* self)
+static PyObject* sllist_create_iterator(PyObject* self, PyObject* iterator_type)
 {
     PyObject* args;
     PyObject* result;
@@ -1431,13 +1432,22 @@ static PyObject* sllist_iter(PyObject* self)
         return NULL;
     }
 
-    result = PyObject_CallObject((PyObject*)&SLListIteratorType, args);
+    result = PyObject_CallObject(iterator_type, args);
 
     Py_DECREF(args);
 
     return result;
 }
 
+static PyObject* sllist_iternodes(PyObject* self)
+{
+    return sllist_create_iterator(self, (PyObject*)&SLListNodeIteratorType);
+}
+
+static PyObject* sllist_itervalues(PyObject* self)
+{
+    return sllist_create_iterator(self, (PyObject*)&SLListIteratorType);
+}
 
 
 static PyObject* sllist_to_string(SLListObject* self,
@@ -1583,6 +1593,12 @@ static PyMethodDef SLListMethods[] =
     { "insertnodebefore", (PyCFunction)sllist_insertnodebefore, METH_VARARGS,
       "Inserts element before node" },
 
+    { "iternodes", (PyCFunction)sllist_iternodes, METH_NOARGS,
+      "Return iterator over list nodes" },
+
+    { "itervalues", (PyCFunction)sllist_itervalues, METH_NOARGS,
+      "Return iterator over list values" },
+
     { "nodeat", (PyCFunction)sllist_node_at, METH_O,
       "Return node at index" },
 
@@ -1603,7 +1619,6 @@ static PyMethodDef SLListMethods[] =
 
     { NULL },   /* sentinel */
 };
-
 
 static PyMemberDef SLListMembers[] =
 {
@@ -1662,7 +1677,7 @@ static PyTypeObject SLListType =
                                  /* tp_richcompare    */
     offsetof(SLListObject, weakref_list),
                                  /* tp_weaklistoffset */
-    sllist_iter,                 /* tp_iter           */
+    sllist_itervalues,           /* tp_iter           */
     0,                           /* tp_iternext       */
     SLListMethods,               /* tp_methods        */
     SLListMembers,               /* tp_members        */
@@ -1743,7 +1758,7 @@ static PyObject* sllistiterator_new(PyTypeObject* type,
 }
 
 
-static PyObject* sllistiterator_iternext(PyObject* self)
+static SLListNodeObject* sllistiterator_advance(PyObject* self)
 {
     SLListIteratorObject* iter_self = (SLListIteratorObject*)self;
     PyObject* value;
@@ -1770,12 +1785,28 @@ static PyObject* sllistiterator_iternext(PyObject* self)
         return NULL;
     }
 
-    value = ((SLListNodeObject*)iter_self->current_node)->value;
+    return (SLListNodeObject*)iter_self->current_node;
+}
+
+static PyObject* sllistvalueiterator_iternext(PyObject* self)
+{
+    SLListNodeObject* current_node = sllistiterator_advance(self);
+
+    if (current_node == NULL)
+      return NULL;
+
+    PyObject* value = current_node->value;
     Py_INCREF(value);
 
     return value;
 }
 
+static PyObject* sllistnodeiterator_iternext(PyObject* self)
+{
+    SLListNodeObject* current_node = sllistiterator_advance(self);
+    Py_XINCREF(current_node);
+    return (PyObject*)current_node;
+}
 
 
 static PyTypeObject SLListIteratorType =
@@ -1807,8 +1838,52 @@ static PyTypeObject SLListIteratorType =
     (inquiry)sllistiterator_clear_refs, /* tp_clear          */
     0,                                  /* tp_richcompare    */
     0,                                  /* tp_weaklistoffset */
-    0,                                  /* tp_iter           */
-    sllistiterator_iternext,            /* tp_iternext       */
+    PyObject_SelfIter,                  /* tp_iter           */
+    sllistvalueiterator_iternext,       /* tp_iternext       */
+    0,                                  /* tp_methods        */
+    0,                                  /* tp_members        */
+    0,                                  /* tp_getset         */
+    0,                                  /* tp_base           */
+    0,                                  /* tp_dict           */
+    0,                                  /* tp_descr_get      */
+    0,                                  /* tp_descr_set      */
+    0,                                  /* tp_dictoffset     */
+    0,                                  /* tp_init           */
+    0,                                  /* tp_alloc          */
+    sllistiterator_new,                 /* tp_new            */
+};
+
+static PyTypeObject SLListNodeIteratorType =
+{
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "llist.sllistnodeiterator",         /* tp_name           */
+    sizeof(SLListIteratorObject),       /* tp_basicsize      */
+    0,                                  /* tp_itemsize       */
+    (destructor)sllistiterator_dealloc, /* tp_dealloc        */
+    0,                                  /* tp_print          */
+    0,                                  /* tp_getattr        */
+    0,                                  /* tp_setattr        */
+    0,                                  /* tp_compare        */
+    0,                                  /* tp_repr           */
+    0,                                  /* tp_as_number      */
+    0,                                  /* tp_as_sequence    */
+    0,                                  /* tp_as_mapping     */
+    0,                                  /* tp_hash           */
+    0,                                  /* tp_call           */
+    0,                                  /* tp_str            */
+    0,                                  /* tp_getattro       */
+    0,                                  /* tp_setattro       */
+    0,                                  /* tp_as_buffer      */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+                                        /* tp_flags          */
+    "Singly linked list node iterator", /* tp_doc            */
+    (traverseproc)sllistiterator_traverse,
+                                        /* tp_traverse       */
+    (inquiry)sllistiterator_clear_refs, /* tp_clear          */
+    0,                                  /* tp_richcompare    */
+    0,                                  /* tp_weaklistoffset */
+    PyObject_SelfIter,                  /* tp_iter           */
+    sllistnodeiterator_iternext,        /* tp_iternext       */
     0,                                  /* tp_methods        */
     0,                                  /* tp_members        */
     0,                                  /* tp_getset         */
@@ -1828,7 +1903,8 @@ LLIST_INTERNAL int sllist_init_type(void)
     return
         ((PyType_Ready(&SLListType) == 0) &&
          (PyType_Ready(&SLListNodeType) == 0) &&
-         (PyType_Ready(&SLListIteratorType) == 0))
+         (PyType_Ready(&SLListIteratorType) == 0) &&
+         (PyType_Ready(&SLListNodeIteratorType) == 0))
         ? 1 : 0;
 }
 
@@ -1837,8 +1913,12 @@ LLIST_INTERNAL void sllist_register(PyObject* module)
     Py_INCREF(&SLListType);
     Py_INCREF(&SLListNodeType);
     Py_INCREF(&SLListIteratorType);
+    Py_INCREF(&SLListNodeIteratorType);
 
     PyModule_AddObject(module, "sllist", (PyObject*)&SLListType);
     PyModule_AddObject(module, "sllistnode", (PyObject*)&SLListNodeType);
-    PyModule_AddObject(module, "sllistiterator", (PyObject*)&SLListIteratorType);
+    PyModule_AddObject(
+        module, "sllistiterator", (PyObject*)&SLListIteratorType);
+    PyModule_AddObject(
+        module, "sllistnodeiterator", (PyObject*)&SLListNodeIteratorType);
 }

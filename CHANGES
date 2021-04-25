@@ -8,6 +8,9 @@
     during preceding step of list iteration (closes issue #12)
   - added insertbefore(), insertafter(), insertnodebefore()
     and insertnodeafter() methods to dllist (closes issue #14)
+  - implemented iter() method on list iterators
+  - implemented iternodes() and itervalues() methods on dllist and
+    sllist (closes issue #5)
 
 -----------------------------------------------------------------------
 
