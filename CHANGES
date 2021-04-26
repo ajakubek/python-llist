@@ -1,3 +1,9 @@
+* llist-0.7.1 (2021-04-27)
+
+  - added missing file to MANIFEST
+
+-----------------------------------------------------------------------
+
 * llist-0.7 (2021-04-27)
 
   - fixed repr() and str() for self-referencing lists and nodes

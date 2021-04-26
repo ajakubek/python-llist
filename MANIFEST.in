@@ -5,4 +5,4 @@ include docs/Makefile docs/make.bat
 graft docs/_static
 graft docs/_templates
 recursive-include examples *.py
-recursive-include tests *test*.py
+recursive-include tests *test*.py py23_utils.py
