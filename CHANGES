@@ -1,4 +1,4 @@
-* llist-0.7 (unreleased)
+* llist-0.7 (2021-04-27)
 
   - fixed repr() and str() for self-referencing lists and nodes
     (closes issue #10)
