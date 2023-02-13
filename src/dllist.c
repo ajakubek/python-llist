@@ -203,6 +203,7 @@ static int dllistnode_clear_refs(DLListNodeObject* self)
 
 static void dllistnode_dealloc(DLListNodeObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     dllistnode_clear_refs(self);
@@ -606,6 +607,7 @@ static int dllist_clear_refs(DLListObject* self)
 
 static void dllist_dealloc(DLListObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     dllist_clear_refs(self);
@@ -1758,6 +1760,7 @@ static int dllistiterator_clear_refs(DLListIteratorObject* self)
 
 static void dllistiterator_dealloc(DLListIteratorObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     dllistiterator_clear_refs(self);
