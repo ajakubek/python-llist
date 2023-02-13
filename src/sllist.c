@@ -131,6 +131,7 @@ static int sllistnode_clear_refs(SLListNodeObject* self)
 
 static void sllistnode_dealloc(SLListNodeObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     sllistnode_clear_refs(self);
@@ -373,6 +374,7 @@ static int sllist_clear_refs(SLListObject* self)
 
 static void sllist_dealloc(SLListObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     sllist_clear_refs(self);
@@ -1722,6 +1724,7 @@ static int sllistiterator_clear_refs(SLListIteratorObject* self)
 
 static void sllistiterator_dealloc(SLListIteratorObject* self)
 {
+    PyObject_GC_UnTrack(self);
     PyObject* obj_self = (PyObject*)self;
 
     sllistiterator_clear_refs(self);
