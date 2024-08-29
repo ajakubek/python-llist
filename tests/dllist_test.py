@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-import unittest
 import weakref
 
+from llist_test_case import LListTestCase
 from py23_utils import py23_cmp, py23_range, py23_xrange
 
 from llist import dllist, dllistnode, sllistnode
 
 
-class testdllist(unittest.TestCase):
+class testdllist(LListTestCase):
 
     def test_init_empty(self):
         ll = dllist()
@@ -1371,20 +1371,20 @@ class testdllist(unittest.TestCase):
             pass
 
     def test_cyclic_list_destruction_does_not_release_extra_None_refs(self):
-        original_ref_count = sys.getrefcount(None)
+        def create_and_free_lists():
+            for _ in range(10):
+                ll = dllist()
+                n = dllistnode(ll)
+                ll.append(n)
+                del ll
+                del n
 
-        for _ in range(original_ref_count * 10):
-            ll = dllist()
-            ll.append(dllistnode(ll))
-            del ll
-
-        self.assertGreater(sys.getrefcount(None), 0)
+        self.assertStableRefCount(create_and_free_lists, None)
 
     def test_cyclic_node_destruction_does_not_release_extra_None_refs(self):
-        original_ref_count = sys.getrefcount(None)
+        def create_and_free_lists():
+            for _ in range(10):
+                ll = self.make_recursive_node_list()
+                del ll
 
-        for _ in range(original_ref_count * 10):
-            ll = self.make_recursive_node_list()
-            del ll
-
-        self.assertGreater(sys.getrefcount(None), 0)
+        self.assertStableRefCount(create_and_free_lists, None)

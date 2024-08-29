@@ -1,6 +1,8 @@
 * llist-0.8 (unreleased)
 
   - added missing file to MANIFEST
+  - adjusted tests to work with immortal objects from Python 3.12
+    (closes issue #18)
 
 -----------------------------------------------------------------------
 
