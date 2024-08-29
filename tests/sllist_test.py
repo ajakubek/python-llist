@@ -4,7 +4,7 @@ import sys
 import unittest
 import weakref
 
-from py23_utils import *
+from py23_utils import py23_cmp, py23_range, py23_xrange
 
 from llist import sllist, sllistnode
 
@@ -88,23 +88,23 @@ class testsllist(unittest.TestCase):
         d = sllist([1, 2, 3, 5])
         e = sllist([1, 0, 0, 0])
         f = sllist([0, 0, 0, 0])
-        self.assertEqual(cmp(a, a), 0)
-        self.assertEqual(cmp(a, b), -1)
-        self.assertEqual(cmp(b, a), 1)
-        self.assertEqual(cmp(c, d), -1)
-        self.assertEqual(cmp(d, c), 1)
-        self.assertEqual(cmp(e, f), 1)
-        self.assertEqual(cmp(f, e), -1)
+        self.assertEqual(py23_cmp(a, a), 0)
+        self.assertEqual(py23_cmp(a, b), -1)
+        self.assertEqual(py23_cmp(b, a), 1)
+        self.assertEqual(py23_cmp(c, d), -1)
+        self.assertEqual(py23_cmp(d, c), 1)
+        self.assertEqual(py23_cmp(e, f), 1)
+        self.assertEqual(py23_cmp(f, e), -1)
 
     def test_cmp_nonlist(self):
         a = sllist(py23_xrange(0, 1100))
         b = [py23_xrange(0, 1100)]
         if sys.hexversion < 0x03000000:
             # actual order is not specified by language
-            self.assertNotEqual(cmp(a, b), 0)
-            self.assertNotEqual(cmp(b, a), 0)
-            self.assertNotEqual(cmp([], a), 0)
-            self.assertNotEqual(cmp(a, []), 0)
+            self.assertNotEqual(py23_cmp(a, b), 0)
+            self.assertNotEqual(py23_cmp(b, a), 0)
+            self.assertNotEqual(py23_cmp([], a), 0)
+            self.assertNotEqual(py23_cmp(a, []), 0)
 
     def test_eq(self):
         a = sllist(py23_xrange(0, 1100))
@@ -522,14 +522,14 @@ class testsllist(unittest.TestCase):
         arg_node = sllistnode(100)
         new_node = ll.insertnodeafter(arg_node, ll.first)
         self.assertEqual([1, 100, 3, '123'], list(ll))
-        self.assertEqual(new_node, arg_node);
+        self.assertEqual(new_node, arg_node)
 
     def test_insert_node_before_first(self):
         ll = sllist([1, 3, '123'])
         arg_node = sllistnode(100)
         new_node = ll.insertnodebefore(arg_node, ll.first)
         self.assertEqual([100, 1, 3, '123'], list(ll))
-        self.assertEqual(new_node, arg_node);
+        self.assertEqual(new_node, arg_node)
 
     def test_insert_node_after_another(self):
         ll = sllist(py23_xrange(4))
@@ -570,7 +570,7 @@ class testsllist(unittest.TestCase):
         self.assertEqual(prev.next, new_node)
         self.assertEqual(ll, ref)
 
-    def test_insert_node_before_first(self):
+    def test_insert_node_before_node_at_index_0(self):
         ll = sllist(py23_xrange(4))
         ref = sllist([10, 0, 1, 2, 3])
         next = ll.nodeat(0)
@@ -1087,7 +1087,7 @@ class testsllist(unittest.TestCase):
     def test_list_hash(self):
         self.assertEqual(hash(sllist()), hash(sllist()))
         self.assertEqual(hash(sllist(py23_range(0, 1024, 4))),
-            hash(sllist(py23_range(0, 1024, 4))))
+                         hash(sllist(py23_range(0, 1024, 4))))
         self.assertEqual(hash(sllist([0, 2])), hash(sllist([0.0, 2.0])))
         self.assertNotEqual(hash(sllist([1, 2])), hash(sllist([2, 1])))
 
