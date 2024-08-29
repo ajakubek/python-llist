@@ -1761,7 +1761,6 @@ static PyObject* sllistiterator_new(PyTypeObject* type,
 static SLListNodeObject* sllistiterator_advance(PyObject* self)
 {
     SLListIteratorObject* iter_self = (SLListIteratorObject*)self;
-    PyObject* value;
 
     if (iter_self->current_node == NULL)
     {

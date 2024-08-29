@@ -19,7 +19,7 @@ class Stopwatch(object):
 
     def __exit__(self, *exc_details):
         stop_time = time.time()
-        assert(self._start_time is not None)
+        assert self._start_time is not None
         self.elapsed += stop_time - self._start_time
 
 
