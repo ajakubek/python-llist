@@ -4,7 +4,7 @@ import sys
 import unittest
 import weakref
 
-from py23_utils import *
+from py23_utils import py23_cmp, py23_range, py23_xrange
 
 from llist import dllist, dllistnode, sllistnode
 
@@ -25,9 +25,9 @@ class testdllist(unittest.TestCase):
         self.assertEqual(list(ll), ref)
 
     def test_init_with_non_sequence(self):
-        self.assertRaises(TypeError, dllist, None);
-        self.assertRaises(TypeError, dllist, 1);
-        self.assertRaises(TypeError, dllist, 1.5);
+        self.assertRaises(TypeError, dllist, None)
+        self.assertRaises(TypeError, dllist, 1)
+        self.assertRaises(TypeError, dllist, 1.5)
 
     def test_str(self):
         a = dllist([])
@@ -89,23 +89,23 @@ class testdllist(unittest.TestCase):
         d = dllist([1, 2, 3, 5])
         e = dllist([1, 0, 0, 0])
         f = dllist([0, 0, 0, 0])
-        self.assertEqual(cmp(a, a), 0)
-        self.assertEqual(cmp(a, b), -1)
-        self.assertEqual(cmp(b, a), 1)
-        self.assertEqual(cmp(c, d), -1)
-        self.assertEqual(cmp(d, c), 1)
-        self.assertEqual(cmp(e, f), 1)
-        self.assertEqual(cmp(f, e), -1)
+        self.assertEqual(py23_cmp(a, a), 0)
+        self.assertEqual(py23_cmp(a, b), -1)
+        self.assertEqual(py23_cmp(b, a), 1)
+        self.assertEqual(py23_cmp(c, d), -1)
+        self.assertEqual(py23_cmp(d, c), 1)
+        self.assertEqual(py23_cmp(e, f), 1)
+        self.assertEqual(py23_cmp(f, e), -1)
 
     def test_cmp_nonlist(self):
         a = dllist(py23_xrange(0, 1100))
         b = [py23_xrange(0, 1100)]
         if sys.hexversion < 0x03000000:
             # actual order is not specified by language
-            self.assertNotEqual(cmp(a, b), 0)
-            self.assertNotEqual(cmp(b, a), 0)
-            self.assertNotEqual(cmp([], a), 0)
-            self.assertNotEqual(cmp(a, []), 0)
+            self.assertNotEqual(py23_cmp(a, b), 0)
+            self.assertNotEqual(py23_cmp(b, a), 0)
+            self.assertNotEqual(py23_cmp([], a), 0)
+            self.assertNotEqual(py23_cmp(a, []), 0)
 
     def test_eq(self):
         a = dllist(py23_xrange(0, 1100))
@@ -489,7 +489,6 @@ class testdllist(unittest.TestCase):
 
     def test_insertbefore_before_first_item_updates_list_head(self):
         ll = dllist([0])
-        original_head = ll.first
         new_node = ll.insertbefore(1234, ll.first)
         self.assertIs(ll.first, new_node)
 
@@ -563,7 +562,6 @@ class testdllist(unittest.TestCase):
 
     def test_insertafter_after_last_item_updates_list_tail(self):
         ll = dllist([0])
-        original_tail = ll.last
         new_node = ll.insertafter(1234, ll.last)
         self.assertIs(ll.last, new_node)
 
@@ -729,7 +727,7 @@ class testdllist(unittest.TestCase):
     def test_insertnodebefore_updates_list_head_if_inserted_node_becomes_head(self):
         ll = dllist([0])
         inserted_node = dllistnode(1234)
-        new_node = ll.insertnodebefore(inserted_node, ll.first)
+        ll.insertnodebefore(inserted_node, ll.first)
         self.assertIs(ll.first, inserted_node)
 
     def test_insertnodebefore_after_first_item_does_not_update_list_head(self):
@@ -828,7 +826,7 @@ class testdllist(unittest.TestCase):
     def test_insertnodeafter_updates_list_tail_if_inserted_node_becomes_tail(self):
         ll = dllist([0])
         inserted_node = dllistnode(1234)
-        new_node = ll.insertnodeafter(inserted_node, ll.last)
+        ll.insertnodeafter(inserted_node, ll.last)
         self.assertIs(ll.last, inserted_node)
 
     def test_insertnodeafter_before_last_item_does_not_update_list_tail(self):
@@ -858,7 +856,7 @@ class testdllist(unittest.TestCase):
         arg_node = dllistnode(10)
         new_node = ll.append(arg_node)
         self.assertNotEqual(new_node, arg_node)
-        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.prev, prev)
         self.assertEqual(new_node.next, None)
         self.assertEqual(prev.next, new_node)
@@ -872,7 +870,7 @@ class testdllist(unittest.TestCase):
         arg_node = dllistnode(10)
         new_node = ll.appendleft(arg_node)
         self.assertNotEqual(new_node, arg_node)
-        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.prev, None)
         self.assertEqual(new_node.next, next)
         self.assertEqual(next.prev, new_node)
@@ -886,7 +884,7 @@ class testdllist(unittest.TestCase):
         arg_node = dllistnode(10)
         new_node = ll.appendright(arg_node)
         self.assertNotEqual(new_node, arg_node)
-        self.assertEqual(new_node.value, 10);
+        self.assertEqual(new_node.value, 10)
         self.assertEqual(new_node.prev, prev)
         self.assertEqual(new_node.next, None)
         self.assertEqual(prev.next, new_node)
@@ -1038,7 +1036,7 @@ class testdllist(unittest.TestCase):
     def test_pop(self):
         ref = py23_range(0, 1024, 4)
         ll = dllist(ref)
-        result = ll.pop();
+        result = ll.pop()
         self.assertEqual(result, ref[-1])
         self.assertEqual(len(ll), len(ref) - 1)
         self.assertEqual(ll.size, len(ref) - 1)
@@ -1360,7 +1358,7 @@ class testdllist(unittest.TestCase):
     def test_list_hash(self):
         self.assertEqual(hash(dllist()), hash(dllist()))
         self.assertEqual(hash(dllist(py23_range(0, 1024, 4))),
-            hash(dllist(py23_range(0, 1024, 4))))
+                         hash(dllist(py23_range(0, 1024, 4))))
         self.assertEqual(hash(dllist([0, 2])), hash(dllist([0.0, 2.0])))
         self.assertNotEqual(hash(dllist([1, 2])), hash(dllist([2, 1])))
 
