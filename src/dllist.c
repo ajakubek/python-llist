@@ -1796,7 +1796,6 @@ static PyObject* dllistiterator_new(PyTypeObject* type,
 static DLListNodeObject* dllistiterator_advance(PyObject* self)
 {
     DLListIteratorObject* iter_self = (DLListIteratorObject*)self;
-    PyObject* value;
 
     if (iter_self->current_node == NULL)
     {
