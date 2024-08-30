@@ -35,4 +35,4 @@ https://github.com/ajakubek/python-llist/issues
 This software is distributed under the MIT license.
 Please see the LICENSE file included in the package for details.
 
-[![Build Status](https://travis-ci.org/ajakubek/python-llist.svg?branch=master)](https://travis-ci.org/ajakubek/python-llist)
+[![Build Status](https://github.com/ajakubek/python-llist/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/ajakubek/python-llist/actions/workflows/python-package.yml?query=branch%3Amaster)
