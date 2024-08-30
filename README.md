@@ -9,7 +9,7 @@ the middle of a sequence.
 For this kind of workload, they can be significantly faster than
 collections.deque or standard Python lists.
 
-This extension requires CPython 2.5 or newer (3.x is supported).
+This extension requires CPython 2.7 or newer (3.x is supported).
 If you are looking for an implementation of linked lists in pure Python,
 visit http://github.com/rgsoda/pypy-llist/
 The pypy-llist module has the same API as this extension, but is
@@ -22,9 +22,13 @@ Currently llist provides the following types of linked lists:
 Full documentation of these classes is available at:
 https://ajakubek.github.io/python-llist/index.html
 
-To install this package, either run "pip install llist",
-or download it manually from http://pypi.python.org/pypi
-then unpack the sources and compile them with "python setup.py install".
+To install this package, run "pip install llist".
+Alternatively you can also download it manually from http://pypi.python.org/pypi, unpack into a directory and build/install with the following commands:
+```
+python -m build
+pip install .
+```
+The instruction assumes that the 'build' frontend is already available in site-packages.
 
 The most current development version is available at:
 https://github.com/ajakubek/python-llist/
