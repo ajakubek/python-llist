@@ -51,7 +51,7 @@ PyInit__llist(void)
 #else
 
 PyMODINIT_FUNC
-initllist(void)
+init_llist(void)
 {
     PyObject* m;
 
