@@ -20,7 +20,7 @@ static PyMethodDef llist_methods[] =
 
 static struct PyModuleDef llist_moduledef = {
     PyModuleDef_HEAD_INIT,
-    "llist",                            /* m_name */
+    "_llist",                           /* m_name */
     "Singly and doubly linked lists.",  /* m_doc */
     -1,                                 /* m_size */
     llist_methods,                      /* m_methods */
@@ -31,7 +31,7 @@ static struct PyModuleDef llist_moduledef = {
 };
 
 PyMODINIT_FUNC
-PyInit_llist(void)
+PyInit__llist(void)
 {
     PyObject* m;
 
@@ -60,7 +60,7 @@ initllist(void)
     if (!dllist_init_type())
         return;
 
-    m = Py_InitModule3("llist", llist_methods,
+    m = Py_InitModule3("_llist", llist_methods,
                        "Singly and doubly linked lists.");
 
     sllist_register(m);

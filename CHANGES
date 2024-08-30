@@ -3,6 +3,7 @@
   - added missing file to MANIFEST
   - adjusted tests to work with immortal objects from Python 3.12
     (closes issue #18)
+  - added support for type hints (closes issue #16)
 
 -----------------------------------------------------------------------
 
