@@ -79,4 +79,4 @@ for container in [deque, dllist, sllist]:
             container.__name__,
             operation.__name__,
             stopwatch.elapsed,
-            num / stopwatch.elapsed))
+            num / stopwatch.elapsed if stopwatch.elapsed != 0 else float('inf')))
