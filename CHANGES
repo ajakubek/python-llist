@@ -4,6 +4,8 @@
   - adjusted tests to work with immortal objects from Python 3.12
     (closes issue #18)
   - added support for type hints (closes issue #16)
+  - added missing PyObject_GC_UnTrack calls (contribution from
+    Alexander Shadchin)
 
 -----------------------------------------------------------------------
 
