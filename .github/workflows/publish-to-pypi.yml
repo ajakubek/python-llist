@@ -2,8 +2,6 @@ name: Publish package to PyPI and TestPyPI
 
 on:
   push:
-    tags:
-    - '*'
 
 jobs:
   tests:
