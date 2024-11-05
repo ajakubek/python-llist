@@ -15,9 +15,15 @@ visit http://github.com/rgsoda/pypy-llist/
 The pypy-llist module has the same API as this extension, but is
 significantly slower in CPython.
 
+Understanding Linked Lists
+Linked lists are an ordered collection of objects. So what makes them different from normal lists? Linked lists differ from lists in the way that they store elements in memory. While lists use a contiguous memory block to store references to their data, linked lists store references as part of their own elements.
+
 Currently llist provides the following types of linked lists:
  - dllist - a doubly linked list
  - sllist - a singly linked list
+ 
+ Practical Applications:
+Linked lists serve a variety of purposes in the real world. They can be used to implement (spoiler alert!) queues or stacks as well as graphs. They’re also useful for much more complex tasks, such as lifecycle management for an operating system application.
 
 Full documentation of these classes is available at:
 https://ajakubek.github.io/python-llist/index.html
